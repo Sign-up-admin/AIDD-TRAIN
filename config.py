@@ -10,14 +10,15 @@ CONFIG = {
 
     # --- Model & Training Hyperparameters ---
     'epochs': 20,
-    'batch_size': 128,
+    # Reduced batch size to prevent CUDA out-of-memory errors. Graph data is memory-intensive.
+    'batch_size': 16,
     'learning_rate': 0.001,
     'train_split': 0.8,
     'dropout_rate': 0.5,
 
     # --- Hardware & Performance ---
     # Number of CPU cores for the one-time, initial data preprocessing.
-    # A high value caused memory crashes. A safer, more conservative value is set.
+    # A high value can cause memory crashes. A safer, more conservative value is set.
     # You can try tuning this value up (e.g., 12, 16) if you have sufficient RAM.
     'processing_num_workers': 8,
 

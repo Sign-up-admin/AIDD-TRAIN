@@ -129,9 +129,11 @@ def ligand_mol_to_graph(mol):
         return None
     return Data(x=atom_features, edge_index=edge_index, pos=pos)
 
-def protein_structure_to_graph(structure, cutoff=8.0):
+def protein_structure_to_graph(structure, k=32, cutoff=10.0):
     atoms_to_include = [atom for residue in structure.get_residues() if residue.id[0] == ' ' for atom in residue.get_atoms()]
-    if not atoms_to_include:
+    
+    num_atoms = len(atoms_to_include)
+    if num_atoms < k + 1:
         return None
 
     atom_features_list, positions_list = [], []
@@ -145,23 +147,30 @@ def protein_structure_to_graph(structure, cutoff=8.0):
     atom_features = torch.tensor(atom_features_list, dtype=torch.float)
     positions_np = np.array(positions_list)
 
-    # Use KDTree for memory-efficient neighbor search, avoiding O(N^2) memory
     kdtree = KDTree(positions_np)
-    edge_list = kdtree.query_ball_tree(kdtree, r=cutoff, p=2.0)
+    distances, indices = kdtree.query(positions_np, k=k+1, p=2.0)
 
-    rows, cols = [], []
-    for i, neighbors in enumerate(edge_list):
-        for j in neighbors:
-            if i < j: # Avoid self-loops and duplicate edges
-                rows.append(i)
-                cols.append(j)
+    edge_set = set()
+    for i in range(num_atoms):
+        for j_idx in range(1, k + 1):
+            neighbor_idx = indices[i, j_idx]
+            if distances[i, j_idx] < cutoff:
+                pair = tuple(sorted((i, neighbor_idx)))
+                edge_set.add(pair)
+    
+    if not edge_set:
+        return None
 
-    # Add edges in both directions
+    rows, cols = zip(*edge_set)
+    rows = list(rows)
+    cols = list(cols)
+    
     edge_index = torch.tensor([rows + cols, cols + rows], dtype=torch.long)
-    edge_index, _ = add_self_loops(edge_index, num_nodes=atom_features.size(0))
+    
     pos = torch.from_numpy(positions_np).float()
-
-    return Data(x=atom_features, edge_index=edge_index, pos=pos)
+    data = Data(x=atom_features, edge_index=edge_index, pos=pos)
+    data.edge_index, _ = add_self_loops(data.edge_index, num_nodes=data.num_nodes)
+    return data
 
 def count_pdb_atoms(pdb_path):
     try:
@@ -178,9 +187,8 @@ def process_item(item):
             logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
             return None
 
-        # Stricter atom count limit for safety with KDTree
-        if count_pdb_atoms(protein_path) > 15000:
-            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>15,000) for safe processing.")
+        if count_pdb_atoms(protein_path) > 20000: # Increased limit slightly as KNN is safer
+            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>20,000) for safe processing.")
             return None
 
         parser = PDBParser(QUIET=True)
@@ -273,7 +281,7 @@ class PDBBindDataset(Dataset):
                 success_count += result
                 if error_msg: logging.warning(error_msg)
         
-        print(f"--- Processing Finished ---")
+        print("--- Processing Finished ---")
         skipped_count = len(tasks) - success_count
         print(f"Successfully processed {success_count}/{len(tasks)} items ({skipped_count} skipped due to errors).")
 
@@ -381,7 +389,7 @@ def main():
 
     print("Step 2: Verifying data consistency and creating dataset...")
 
-    DATA_PROCESSING_VERSION = f"v7_kdtree_{len(ELEMENTS)}"
+    DATA_PROCESSING_VERSION = f"v8_knn32_{len(ELEMENTS)}" # Switched to KNN graph construction
     version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
 
     processed_files_exist = any(os.path.exists(os.path.join(config['processed_data_dir'], item['year_dir'], f"{item['pdb_code']}.pt")) for item in all_data_paths)
