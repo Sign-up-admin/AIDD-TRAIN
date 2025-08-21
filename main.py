@@ -22,6 +22,7 @@ from torch_geometric.utils import add_self_loops
 from rdkit import Chem, rdBase
 from Bio.PDB import PDBParser
 from scipy.spatial import KDTree
+from torch.amp import GradScaler, autocast
 
 # --- Local Imports ---
 from config import CONFIG
@@ -187,7 +188,7 @@ def process_item(item):
             logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
             return None
 
-        if count_pdb_atoms(protein_path) > 15000: # Stricter limit to filter out very large proteins
+        if count_pdb_atoms(protein_path) > 15000: # Relaxed limit
             logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>15,000) for safe processing.")
             return None
 
@@ -360,22 +361,36 @@ class ViSNetPDB(torch.nn.Module):
         return output
 
 # ==============================================================================
-# PART 5: TRAINING AND EVALUATION LOOPS
+# PART 5: TRAINING AND EVALUATION LOOPS (WITH AMP AND GRADIENT ACCUMULATION)
 # ==============================================================================
 
-def train(model, loader, optimizer, device):
+def train(model, loader, optimizer, device, scaler, grad_accum_steps):
     model.train()
     total_loss, processed_graphs = 0, 0
-    for batch in tqdm(loader, desc="Training", leave=False):
+    optimizer.zero_grad() # Reset gradients at the start of the epoch
+
+    for i, batch in enumerate(tqdm(loader, desc="Training", leave=False)):
         if batch is None: continue
         data = batch.to(device)
-        optimizer.zero_grad()
-        output = model(data)
-        loss = F.mse_loss(output, data.y.view(-1, 1))
-        loss.backward()
-        optimizer.step()
-        total_loss += loss.item() * data.num_graphs
+
+        # Automatic Mixed Precision (AMP)
+        with autocast(device_type=device.type, dtype=torch.float16):
+            output = model(data)
+            # Normalize loss for gradient accumulation
+            loss = F.mse_loss(output, data.y.view(-1, 1)) / grad_accum_steps
+
+        # Scale gradients and perform backward pass
+        scaler.scale(loss).backward()
+
+        # Update weights every `grad_accum_steps`
+        if (i + 1) % grad_accum_steps == 0 or (i + 1) == len(loader):
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad()
+
+        total_loss += loss.item() * grad_accum_steps * data.num_graphs
         processed_graphs += data.num_graphs
+
     return total_loss / processed_graphs if processed_graphs > 0 else 0
 
 def test(model, loader, device):
@@ -385,8 +400,10 @@ def test(model, loader, device):
         for batch in tqdm(loader, desc="Validation", leave=False):
             if batch is None: continue
             data = batch.to(device)
-            output = model(data)
-            loss = F.mse_loss(output, data.y.view(-1, 1))
+            # AMP for inference is also beneficial
+            with autocast(device_type=device.type, dtype=torch.float16):
+                output = model(data)
+                loss = F.mse_loss(output, data.y.view(-1, 1))
             total_loss += loss.item() * data.num_graphs
             processed_graphs += data.num_graphs
     return total_loss / processed_graphs if processed_graphs > 0 else 0
@@ -422,7 +439,7 @@ def main():
     print("--- Configuration Loaded ---")
     print(f"Processing Cores: {config['processing_num_workers']}")
     print(f"Loader Cores: {config['loader_num_workers']}")
-    print(f"Batch Size: {config['batch_size']}")
+    print(f"Batch Size: {config['batch_size']} (Effective: {config['batch_size'] * config['gradient_accumulation_steps']})")
     print(f"Epochs: {config['epochs']}")
     print("--------------------------")
     
@@ -438,7 +455,7 @@ def main():
 
     print("Step 2: Verifying data consistency and creating dataset...")
 
-    DATA_PROCESSING_VERSION = f"v11_knn32_{len(ELEMENTS)}_atom_15000" # Reflects new atom limit
+    DATA_PROCESSING_VERSION = f"v13_amp_grad_accum_atom_15000" # Reflects new atom limit and training techniques
     version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
 
     processed_files_exist = any(os.path.exists(os.path.join(config['processed_data_dir'], item['year_dir'], f"{item['pdb_code']}.pt")) for item in all_data_paths)
@@ -505,8 +522,6 @@ def main():
         return
         
     # --- NEW ViSNet Model Instantiation ---
-    # ViSNet does not require input dimensions derived from the data,
-    # as it works with atomic numbers directly.
     print("-> Initializing ViSNet model...")
     model = ViSNetPDB(
         hidden_channels=config.get('visnet_hidden_channels', 128),
@@ -517,6 +532,7 @@ def main():
     ).to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
+    scaler = GradScaler(device=device)
     print(f"-> Model initialized with {sum(p.numel() for p in model.parameters()):,} parameters.")
 
     # --- Checkpoint Loading ---
@@ -529,6 +545,9 @@ def main():
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
             start_epoch = checkpoint['epoch'] + 1
             best_val_loss = checkpoint.get('val_loss', float('inf'))
+            if 'scaler_state_dict' in checkpoint:
+                scaler.load_state_dict(checkpoint['scaler_state_dict'])
+                print("--> Resumed GradScaler state.")
             print(f"--> Resumed from checkpoint. Starting at epoch {start_epoch}. Last validation loss: {best_val_loss:.4f}")
         except (KeyError, RuntimeError) as e:
             print(f"Could not load checkpoint due to an error: {e}. Starting from scratch.")
@@ -539,7 +558,7 @@ def main():
 
     print("Step 5: Starting training...")
     for epoch in range(start_epoch, config['epochs'] + 1):
-        train_loss = train(model, train_loader, optimizer, device)
+        train_loss = train(model, train_loader, optimizer, device, scaler, config['gradient_accumulation_steps'])
         val_loss = test(model, val_loader, device)
         print(f"Epoch {epoch:02d}/{config['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
@@ -552,6 +571,7 @@ def main():
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
+            'scaler_state_dict': scaler.state_dict(),
             'val_loss': val_loss,
         }
         
