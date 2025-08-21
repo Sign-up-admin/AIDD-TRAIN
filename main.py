@@ -2,6 +2,7 @@
 import os
 import re
 import math
+import random
 import platform
 import logging
 from io import StringIO
@@ -393,68 +394,79 @@ def main():
     all_data_paths = get_data_paths(pdb_info, config['dataset_path'])
     print(f"-> Found {len(all_data_paths)} total pairs with existing data files.")
 
-    print("Step 2: Creating/loading processed PyTorch Geometric dataset...")
-    print("NOTE: If you've changed data processing logic, clear the processed data directory.")
+    print("Step 2: Verifying data consistency and creating dataset...")
+
+    # --- Data Versioning Check --- 
+    # This ensures that processed data corresponds to the current processing logic.
+    DATA_PROCESSING_VERSION = f"v4_elements_{len(ELEMENTS)}" # Version based on feature size
+    version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
+
+    processed_files_exist = False
+    if os.path.isdir(config['processed_data_dir']):
+        for _, _, filenames in os.walk(config['processed_data_dir']):
+            if any(f.endswith('.pt') for f in filenames):
+                processed_files_exist = True
+                break
+
+    if processed_files_exist:
+        if os.path.exists(version_file_path):
+            with open(version_file_path, 'r') as f:
+                stored_version = f.read().strip()
+            if stored_version != DATA_PROCESSING_VERSION:
+                print("\n" + "="*70)
+                print("FATAL: Data processing logic has changed.")
+                print(f"  - Stored data version: {stored_version}")
+                print(f"  - Current code version: {DATA_PROCESSING_VERSION}")
+                print("  - Please DELETE the processed data directory to allow reprocessing:")
+                print(f"    {config['processed_data_dir']}")
+                print("="*70 + "\n")
+                return
+        else:
+            print("\n" + "="*70)
+            print("FATAL: Found old, unversioned processed data.")
+            print("  - The data processing logic has been updated for consistency.")
+            print("  - Please DELETE the processed data directory to allow reprocessing:")
+            print(f"    {config['processed_data_dir']}")
+            print("="*70 + "\n")
+            return
+
     dataset = PDBBindDataset(
         root=config['processed_data_dir'], 
         data_paths=all_data_paths,
         num_workers=config['num_workers']
     )
-    
-    # Filter out data that failed to process by checking for the processed file's existence.
-    processed_indices = [i for i, name in enumerate(dataset.processed_file_names) if os.path.exists(os.path.join(dataset.processed_dir, name))]
-    if not processed_indices:
-        print("FATAL: No data could be processed or found. Check processing logs. Cannot proceed.")
-        return
-    
-    print(f"-> Successfully loaded {len(processed_indices)}/{len(all_data_paths)} available data points.")
-    dataset = dataset.index_select(processed_indices)
 
-    # Custom filtering for corrupted files and inconsistent features
-    valid_indices = []
-    expected_dims = None
+    # Write version file after processing is confirmed to have run or data is verified
+    if not os.path.exists(version_file_path):
+        with open(version_file_path, 'w') as f: f.write(DATA_PROCESSING_VERSION)
 
-    for i in tqdm(range(len(dataset)), desc="Verifying processed files"):
+    # --- Data Loading and Final Validation ---
+    initial_data_list = []
+    for i in tqdm(range(len(dataset)), desc="Loading processed files"):
+        # dataset.get() handles basic corruption (e.g. file not found, EOF)
         data = dataset.get(i)
         if data is not None:
-            try:
-                current_dims = (data.protein_x.shape[1], data.ligand_x.shape[1])
-                if expected_dims is None:
-                    expected_dims = current_dims
-                
-                if current_dims == expected_dims:
-                    valid_indices.append(i)
-                else:
-                    pdb_code = dataset.data_paths[i].get('pdb_code', f'index {i}')
-                    logging.warning(f"Skipping {pdb_code} due to inconsistent feature dimensions. "
-                                    f"Expected {expected_dims}, got {current_dims}.")
-            except (AttributeError, IndexError):
-                # This case should be already handled by dataset.get() returning None, but as a safeguard.
-                pass
+            initial_data_list.append(data)
 
-    if len(valid_indices) < len(dataset):
-        print(f"-> Pruned {len(dataset) - len(valid_indices)} data points due to corruption or inconsistency.")
+    if not initial_data_list:
+        print("FATAL: No valid data points could be loaded. Cannot proceed.")
+        return
 
-    dataset = dataset.index_select(valid_indices)
-    print(f"-> Verified {len(dataset)} valid data points.")
+    print(f"-> Verified {len(initial_data_list)} valid data points.")
 
     print("Step 3: Splitting data and creating loaders...")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"-> Using device: {device}")
 
-    dataset = dataset.shuffle()
-    train_size = int(config['train_split'] * len(dataset))
-    train_dataset = dataset[:train_size]
-    val_dataset = dataset[train_size:]
+    random.shuffle(initial_data_list)
+    train_size = int(config['train_split'] * len(initial_data_list))
+    train_dataset = initial_data_list[:train_size]
+    val_dataset = initial_data_list[train_size:]
     
     loader_num_workers = config['num_workers']
     if platform.system() == 'Windows' and loader_num_workers > 0:
         print("Warning: Using multiple workers for DataLoader on Windows can be unstable.")
         print("If you encounter freezing or memory issues, consider setting 'num_workers' to 0 in config.py.")
-
-    # Filter out None values from datasets before creating loaders
-    train_dataset = [data for data in train_dataset if data is not None]
-    val_dataset = [data for data in val_dataset if data is not None]
 
     pin_memory = True if device.type == 'cuda' else False
     train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=loader_num_workers, pin_memory=pin_memory, follow_batch=['protein_x', 'ligand_x'])
