@@ -10,10 +10,19 @@ CONFIG = {
 
     # --- Model & Training Hyperparameters ---
     'epochs': 20,
-    'batch_size': 16,
-    'learning_rate': 0.001,
+    'batch_size': 5, # Final adjustment to find the sweet spot
+    'learning_rate': 0.0001,
     'train_split': 0.8,
     'dropout_rate': 0.5,
+
+    # --- ViSNet Model Specific ---
+    # These parameters control the size and complexity of the ViSNet model.
+    # Reducing them can help with CUDA out-of-memory errors.
+    'visnet_hidden_channels': 128,  # Reduced from 256
+    'visnet_num_layers': 4,         # Reduced from 6
+    'visnet_max_neighbors': 16,
+    'visnet_cutoff': 8.0, # Cutoff distance for neighbors
+    'visnet_num_rbf': 64,           # Reduced from 128
 
     # --- Hardware & Performance ---
     # Number of CPU cores for the one-time, initial data preprocessing.
@@ -23,5 +32,5 @@ CONFIG = {
 
     # Number of CPU cores for the DataLoader during training.
     # This is an I/O-bound task. A smaller number is recommended.
-    'loader_num_workers': 4,
+    'loader_num_workers': 12, # Kept at 12 to speed up data loading
 }

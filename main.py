@@ -187,8 +187,8 @@ def process_item(item):
             logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
             return None
 
-        if count_pdb_atoms(protein_path) > 20000: # Increased limit slightly as KNN is safer
-            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>20,000) for safe processing.")
+        if count_pdb_atoms(protein_path) > 15000: # Stricter limit to filter out very large proteins
+            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>15,000) for safe processing.")
             return None
 
         parser = PDBParser(QUIET=True)
@@ -327,7 +327,6 @@ class ViSNetPDB(torch.nn.Module):
             vecnorm_type='max_min',
             trainable_vecnorm=False,
             num_heads=8,
-            rbf_type='expnorm',
             trainable_rbf=False,
             max_z=100, # Max atomic number in periodic table
             reduce_op='add'
@@ -354,8 +353,10 @@ class ViSNetPDB(torch.nn.Module):
         batch = torch.cat([data.protein_x_batch, data.ligand_x_batch], dim=0)
 
         # 3. Run ViSNet forward pass
-        # The model returns a single energy-like value per graph.
+        # The ViSNet model can return a tuple (prediction, other_outputs). We only need the prediction.
         output = self.visnet(z, pos, batch)
+        if isinstance(output, tuple):
+            return output[0]
         return output
 
 # ==============================================================================
@@ -437,7 +438,7 @@ def main():
 
     print("Step 2: Verifying data consistency and creating dataset...")
 
-    DATA_PROCESSING_VERSION = f"v8_knn32_{len(ELEMENTS)}" # Switched to KNN graph construction
+    DATA_PROCESSING_VERSION = f"v11_knn32_{len(ELEMENTS)}_atom_15000" # Reflects new atom limit
     version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
 
     processed_files_exist = any(os.path.exists(os.path.join(config['processed_data_dir'], item['year_dir'], f"{item['pdb_code']}.pt")) for item in all_data_paths)
