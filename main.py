@@ -14,12 +14,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+from torch.utils.data import random_split
 from torch_geometric.data import Dataset, Data, Batch
 from torch_geometric.loader import DataLoader
 from torch_geometric.nn import GCNConv, global_mean_pool
 from torch_geometric.utils import add_self_loops
 from rdkit import Chem, rdBase
 from Bio.PDB import PDBParser
+from scipy.spatial import KDTree
 
 # --- Local Imports ---
 from config import CONFIG
@@ -105,13 +107,8 @@ ELEMENTS = ['C', 'O', 'N', 'S', 'P', 'H', 'F', 'Cl', 'Br', 'I', 'UNK']
 ELEMENT_MAP = {el: i for i, el in enumerate(ELEMENTS)}
 
 def get_atom_features(atom):
-    """
-    Converts an RDKit atom object into a one-hot encoded feature vector
-    based on the atom's element type.
-    """
     feat = [0] * len(ELEMENTS)
     element = atom.GetSymbol()
-    # Use the shared element map, defaulting to 'UNK' for unknown elements.
     feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1
     return feat
 
@@ -119,7 +116,6 @@ def ligand_mol_to_graph(mol):
     if mol is None: return None
     try:
         if mol.GetNumConformers() == 0: return None
-        # Features are now one-hot encoded, consistent with protein features.
         atom_features = torch.tensor([get_atom_features(atom) for atom in mol.GetAtoms()], dtype=torch.float)
         rows, cols = [], []
         for bond in mol.GetBonds():
@@ -134,62 +130,62 @@ def ligand_mol_to_graph(mol):
     return Data(x=atom_features, edge_index=edge_index, pos=pos)
 
 def protein_structure_to_graph(structure, cutoff=8.0):
-    """
-    Converts a Bio.PDB structure object into a PyTorch Geometric Data object.
-    Features are one-hot encoded element types using the shared ELEMENT_MAP.
-    """
-    # Select only standard amino acid residues, ignoring HETATMs
     atoms_to_include = [atom for residue in structure.get_residues() if residue.id[0] == ' ' for atom in residue.get_atoms()]
-
     if not atoms_to_include:
         return None
 
-    atom_features = []
-    positions = []
-
+    atom_features_list, positions_list = [], []
     for atom in atoms_to_include:
         element = atom.element.strip().upper() if atom.element else ''
         feat = [0] * len(ELEMENTS)
-        # Use the shared element map
-        feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1 # Default to UNK
-        atom_features.append(feat)
-        positions.append(atom.get_coord())
+        feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1
+        atom_features_list.append(feat)
+        positions_list.append(atom.get_coord())
 
-    atom_features = torch.tensor(atom_features, dtype=torch.float)
-    pos = torch.tensor(np.array(positions), dtype=torch.float)
+    atom_features = torch.tensor(atom_features_list, dtype=torch.float)
+    positions_np = np.array(positions_list)
 
-    # Build edges based on distance cutoff using a much faster, vectorized approach.
-    dists = torch.cdist(pos, pos)
-    # Create an adjacency matrix for atoms within the cutoff distance, excluding self-loops.
-    adj_matrix = (dists <= cutoff) & ~torch.eye(pos.size(0), dtype=torch.bool)
-    edge_index = adj_matrix.nonzero().t().contiguous()
+    # Use KDTree for memory-efficient neighbor search, avoiding O(N^2) memory
+    kdtree = KDTree(positions_np)
+    edge_list = kdtree.query_ball_tree(kdtree, r=cutoff, p=2.0)
 
+    rows, cols = [], []
+    for i, neighbors in enumerate(edge_list):
+        for j in neighbors:
+            if i < j: # Avoid self-loops and duplicate edges
+                rows.append(i)
+                cols.append(j)
+
+    # Add edges in both directions
+    edge_index = torch.tensor([rows + cols, cols + rows], dtype=torch.long)
     edge_index, _ = add_self_loops(edge_index, num_nodes=atom_features.size(0))
+    pos = torch.from_numpy(positions_np).float()
 
     return Data(x=atom_features, edge_index=edge_index, pos=pos)
 
+def count_pdb_atoms(pdb_path):
+    try:
+        with open(pdb_path, 'r') as f:
+            return sum(1 for line in f if line.startswith('ATOM'))
+    except IOError:
+        return 0
+
 def process_item(item):
     pdb_code = item.get('pdb_code', 'N/A')
-    logging.info(f"Processing {pdb_code}")
     try:
-        # --- Protein Processing (Bio.PDB) ---
-        if os.path.getsize(item['protein_path']) > 20 * 1024 * 1024: # Increased limit
-            logging.warning(f"Skipping {pdb_code}: Protein file is too large.")
+        protein_path = item['protein_path']
+        if os.path.getsize(protein_path) > 100 * 1024 * 1024: # 100MB limit
+            logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
             return None
-        
+
+        # Stricter atom count limit for safety with KDTree
+        if count_pdb_atoms(protein_path) > 15000:
+            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>15,000) for safe processing.")
+            return None
+
         parser = PDBParser(QUIET=True)
-        structure = parser.get_structure(pdb_code, item['protein_path'])
+        structure = parser.get_structure(pdb_code, protein_path)
 
-        if len(list(structure.get_atoms())) > 30000:
-            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms.")
-            return None
-
-        protein_graph = protein_structure_to_graph(structure)
-        if protein_graph is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to create protein graph from Bio.PDB structure.")
-            return None
-
-        # --- Ligand Processing (RDKit) ---
         ligand = None
         ligand_path = item['ligand_path']
         if ligand_path.endswith('.mol2'):
@@ -198,25 +194,18 @@ def process_item(item):
             suppl = Chem.SDMolSupplier(ligand_path, removeHs=True, sanitize=True)
             if suppl: ligand = next(suppl, None)
         
-        if ligand is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to load ligand.")
+        if ligand is None or ligand.GetNumAtoms() == 0:
+            logging.warning(f"Skipping {pdb_code}: Failed to load ligand or ligand has no atoms.")
             return None
-        if ligand.GetNumAtoms() == 0:
-            logging.warning(f"Skipping {pdb_code}: Ligand has no atoms after processing.")
-            return None
+
+        protein_graph = protein_structure_to_graph(structure)
+        if protein_graph is None: return None
 
         ligand_graph = ligand_mol_to_graph(ligand)
-        if ligand_graph is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to create ligand graph.")
-            return None
+        if ligand_graph is None: return None
 
-        # --- Final Assembly ---
         y = parse_binding_data(item['binding_data'])
-        if y is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to parse binding data.")
-            return None
-
-        logging.info(f"Successfully processed {pdb_code}")
+        if y is None: return None
         
         return ProteinLigandData(
             protein_x=protein_graph.x, protein_pos=protein_graph.pos, protein_edge_index=protein_graph.edge_index,
@@ -234,15 +223,12 @@ def process_item(item):
 
 def _process_and_save_helper(args):
     item_info, dest_path, pre_transform = args
-    try:
-        data = process_item(item_info)
-        if data is not None:
-            if pre_transform: data = pre_transform(data)
-            torch.save(data, dest_path)
-            return 1
-    except Exception as e:
-        print(f"ERROR: Unhandled exception for PDB {item_info.get('pdb_code', 'N/A')}: {e}")
-    return 0
+    data = process_item(item_info)
+    if data is not None:
+        if pre_transform: data = pre_transform(data)
+        torch.save(data, dest_path)
+        return (1, None)
+    return (0, f"PDB {item_info.get('pdb_code', 'N/A')} was skipped.")
 
 class PDBBindDataset(Dataset):
     def __init__(self, root, data_paths, num_workers, transform=None, pre_transform=None):
@@ -260,12 +246,12 @@ class PDBBindDataset(Dataset):
 
     def process(self):
         print("Starting data processing...")
-        tasks = []
-        for i, (item, rel_path) in enumerate(zip(self.data_paths, self.processed_file_names)):
-            dest_path = os.path.join(self.processed_dir, rel_path)
-            if not os.path.exists(dest_path):
-                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-                tasks.append((item, dest_path, self.pre_transform))
+        tasks = [(item, os.path.join(self.processed_dir, rel_path), self.pre_transform)
+                 for item, rel_path in zip(self.data_paths, self.processed_file_names)
+                 if not os.path.exists(os.path.join(self.processed_dir, rel_path))]
+
+        for item, dest_path, _ in tasks:
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
         if not tasks: 
             print("All data is already processed.")
@@ -277,14 +263,17 @@ class PDBBindDataset(Dataset):
             print(f"Processing data in parallel with {self.num_workers} cores...")
             with Pool(processes=self.num_workers) as pool:
                 pbar = tqdm(pool.imap_unordered(_process_and_save_helper, tasks), total=len(tasks), desc="Processing Raw Data")
-                for result in pbar:
+                for result, error_msg in pbar:
                     success_count += result
+                    if error_msg: logging.warning(error_msg)
         else:
             print("Processing data sequentially...")
             for task in tqdm(tasks, desc="Processing Raw Data"):
-                success_count += _process_and_save_helper(task)
+                result, error_msg = _process_and_save_helper(task)
+                success_count += result
+                if error_msg: logging.warning(error_msg)
         
-        print("--- Processing Finished ---")
+        print(f"--- Processing Finished ---")
         skipped_count = len(tasks) - success_count
         print(f"Successfully processed {success_count}/{len(tasks)} items ({skipped_count} skipped due to errors).")
 
@@ -294,11 +283,9 @@ class PDBBindDataset(Dataset):
     def get(self, idx):
         try:
             path = os.path.join(self.processed_dir, self.processed_file_names[idx])
-            data = torch.load(path, weights_only=False)
-            if self.transform:
-                data = self.transform(data)
-            return data
-        except (FileNotFoundError, RuntimeError, EOFError, AttributeError):
+            if not os.path.exists(path): return None
+            return torch.load(path, weights_only=False)
+        except (RuntimeError, EOFError, AttributeError):
             pdb_code = self.data_paths[idx].get('pdb_code', f'index {idx}')
             logging.warning(f"Skipping corrupt or incomplete data file for PDB {pdb_code}: {self.processed_file_names[idx]}")
             return None
@@ -310,7 +297,6 @@ class PDBBindDataset(Dataset):
 class Net(nn.Module):
     def __init__(self, protein_in_dim, ligand_in_dim, hidden_dim=64, dropout_rate=0.5):
         super(Net, self).__init__()
-        # Note: protein_in_dim and ligand_in_dim will now be the same.
         self.protein_conv1 = GCNConv(protein_in_dim, hidden_dim)
         self.protein_conv2 = GCNConv(hidden_dim, hidden_dim * 2)
         self.protein_conv3 = GCNConv(hidden_dim * 2, hidden_dim * 4)
@@ -350,8 +336,7 @@ def train(model, loader, optimizer, device):
     model.train()
     total_loss, processed_graphs = 0, 0
     for batch in tqdm(loader, desc="Training", leave=False):
-        if batch is None: 
-            continue
+        if batch is None: continue
         data = batch.to(device)
         optimizer.zero_grad()
         output = model(data)
@@ -367,8 +352,7 @@ def test(model, loader, device):
     total_loss, processed_graphs = 0, 0
     with torch.no_grad():
         for batch in tqdm(loader, desc="Validation", leave=False):
-            if batch is None: 
-                continue
+            if batch is None: continue
             data = batch.to(device)
             output = model(data)
             loss = F.mse_loss(output, data.y.view(-1, 1))
@@ -383,7 +367,8 @@ def test(model, loader, device):
 def main():
     config = CONFIG
     print("--- Configuration Loaded ---")
-    print(f"Processing Cores: {config['num_workers']}")
+    print(f"Processing Cores: {config['processing_num_workers']}")
+    print(f"Loader Cores: {config['loader_num_workers']}")
     print(f"Batch Size: {config['batch_size']}")
     print(f"Epochs: {config['epochs']}")
     print("--------------------------")
@@ -396,17 +381,10 @@ def main():
 
     print("Step 2: Verifying data consistency and creating dataset...")
 
-    # --- Data Versioning Check --- 
-    # This ensures that processed data corresponds to the current processing logic.
-    DATA_PROCESSING_VERSION = f"v4_elements_{len(ELEMENTS)}" # Version based on feature size
+    DATA_PROCESSING_VERSION = f"v7_kdtree_{len(ELEMENTS)}"
     version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
 
-    processed_files_exist = False
-    if os.path.isdir(config['processed_data_dir']):
-        for _, _, filenames in os.walk(config['processed_data_dir']):
-            if any(f.endswith('.pt') for f in filenames):
-                processed_files_exist = True
-                break
+    processed_files_exist = any(os.path.exists(os.path.join(config['processed_data_dir'], item['year_dir'], f"{item['pdb_code']}.pt")) for item in all_data_paths)
 
     if processed_files_exist:
         if os.path.exists(version_file_path):
@@ -433,40 +411,31 @@ def main():
     dataset = PDBBindDataset(
         root=config['processed_data_dir'], 
         data_paths=all_data_paths,
-        num_workers=config['num_workers']
+        num_workers=config['processing_num_workers']
     )
 
-    # Write version file after processing is confirmed to have run or data is verified
     if not os.path.exists(version_file_path):
         with open(version_file_path, 'w') as f: f.write(DATA_PROCESSING_VERSION)
 
-    # --- Data Loading and Final Validation ---
-    initial_data_list = []
-    for i in tqdm(range(len(dataset)), desc="Loading processed files"):
-        # dataset.get() handles basic corruption (e.g. file not found, EOF)
-        data = dataset.get(i)
-        if data is not None:
-            initial_data_list.append(data)
+    valid_indices = [i for i, f in enumerate(dataset.processed_paths) if os.path.exists(f)]
+    dataset = dataset.index_select(valid_indices)
+    print(f"-> Found {len(dataset)} processable data points.")
 
-    if not initial_data_list:
-        print("FATAL: No valid data points could be loaded. Cannot proceed.")
+    if len(dataset) == 0:
+        print("FATAL: No valid data points found after filtering. Cannot proceed.")
         return
-
-    print(f"-> Verified {len(initial_data_list)} valid data points.")
 
     print("Step 3: Splitting data and creating loaders...")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"-> Using device: {device}")
 
-    random.shuffle(initial_data_list)
-    train_size = int(config['train_split'] * len(initial_data_list))
-    train_dataset = initial_data_list[:train_size]
-    val_dataset = initial_data_list[train_size:]
+    train_size = int(config['train_split'] * len(dataset))
+    val_size = len(dataset) - train_size
+    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
     
-    loader_num_workers = config['num_workers']
+    loader_num_workers = config['loader_num_workers']
     if platform.system() == 'Windows' and loader_num_workers > 0:
         print("Warning: Using multiple workers for DataLoader on Windows can be unstable.")
-        print("If you encounter freezing or memory issues, consider setting 'num_workers' to 0 in config.py.")
 
     pin_memory = True if device.type == 'cuda' else False
     train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=loader_num_workers, pin_memory=pin_memory, follow_batch=['protein_x', 'ligand_x'])
@@ -474,16 +443,16 @@ def main():
     print(f"-> Train: {len(train_dataset)} | Validation: {len(val_dataset)}")
 
     print("Step 4: Setting up model and optimizer...")
-    if not train_dataset:
+    if len(train_dataset) == 0:
         print("FATAL: Training dataset is empty. Cannot proceed.")
         return
         
     try:
-        sample_data = train_dataset[0]
+        sample_data = next(iter(train_loader))
         protein_in_dim = sample_data.protein_x.shape[1]
         ligand_in_dim = sample_data.ligand_x.shape[1]
-    except (IndexError, AttributeError):
-        print("FATAL: Cannot determine model dimensions from the dataset.")
+    except (StopIteration, IndexError, AttributeError):
+        print("FATAL: Cannot determine model dimensions from the dataset. Check for empty validation set.")
         return
 
     model = Net(
@@ -507,11 +476,9 @@ def main():
 # ==============================================================================
 
 if __name__ == '__main__':
-    # Set start method to 'spawn' for multiprocessing compatibility, especially on Windows/macOS.
     try:
         set_start_method('spawn')
     except RuntimeError:
-        # This will fail if the start method has already been set.
         pass
     
     main()

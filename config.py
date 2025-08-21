@@ -10,13 +10,18 @@ CONFIG = {
 
     # --- Model & Training Hyperparameters ---
     'epochs': 20,
-    'batch_size': 128,  # Increased for better GPU utilization (was 32)
+    'batch_size': 128,
     'learning_rate': 0.001,
     'train_split': 0.8,
     'dropout_rate': 0.5,
 
     # --- Hardware & Performance ---
-    # Set the number of CPU cores for parallel data preprocessing.
-    # Recommended: Set to the number of physical cores for optimal performance.
-    'num_workers': 0, # Increased for faster data loading (was 4)
+    # Number of CPU cores for the one-time, initial data preprocessing.
+    # A high value caused memory crashes. A safer, more conservative value is set.
+    # You can try tuning this value up (e.g., 12, 16) if you have sufficient RAM.
+    'processing_num_workers': 8,
+
+    # Number of CPU cores for the DataLoader during training.
+    # This is an I/O-bound task. A smaller number is recommended.
+    'loader_num_workers': 4,
 }
