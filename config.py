@@ -10,7 +10,6 @@ CONFIG = {
 
     # --- Model & Training Hyperparameters ---
     'epochs': 20,
-    # Reduced batch size to prevent CUDA out-of-memory errors. Graph data is memory-intensive.
     'batch_size': 16,
     'learning_rate': 0.001,
     'train_split': 0.8,
@@ -18,9 +17,9 @@ CONFIG = {
 
     # --- Hardware & Performance ---
     # Number of CPU cores for the one-time, initial data preprocessing.
-    # A high value can cause memory crashes. A safer, more conservative value is set.
-    # You can try tuning this value up (e.g., 12, 16) if you have sufficient RAM.
-    'processing_num_workers': 8,
+    # WARNING: High values can lead to I/O errors on some systems during file saving.
+    # If you encounter RuntimeErrors, consider reducing this number.
+    'processing_num_workers': 28,
 
     # Number of CPU cores for the DataLoader during training.
     # This is an I/O-bound task. A smaller number is recommended.

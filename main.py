@@ -17,7 +17,7 @@ import numpy as np
 from torch.utils.data import random_split
 from torch_geometric.data import Dataset, Data, Batch
 from torch_geometric.loader import DataLoader
-from torch_geometric.nn import GCNConv, global_mean_pool
+from torch_geometric.nn.models import ViSNet
 from torch_geometric.utils import add_self_loops
 from rdkit import Chem, rdBase
 from Bio.PDB import PDBParser
@@ -302,39 +302,61 @@ class PDBBindDataset(Dataset):
 # PART 4: GRAPH NEURAL NETWORK MODEL
 # ==============================================================================
 
-class Net(nn.Module):
-    def __init__(self, protein_in_dim, ligand_in_dim, hidden_dim=64, dropout_rate=0.5):
-        super(Net, self).__init__()
-        self.protein_conv1 = GCNConv(protein_in_dim, hidden_dim)
-        self.protein_conv2 = GCNConv(hidden_dim, hidden_dim * 2)
-        self.protein_conv3 = GCNConv(hidden_dim * 2, hidden_dim * 4)
-        self.ligand_conv1 = GCNConv(ligand_in_dim, hidden_dim)
-        self.ligand_conv2 = GCNConv(hidden_dim, hidden_dim * 2)
-        self.ligand_conv3 = GCNConv(hidden_dim * 2, hidden_dim * 4)
-        self.fc1 = nn.Linear(hidden_dim * 4 * 2, 1024)
-        self.fc2 = nn.Linear(1024, 512)
-        self.out = nn.Linear(512, 1)
-        self.dropout_rate = dropout_rate
+# --- NEW ViSNet-based Model ---
+
+# Mapping from element index to atomic number (0 for UNK)
+# Based on this list from the data processing section:
+# ELEMENTS = ['C', 'O', 'N', 'S', 'P', 'H', 'F', 'Cl', 'Br', 'I', 'UNK']
+INDEX_TO_Z = torch.tensor([6, 8, 7, 16, 15, 1, 9, 17, 35, 53, 0], dtype=torch.long)
+
+class ViSNetPDB(torch.nn.Module):
+    """
+    A wrapper for the ViSNet model to handle the combined protein-ligand graph data.
+    This model replaces the previous GCN-based architecture.
+    """
+    def __init__(self, hidden_channels=128, num_layers=6, num_rbf=64, cutoff=8.0, max_num_neighbors=32):
+        super().__init__()
+        self.visnet = ViSNet(
+            hidden_channels=hidden_channels,
+            num_layers=num_layers,
+            num_rbf=num_rbf,
+            cutoff=cutoff,
+            max_num_neighbors=max_num_neighbors,
+            # Sensible defaults, often used in molecular modeling
+            lmax=1,
+            vecnorm_type='max_min',
+            trainable_vecnorm=False,
+            num_heads=8,
+            rbf_type='expnorm',
+            trainable_rbf=False,
+            max_z=100, # Max atomic number in periodic table
+            reduce_op='add'
+        )
+        # Register the index-to-atomic-number mapping as a buffer
+        # This ensures it gets moved to the correct device (e.g., GPU) with the model
+        self.register_buffer('index_to_z', INDEX_TO_Z)
 
     def forward(self, data):
-        p_x, p_edge_index, p_batch = data.protein_x, data.protein_edge_index, data.protein_x_batch
-        l_x, l_edge_index, l_batch = data.ligand_x, data.ligand_edge_index, data.ligand_x_batch
+        # 1. Convert one-hot encoded features to atomic numbers (z)
+        # The ViSNet model expects a tensor of atomic numbers, not one-hot encodings.
+        protein_z_idx = data.protein_x.argmax(dim=-1)
+        ligand_z_idx = data.ligand_x.argmax(dim=-1)
         
-        p_x = F.relu(self.protein_conv1(p_x, p_edge_index))
-        p_x = F.relu(self.protein_conv2(p_x, p_edge_index))
-        p_x = F.relu(self.protein_conv3(p_x, p_edge_index))
-        p_x = global_mean_pool(p_x, p_batch)
+        protein_z = self.index_to_z[protein_z_idx]
+        ligand_z = self.index_to_z[ligand_z_idx]
+
+        # 2. Combine protein and ligand data into a single complex graph
+        # ViSNet operates on a single graph representing the entire complex.
+        z = torch.cat([protein_z, ligand_z], dim=0)
+        pos = torch.cat([data.protein_pos, data.ligand_pos], dim=0)
         
-        l_x = F.relu(self.ligand_conv1(l_x, l_edge_index))
-        l_x = F.relu(self.ligand_conv2(l_x, l_edge_index))
-        l_x = F.relu(self.ligand_conv3(l_x, l_edge_index))
-        l_x = global_mean_pool(l_x, l_batch)
-        
-        x = torch.cat([p_x, l_x], dim=1)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, p=self.dropout_rate, training=self.training)
-        x = F.relu(self.fc2(x))
-        return self.out(x)
+        # The batch tensor maps each atom to its respective graph in the batch
+        batch = torch.cat([data.protein_x_batch, data.ligand_x_batch], dim=0)
+
+        # 3. Run ViSNet forward pass
+        # The model returns a single energy-like value per graph.
+        output = self.visnet(z, pos, batch)
+        return output
 
 # ==============================================================================
 # PART 5: TRAINING AND EVALUATION LOOPS
@@ -369,6 +391,28 @@ def test(model, loader, device):
     return total_loss / processed_graphs if processed_graphs > 0 else 0
 
 # ==============================================================================
+# PART 5B: CHECKPOINTING HELPERS
+# ==============================================================================
+
+def save_checkpoint(state, directory, filename="checkpoint.pth.tar"):
+    """Saves checkpoint to file."""
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    filepath = os.path.join(directory, filename)
+    torch.save(state, filepath)
+    logging.info(f"Checkpoint saved to {filepath}")
+
+def load_checkpoint(directory, device, filename="checkpoint.pth.tar"):
+    """Loads checkpoint from file."""
+    filepath = os.path.join(directory, filename)
+    if not os.path.isfile(filepath):
+        logging.info(f"=> no checkpoint found at '{filepath}'")
+        return None
+    logging.info(f"=> loading checkpoint '{filepath}'")
+    checkpoint = torch.load(filepath, map_location=device)
+    return checkpoint
+
+# ==============================================================================
 # PART 6: MAIN EXECUTION SCRIPT
 # ==============================================================================
 
@@ -380,7 +424,11 @@ def main():
     print(f"Batch Size: {config['batch_size']}")
     print(f"Epochs: {config['epochs']}")
     print("--------------------------")
+    
+    # Define and create checkpoint directory
+    config['checkpoint_dir'] = os.path.join(os.path.dirname(config.get('processed_data_dir', '.')), 'checkpoints')
     os.makedirs(config['processed_data_dir'], exist_ok=True)
+    os.makedirs(config['checkpoint_dir'], exist_ok=True)
 
     print("Step 1: Parsing PDBbind index...")
     pdb_info = get_pdb_info(config['index_file'])
@@ -455,27 +503,61 @@ def main():
         print("FATAL: Training dataset is empty. Cannot proceed.")
         return
         
-    try:
-        sample_data = next(iter(train_loader))
-        protein_in_dim = sample_data.protein_x.shape[1]
-        ligand_in_dim = sample_data.ligand_x.shape[1]
-    except (StopIteration, IndexError, AttributeError):
-        print("FATAL: Cannot determine model dimensions from the dataset. Check for empty validation set.")
-        return
-
-    model = Net(
-        protein_in_dim=protein_in_dim, 
-        ligand_in_dim=ligand_in_dim,
-        dropout_rate=config['dropout_rate']
+    # --- NEW ViSNet Model Instantiation ---
+    # ViSNet does not require input dimensions derived from the data,
+    # as it works with atomic numbers directly.
+    print("-> Initializing ViSNet model...")
+    model = ViSNetPDB(
+        hidden_channels=config.get('visnet_hidden_channels', 128),
+        num_layers=config.get('visnet_num_layers', 6),
+        num_rbf=config.get('visnet_num_rbf', 64),
+        cutoff=config.get('visnet_cutoff', 8.0),
+        max_num_neighbors=config.get('visnet_max_neighbors', 32)
     ).to(device)
+
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
     print(f"-> Model initialized with {sum(p.numel() for p in model.parameters()):,} parameters.")
 
+    # --- Checkpoint Loading ---
+    start_epoch = 1
+    best_val_loss = float('inf')
+    checkpoint = load_checkpoint(config['checkpoint_dir'], device)
+    if checkpoint:
+        try:
+            model.load_state_dict(checkpoint['model_state_dict'])
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            start_epoch = checkpoint['epoch'] + 1
+            best_val_loss = checkpoint.get('val_loss', float('inf'))
+            print(f"--> Resumed from checkpoint. Starting at epoch {start_epoch}. Last validation loss: {best_val_loss:.4f}")
+        except (KeyError, RuntimeError) as e:
+            print(f"Could not load checkpoint due to an error: {e}. Starting from scratch.")
+            start_epoch = 1
+            best_val_loss = float('inf')
+    else:
+        print("--> No checkpoint found, starting from scratch.")
+
     print("Step 5: Starting training...")
-    for epoch in range(1, config['epochs'] + 1):
+    for epoch in range(start_epoch, config['epochs'] + 1):
         train_loss = train(model, train_loader, optimizer, device)
         val_loss = test(model, val_loader, device)
         print(f"Epoch {epoch:02d}/{config['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
+
+        # --- Checkpoint Saving ---
+        is_best = val_loss < best_val_loss
+        if is_best:
+            best_val_loss = val_loss
+        
+        checkpoint_data = {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'val_loss': val_loss,
+        }
+        
+        save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'checkpoint.pth.tar')
+        if is_best:
+            save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'model_best.pth.tar')
+            print(f"-> New best model saved with validation loss: {val_loss:.4f}")
 
     print("--- Training Finished ---")
 
