@@ -26,6 +26,18 @@ def collate_filter_none(batch):
 def main():
     config = CONFIG
 
+    # Dynamically set processing and loader workers based on CPU cores
+    num_cpu_cores = os.cpu_count()
+    if num_cpu_cores is not None:
+        if num_cpu_cores < 4:
+            config['processing_num_workers'] = 2
+            config['loader_num_workers'] = 2
+        else:
+            config['processing_num_workers'] = num_cpu_cores
+            config['loader_num_workers'] = num_cpu_cores
+    else:
+        print("Warning: Could not detect number of CPU cores. Using default worker settings from config.py.")
+
     # --- Reproducibility ---
     set_seed(config.get('seed', 42))
 

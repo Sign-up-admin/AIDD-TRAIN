@@ -3,5 +3,10 @@ torch-geometric
 numpy
 rdkit-pypi
 biopython
+<<<<<<< Updated upstream
 scipy
 tqdm
+=======
+numpy
+scipy
+>>>>>>> Stashed changes
