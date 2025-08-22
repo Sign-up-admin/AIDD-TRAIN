@@ -30,4 +30,13 @@ CONFIG = {
     # --- Hardware & Performance ---
     'processing_num_workers': 28,
     'loader_num_workers': 0,
+    # --- Performance Profiling ---
+    # Set to True to run the profiler on the first epoch to identify bottlenecks.
+    'profile': False,
+    # --- Manual Save Trigger ---
+    # Create a file with this name in the project root to trigger an immediate checkpoint save.
+    'manual_save_trigger_file': 'SAVE_NOW.flag',
+    # --- Reproducibility ---
+    # Set a random seed for consistent data splitting and model initialization.
+    'seed': 42,
 }
