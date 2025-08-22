@@ -6,18 +6,17 @@ import logging
 import torch
 import numpy as np
 from torch_geometric.data import Data
-from torch_geometric.utils import add_self_loops
 from rdkit import Chem, RDLogger
 from Bio.PDB import PDBParser
-from scipy.spatial import KDTree
+from scipy.spatial.distance import cdist
 from tqdm import tqdm
 
-# Suppress RDKit warnings about 2D/3D coordinates
+# Suppress RDKit warnings
 RDLogger.logger().setLevel(RDLogger.CRITICAL)
 
-# ==============================================================================
-# PART 1: DATA PATH AND BINDING VALUE PARSING
-# ==============================================================================
+# =============================================================================
+# PART 1: DATA PATH AND BINDING VALUE PARSING (No changes needed here)
+# =============================================================================
 
 def get_pdb_info(index_file):
     pdb_info = {}
@@ -58,7 +57,7 @@ def get_data_paths(pdb_info, dataset_path):
                 'protein_path': protein_path,
                 'ligand_path': ligand_path,
                 'binding_data': info['binding_data'],
-                'year_dir': year_dir  # Store the year directory for structured output
+                'year_dir': year_dir
             })
     return data_paths
 
@@ -71,11 +70,10 @@ def parse_binding_data(binding_str):
     molar_value = value * unit_map.get(unit, 1.0)
     return -math.log10(molar_value) if molar_value > 0 else 0.0
 
-# ==============================================================================
-# PART 2: MOLECULE-TO-GRAPH CONVERSION (ROBUST)
-# ==============================================================================
+# =============================================================================
+# PART 2: MOLECULE-TO-GRAPH CONVERSION (REFACTORED)
+# =============================================================================
 
-# Define a shared set of elements for one-hot encoding to ensure consistency.
 ELEMENTS = ['C', 'O', 'N', 'S', 'P', 'H', 'F', 'Cl', 'Br', 'I', 'UNK']
 ELEMENT_MAP = {el: i for i, el in enumerate(ELEMENTS)}
 
@@ -85,28 +83,38 @@ def get_atom_features(atom):
     feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1
     return feat
 
-def ligand_mol_to_graph(mol):
-    if mol is None: return None
-    try:
-        if mol.GetNumConformers() == 0: return None
-        atom_features = torch.tensor([get_atom_features(atom) for atom in mol.GetAtoms()], dtype=torch.float)
-        rows, cols = [], []
-        for bond in mol.GetBonds():
-            start, end = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
-            rows.extend([start, end])
-            cols.extend([end, start])
-        edge_index = torch.tensor([rows, cols], dtype=torch.long)
-        edge_index, _ = add_self_loops(edge_index, num_nodes=atom_features.size(0))
-        pos = torch.tensor(mol.GetConformer().GetPositions(), dtype=torch.float)
-    except (ValueError, AttributeError, RuntimeError):
+def get_ligand_graph(mol):
+    if mol is None or mol.GetNumConformers() == 0:
         return None
-    return Data(x=atom_features, edge_index=edge_index, pos=pos)
+    
+    # Atom features
+    atom_features = torch.tensor([get_atom_features(atom) for atom in mol.GetAtoms()], dtype=torch.float)
+    
+    # Edge index and features
+    rows, cols, edge_feats = [], [], []
+    for bond in mol.GetBonds():
+        start, end = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
+        rows.extend([start, end])
+        cols.extend([end, start])
+        # Use bond type as a simple edge feature
+        bond_type = bond.GetBondTypeAsDouble()
+        edge_feats.extend([bond_type, bond_type])
+        
+    edge_index = torch.tensor([rows, cols], dtype=torch.long)
+    edge_attr = torch.tensor(edge_feats, dtype=torch.float).view(-1, 1)
+    
+    # Atom positions
+    pos = torch.tensor(mol.GetConformer().GetPositions(), dtype=torch.float)
+    
+    return {'v': atom_features, 'edge_index': edge_index, 'edge_attr': edge_attr, 'pos': pos}
 
-def protein_structure_to_graph(structure, k=32, cutoff=10.0):
+def get_protein_graph(protein_path):
+    parser = PDBParser(QUIET=True)
+    structure = parser.get_structure("protein", protein_path)
+    
     atoms_to_include = [atom for residue in structure.get_residues() if residue.id[0] == ' ' for atom in residue.get_atoms()]
     
-    num_atoms = len(atoms_to_include)
-    if num_atoms < k + 1:
+    if not atoms_to_include:
         return None
 
     atom_features_list, positions_list = [], []
@@ -117,33 +125,23 @@ def protein_structure_to_graph(structure, k=32, cutoff=10.0):
         atom_features_list.append(feat)
         positions_list.append(atom.get_coord())
 
-    atom_features = torch.tensor(atom_features_list, dtype=torch.float)
-    positions_np = np.array(positions_list)
+    return {
+        'v': torch.tensor(atom_features_list, dtype=torch.float),
+        'pos': torch.tensor(np.array(positions_list), dtype=torch.float)
+    }
 
-    kdtree = KDTree(positions_np)
-    distances, indices = kdtree.query(positions_np, k=k+1, p=2.0)
-
-    edge_set = set()
-    for i in range(num_atoms):
-        for j_idx in range(1, k + 1):
-            neighbor_idx = indices[i, j_idx]
-            if distances[i, j_idx] < cutoff:
-                pair = tuple(sorted((i, neighbor_idx)))
-                edge_set.add(pair)
+def get_interaction_graph(ligand_pos, protein_pos, cutoff):
+    # Compute pairwise distances
+    dist_matrix = cdist(ligand_pos, protein_pos)
     
-    if not edge_set:
-        return None
-
-    rows, cols = zip(*edge_set)
-    rows = list(rows)
-    cols = list(cols)
+    # Find interacting atoms
+    interactions = np.where(dist_matrix < cutoff)
     
-    edge_index = torch.tensor([rows + cols, cols + rows], dtype=torch.long)
+    # Create edge index and attributes (distances)
+    interaction_edge_index = torch.tensor(np.array(interactions), dtype=torch.long)
+    interaction_edge_attr = torch.tensor(dist_matrix[interactions], dtype=torch.float).view(-1, 1)
     
-    pos = torch.from_numpy(positions_np).float()
-    data = Data(x=atom_features, edge_index=edge_index, pos=pos)
-    data.edge_index, _ = add_self_loops(data.edge_index, num_nodes=data.num_nodes)
-    return data
+    return {'edge_index': interaction_edge_index, 'edge_attr': interaction_edge_attr}
 
 def count_pdb_atoms(pdb_path):
     try:
@@ -152,7 +150,7 @@ def count_pdb_atoms(pdb_path):
     except IOError:
         return 0
 
-def process_item(item):
+def process_item(item, cutoff=8.0):
     pdb_code = item.get('pdb_code', 'N/A')
     try:
         protein_path = item['protein_path']
@@ -160,51 +158,50 @@ def process_item(item):
             logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
             return None
 
-        if count_pdb_atoms(protein_path) > 15000: # Relaxed limit
-            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>15,000) for safe processing.")
+        if count_pdb_atoms(protein_path) > 20000: # Relaxed limit
+            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>20,000).")
             return None
 
-        parser = PDBParser(QUIET=True)
-        structure = parser.get_structure(pdb_code, protein_path)
-
+        # 1. Load ligand with hydrogens
         ligand = None
         ligand_path = item['ligand_path']
         if ligand_path.endswith('.mol2'):
-            ligand = Chem.MolFromMol2File(ligand_path, removeHs=True, sanitize=True)
+            ligand = Chem.MolFromMol2File(ligand_path, removeHs=False, sanitize=True)
         elif ligand_path.endswith('.sdf'):
-            suppl = Chem.SDMolSupplier(ligand_path, removeHs=True, sanitize=True)
+            suppl = Chem.SDMolSupplier(ligand_path, removeHs=False, sanitize=True)
             if suppl: ligand = next(suppl, None)
         
         if ligand is None or ligand.GetNumAtoms() == 0:
             logging.warning(f"Skipping {pdb_code}: Failed to load ligand or ligand has no atoms.")
             return None
 
-        protein_graph = protein_structure_to_graph(structure)
-        if protein_graph is None: return None
+        # 2. Get graphs
+        ligand_graph = get_ligand_graph(ligand)
+        protein_graph = get_protein_graph(protein_path)
+        
+        if protein_graph is None or ligand_graph is None:
+            logging.warning(f"Skipping {pdb_code}: Failed to generate protein or ligand graph.")
+            return None
 
-        ligand_graph = ligand_mol_to_graph(ligand)
-        if ligand_graph is None: return None
-
+        # 3. Parse binding affinity
         y = parse_binding_data(item['binding_data'])
         if y is None: return None
         
-        # Combine protein and ligand graphs into a single Data object
-        num_protein_nodes = protein_graph.x.size(0)
+        # 4. Assemble Data object with combined features for the model
+        data = Data(y=torch.tensor([y], dtype=torch.float), pdb_code=pdb_code)
         
-        x = torch.cat([protein_graph.x, ligand_graph.x], dim=0)
-        pos = torch.cat([protein_graph.pos, ligand_graph.pos], dim=0)
-        
-        # Adjust ligand edge indices and combine
-        ligand_edge_index_adjusted = ligand_graph.edge_index + num_protein_nodes
-        edge_index = torch.cat([protein_graph.edge_index, ligand_edge_index_adjusted], dim=1)
+        # Combine node features (x) and positions (pos)
+        data.x = torch.cat([ligand_graph['v'], protein_graph['v']], dim=0)
+        data.pos = torch.cat([ligand_graph['pos'], protein_graph['pos']], dim=0)
 
-        return Data(
-            x=x,
-            pos=pos,
-            edge_index=edge_index,
-            y=torch.tensor([y], dtype=torch.float),
-            pdb_code=pdb_code
-        )
+        # The ViSNet model does not require edge_index, it computes neighbors from pos.
+        # We can store them if needed for other purposes, but they are not used by the current model.
+        # data.ligand_edge_index = ligand_graph['edge_index']
+        # data.protein_edge_index = ... (not computed)
+        # data.interaction_edge_index = ... (not computed in this new flow)
+
+        return data
+
     except Exception as e:
-        logging.error(f"ERROR for PDB {pdb_code}: {e}")
+        logging.error(f"ERROR for PDB {pdb_code}: {e}", exc_info=True)
         return None

@@ -2,6 +2,7 @@ import os
 import sys
 import signal
 import platform
+import hashlib
 from multiprocessing import set_start_method
 
 import torch
@@ -19,9 +20,27 @@ from src.model import ViSNetPDB
 from src.training import train, test
 from src.utils import save_checkpoint, load_checkpoint, set_seed
 
+
 def collate_filter_none(batch):
+    """Filters out None values from a batch and returns a new batch."""
     batch = list(filter(lambda x: x is not None, batch))
-    return torch_geometric.data.Batch.from_data_list(batch) if batch else None
+    # If the batch is empty after filtering, return None
+    if not batch:
+        return None
+    return torch_geometric.data.Batch.from_data_list(batch)
+
+
+def get_file_hash(filepath):
+    """Computes the SHA256 hash of a file to be used as a version identifier."""
+    if not os.path.exists(filepath):
+        return None
+    sha256_hash = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        # Read and update hash in chunks of 4K
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
+
 
 def main():
     config = CONFIG
@@ -59,18 +78,25 @@ def main():
 
     print("Step 2: Verifying data consistency and creating dataset...")
 
-    data_processing_version = f"v17_final_robust_recovery_simplified"
+    # Use the hash of the data processing script as the version
+    data_processing_script_path = os.path.join(os.path.dirname(__file__), 'src', 'data_processing.py')
+    data_processing_version = get_file_hash(data_processing_script_path)
+    if data_processing_version is None:
+        print(f"FATAL: Could not find data processing script at '{data_processing_script_path}' to generate version hash.")
+        return
+        
     version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
 
+    # Check for existing data and compare versions
     if any(os.path.exists(os.path.join(config['processed_data_dir'], item['year_dir'], f"{item['pdb_code']}.pt")) for item in all_data_paths):
         if os.path.exists(version_file_path):
             with open(version_file_path, 'r') as f:
                 stored_version = f.read().strip()
             if stored_version != data_processing_version:
                 print("\n" + "="*70)
-                print("FATAL: Data processing logic has changed.")
-                print(f"  - Stored data version: {stored_version}")
-                print(f"  - Current code version: {data_processing_version}")
+                print("FATAL: Data processing logic has changed (code hash mismatch).")
+                print(f"  - Stored data version: {stored_version[:12]}...")
+                print(f"  - Current code version: {data_processing_version[:12]}...")
                 print("  - Please DELETE the processed data directory to allow reprocessing:")
                 print(f"    {config['processed_data_dir']}")
                 print("="*70 + "\n")
@@ -91,7 +117,8 @@ def main():
     )
 
     if not os.path.exists(version_file_path):
-        with open(version_file_path, 'w') as f: f.write(data_processing_version)
+        with open(version_file_path, 'w') as f:
+            f.write(data_processing_version)
 
     valid_indices = [i for i, f in enumerate(dataset.processed_paths) if os.path.exists(f)]
     dataset = dataset.index_select(valid_indices)
@@ -113,9 +140,11 @@ def main():
     train_dataset = dataset.index_select(train_subset.indices)
     val_dataset = dataset.index_select(val_subset.indices)
     
+    # Force num_workers to 0 on Windows to prevent instability
     loader_num_workers = config['loader_num_workers']
     if platform.system() == 'Windows' and loader_num_workers > 0:
-        print("Warning: Using multiple workers for DataLoader on Windows can be unstable.")
+        print("Warning: Using multiple workers for DataLoader on Windows can be unstable. Forcing num_workers to 0.")
+        loader_num_workers = 0
 
     pin_memory = True if device.type == 'cuda' else False
     train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=loader_num_workers, pin_memory=pin_memory, collate_fn=collate_filter_none)

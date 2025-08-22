@@ -24,6 +24,10 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
     for i, batch in pbar:
         if i < start_batch:
             continue
+
+        # Skip batch if it is None (e.g., due to filtering in collate_fn)
+        if batch is None:
+            continue
         
         if i == start_batch and start_batch > 0:
             pbar.set_description(f"Training Epoch {epoch}")
@@ -31,6 +35,9 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
         training_state['batch_idx'] = i
 
         data = batch.to(device)
+        # Skip batch if it's empty to prevent NaN loss
+        if data.num_graphs == 0:
+            continue
 
         # record_function is used by the profiler to label code regions.
         with record_function("model_forward_pass"):
@@ -82,7 +89,13 @@ def test(model, loader, device):
     total_loss, processed_graphs = 0, 0
     with torch.no_grad():
         for batch in tqdm(loader, desc="Validation", leave=False):
+            # Skip batch if it is None (e.g., due to filtering in collate_fn)
+            if batch is None:
+                continue
             data = batch.to(device)
+            # Skip batch if it's empty to prevent NaN loss
+            if data.num_graphs == 0:
+                continue
             with autocast(device_type=device.type, dtype=torch.float16):
                 output = model(data)
                 loss = F.mse_loss(output, data.y.view(-1, 1))

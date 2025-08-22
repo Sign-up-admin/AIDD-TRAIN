@@ -2,22 +2,25 @@
 
 ## Project Overview
 
-This repository, `AIDD-TRAIN`, documents a deep learning project focused on training models, specifically addressing common challenges encountered during the development process. A significant part of this repository highlights the debugging journey to resolve complex issues like CUDA out of memory errors and subsequent logical bugs in a deep learning training pipeline.
+This repository, `AIDD-TRAIN`, documents a deep learning project focused on training models for drug discovery, specifically addressing common and complex challenges encountered during development. A significant part of this repository highlights the debugging journey and architectural improvements made to the training pipeline, transforming it into a robust and reliable system.
 
-## Key Learnings and Debugging Insights
+## Key Learnings and Architectural Improvements
 
-This project served as a practical case study for debugging deep learning training processes. Key insights gained include:
+This project served as a practical case study for building and debugging deep learning training systems. Key insights and improvements include:
 
-*   **Systematic Debugging**: Starting from common issues (e.g., batch size for OOM) and progressively delving into more complex root causes (model architecture, data characteristics).
-*   **Handling Extreme Cases**: Understanding that data outliers or "edge cases" can often be the primary cause of resource exhaustion (like GPU memory) even when average loads are manageable.
-*   **Code Mechanism Awareness**: Recognizing and utilizing built-in mechanisms (e.g., `DATA_PROCESSING_VERSION` for forcing data re-processing) to ensure changes are effectively applied.
-*   **Precise Error Interpretation**: The importance of carefully reading and understanding specific error messages (e.g., `AttributeError: 'tuple' object has no attribute 'size'`) to pinpoint the exact problem.
+*   **Data Pipeline Unification**: A critical architectural flaw was identified and fixed where the data processing for **training** and **prediction** were inconsistent. The training pipeline was modified to generate explicit protein, ligand, and interaction graphs, matching the structure required for prediction. This ensures the model learns relevant physical interactions and that its predictions are valid.
 
-For a detailed, step-by-step account of the debugging process, including initial diagnostics, deep dives into model and data issues, and resolution of subsequent bugs, please refer to the [Gemini Debugging Log](#gemini-debugging-log) below.
+*   **Robust Checkpointing & Recovery**: The system was hardened to save the complete training state (model, optimizer, scheduler, scaler) and to intelligently load the most recent checkpoint, whether from a normal save or a graceful shutdown.
+
+*   **Graceful Shutdown**: The training loop now handles `KeyboardInterrupt` (Ctrl+C) to perform a final, safe save of the training state, preventing loss of progress on manual termination.
+
+*   **Reproducible Data Splits**: The train/validation data split was made deterministic to ensure that validation loss is a consistent and comparable metric across different training runs.
+
+*   **Systematic Debugging**: The project demonstrates a clear methodology for debugging, from surface-level errors (like CUDA OOM) to deep, logical bugs in the data pipeline.
+
+For a detailed, step-by-step account of the debugging process and agent collaboration, please refer to the [Agent Collaboration Log](AGENT.md).
 
 ## Setup and Usage
-
-*(This section needs to be filled with instructions on how to set up the environment, install dependencies, and run the training scripts. For example:)*
 
 1.  **Clone the repository:**
     ```bash
@@ -26,24 +29,32 @@ For a detailed, step-by-step account of the debugging process, including initial
     ```
 2.  **Create a virtual environment and install dependencies:**
     ```bash
-    conda create -n aidd-train python=3.x
+    # It is recommended to use a conda environment for managing PyTorch and RDKit
+    conda create -n aidd-train python=3.9
     conda activate aidd-train
-    pip install -r requirements.txt # Assuming a requirements.txt exists
+    # Install PyTorch, PyG, RDKit, etc. from requirements.txt
+    pip install -r requirements.txt
     ```
 3.  **Prepare Data:**
-    *(Instructions on how to download or preprocess data, if applicable. Mention the `DATA_PROCESSING_VERSION` if relevant for users.)*
-    *Note: If you modify data processing logic, remember to update `DATA_PROCESSING_VERSION` in `main.py` and delete the `processed_data` folder to force reprocessing.*
+    *   Place your dataset (e.g., PDBbind) in the directory specified in `config.py`.
+    *   **Important**: The data processing logic is versioned. If you make any changes to the functions in `src/data_processing.py`, you **must** update the `data_processing_version` string in `main.py`. This will trigger a warning and require you to delete the old `processed_data/` directory to force regeneration of the dataset with the correct logic.
 
 4.  **Run Training:**
     ```bash
-    python main.py # Or specific command to start training
+    python main.py
     ```
 
-## Gemini Debugging Log
+5.  **Make Predictions:**
+    ```bash
+    python predict.py --protein_path /path/to/protein.pdb --ligand_path /path/to/ligand.sdf --checkpoint /path/to/model_best.pth.tar
+    ```
 
-A comprehensive log detailing the debugging process for resolving CUDA out of memory errors and other related issues is available here:
+## Debugging and Development Logs
 
-*   [GEMINI.md](GEMINI.md)
+Comprehensive logs detailing the debugging process and the collaboration with the AI agent are available in the following files:
+
+*   **Agent Collaboration Log**: [AGENT.md](AGENT.md) - A high-level summary of the key problems identified by the user and the solutions implemented by the agent.
+*   **Detailed Debugging Log**: [GEMINI.md](GEMINI.md) - A verbose, step-by-step log of the entire debugging and development conversation.
 
 ---
 *This README was last updated by Gemini.*

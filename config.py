@@ -4,9 +4,9 @@ Configuration settings for the data processing and model training script.
 
 CONFIG = {
     # --- Path Settings ---
-    'index_file': r'E:/Qinchaojun/AIDD-TRAIN/index/INDEX_general_PL.2020R1.lst',
-    'dataset_path': r'E:/Qinchaojun/PDBbind-2025.8.4/P-L/',
-    'processed_data_dir': r'E:/Qinchaojun/AIDD-TRAIN/processed_data',
+    'index_file': r'index/INDEX_general_PL.2020R1.lst',
+    'dataset_path': r'PDBbind-2025.8.4/P-L/',
+    'processed_data_dir': r'processed_data',
 
     # --- Model & Training Hyperparameters ---
     'epochs': 20,
