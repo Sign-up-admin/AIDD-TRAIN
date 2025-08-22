@@ -44,13 +44,25 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
             # --- Automatic Mixed Precision (AMP) ---
             with autocast(device_type=device.type, dtype=torch.float16):
                 output = model(data)
+                if torch.isnan(output).any() or torch.isinf(output).any():
+                    logging.warning(f"NaN/Inf in model output at epoch {epoch}, batch {i}. Skipping.")
+                    if hasattr(data, 'pdb_code'):
+                        logging.warning(f"Problematic PDBs in batch: {data.pdb_code}")
+                    continue
                 loss = F.mse_loss(output, data.y.view(-1, 1)) / grad_accum_steps
+                if torch.isnan(loss).any() or torch.isinf(loss).any():
+                    logging.warning(f"NaN/Inf in loss at epoch {epoch}, batch {i}. Skipping.")
+                    if hasattr(data, 'pdb_code'):
+                        logging.warning(f"Problematic PDBs in batch: {data.pdb_code}")
+                    continue
 
         with record_function("model_backward_pass"):
             scaler.scale(loss).backward()
 
         with record_function("optimizer_step"):
             if (i + 1) % grad_accum_steps == 0 or (i + 1) == len(loader):
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 scaler.step(optimizer)
                 scaler.update()
                 optimizer.zero_grad()
@@ -98,7 +110,18 @@ def test(model, loader, device):
                 continue
             with autocast(device_type=device.type, dtype=torch.float16):
                 output = model(data)
+                # --- NaN/Inf Check ---
+                # Check for invalid values in output before calculating loss
+                if torch.isnan(output).any() or torch.isinf(output).any():
+                    logging.warning(f"NaN/Inf detected in validation output for a batch. Skipping loss calculation for this batch.")
+                    if hasattr(data, 'pdb_code'):
+                        logging.warning(f"Problematic PDBs in validation batch: {data.pdb_code}")
+                    continue
+                
                 loss = F.mse_loss(output, data.y.view(-1, 1))
-            total_loss += loss.item() * data.num_graphs
-            processed_graphs += data.num_graphs
+            
+            # Ensure loss is valid before accumulating
+            if not torch.isnan(loss):
+                total_loss += loss.item() * data.num_graphs
+                processed_graphs += data.num_graphs
     return total_loss / processed_graphs if processed_graphs > 0 else 0

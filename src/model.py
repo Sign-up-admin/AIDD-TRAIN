@@ -19,8 +19,8 @@ class ViSNetPDB(torch.nn.Module):
             cutoff=cutoff,
             max_num_neighbors=max_num_neighbors,
             lmax=1,
-            vecnorm_type='max_min',
-            trainable_vecnorm=False,
+            vecnorm_type='rms', # Changed from 'max_min' for better stability
+            trainable_vecnorm=True, # Enabled for adaptive normalization
             num_heads=8,
             trainable_rbf=False,
             max_z=100, # Max atomic number in periodic table

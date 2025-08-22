@@ -164,7 +164,8 @@ def main():
         max_num_neighbors=config.get('visnet_max_neighbors', 32)
     ).to(device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'])
+    # Increased epsilon for Adam optimizer for better stability with float16/AMP
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], eps=1e-7)
     scaler = GradScaler()
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.5)
     print(f"-> Model initialized with {sum(p.numel() for p in model.parameters()):,} parameters.")

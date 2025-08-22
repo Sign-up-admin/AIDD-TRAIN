@@ -70,7 +70,11 @@ class PDBBindDataset(Dataset):
         try:
             path = os.path.join(self.processed_dir, self.processed_file_names[idx])
             if not os.path.exists(path): return None
-            return torch.load(path, weights_only=False)
+            data = torch.load(path, weights_only=False)
+            # Attach the PDB code to the data object for easier debugging
+            if data is not None:
+                data.pdb_code = self.data_paths[idx].get('pdb_code', f'index_{idx}')
+            return data
         except (RuntimeError, EOFError, AttributeError):
             pdb_code = self.data_paths[idx].get('pdb_code', f'index {idx}')
             logging.warning(f"Skipping corrupt or incomplete data file for PDB {pdb_code}: {self.processed_file_names[idx]}")
