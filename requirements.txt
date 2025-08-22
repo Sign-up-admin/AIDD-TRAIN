@@ -1,5 +1,7 @@
-tqdm
 torch
 torch-geometric
+numpy
 rdkit-pypi
 biopython
+scipy
+tqdm
