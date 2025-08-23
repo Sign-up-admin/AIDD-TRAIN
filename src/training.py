@@ -11,9 +11,8 @@ from src.utils import save_checkpoint
 def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, best_val_loss, config, scheduler, training_state, start_batch=0):
     model.train()
     total_loss, processed_graphs = 0, 0
-    optimizer.zero_grad()  # Reset gradients at the start of the epoch
+    optimizer.zero_grad()
 
-    # --- Manual Save Trigger Setup ---
     trigger_file = config.get('manual_save_trigger_file')
     checkpoint_dir = config.get('checkpoint_dir')
 
@@ -25,7 +24,6 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
         if i < start_batch:
             continue
 
-        # Skip batch if it is None (e.g., due to filtering in collate_fn)
         if batch is None:
             continue
         
@@ -35,18 +33,14 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
         training_state['batch_idx'] = i
 
         data = batch.to(device)
-        # Skip batch if it's empty to prevent NaN loss
         if data.num_graphs == 0:
             continue
 
-        # record_function is used by the profiler to label code regions.
         with record_function("model_forward_pass"):
-            # --- Automatic Mixed Precision (AMP) ---
             with autocast(device_type=device.type, dtype=torch.float16):
                 output = model(data)
-                loss = F.mse_loss(output, data.y.view(-1, 1)) / grad_accum_steps
+                loss = F.huber_loss(output, data.y.view(-1, 1)) / grad_accum_steps
 
-            # --- NaN/Inf Debugging ---
             if torch.isnan(output).any() or torch.isinf(output).any() or torch.isnan(loss).any() or torch.isinf(loss).any():
                 logging.warning(f"NaN/Inf detected at epoch {epoch}, batch {i}.")
                 if hasattr(data, 'pdb_code'):
@@ -58,6 +52,14 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
                     problem_batch_path = os.path.join(debug_dir, f"problem_batch_epoch_{epoch}_batch_{i}.pt")
                     torch.save(data.to('cpu'), problem_batch_path)
                     logging.error(f"NaN detected. Saved problematic batch to {problem_batch_path}. Stopping training.")
+                    
+                    # --- AUTOMATIC ANALYSIS ---
+                    logging.info("="*80)
+                    logging.info(f"AUTOMATICALLY ANALYZING PROBLEMATIC BATCH: {problem_batch_path}")
+                    os.system(f"python src/analyze_problem_batch.py {problem_batch_path}")
+                    logging.info("="*80)
+                    # --- END AUTOMATIC ANALYSIS ---
+
                     raise RuntimeError(f"NaN detected in batch {i} of epoch {epoch}. Batch saved for debugging.")
                 else:
                     logging.warning("Skipping batch.")
@@ -74,7 +76,6 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
                 scaler.update()
                 optimizer.zero_grad()
         
-        # --- Manual Save Trigger Check ---
         if trigger_file and checkpoint_dir and os.path.exists(trigger_file):
             logging.info(f"--> Manual save triggered by file: {trigger_file}")
             
@@ -108,26 +109,21 @@ def test(model, loader, device):
     total_loss, processed_graphs = 0, 0
     with torch.no_grad():
         for batch in tqdm(loader, desc="Validation", leave=False):
-            # Skip batch if it is None (e.g., due to filtering in collate_fn)
             if batch is None:
                 continue
             data = batch.to(device)
-            # Skip batch if it's empty to prevent NaN loss
             if data.num_graphs == 0:
                 continue
             with autocast(device_type=device.type, dtype=torch.float16):
                 output = model(data)
-                # --- NaN/Inf Check ---
-                # Check for invalid values in output before calculating loss
                 if torch.isnan(output).any() or torch.isinf(output).any():
                     logging.warning(f"NaN/Inf detected in validation output for a batch. Skipping loss calculation for this batch.")
                     if hasattr(data, 'pdb_code'):
                         logging.warning(f"Problematic PDBs in validation batch: {data.pdb_code}")
                     continue
                 
-                loss = F.mse_loss(output, data.y.view(-1, 1))
+                loss = F.huber_loss(output, data.y.view(-1, 1))
             
-            # Ensure loss is valid before accumulating
             if not torch.isnan(loss):
                 total_loss += loss.item() * data.num_graphs
                 processed_graphs += data.num_graphs

@@ -8,7 +8,6 @@ import numpy as np
 from torch_geometric.data import Data
 from rdkit import Chem, RDLogger
 from Bio.PDB import PDBParser
-from scipy.spatial.distance import cdist
 from tqdm import tqdm
 
 # Suppress RDKit warnings
@@ -39,7 +38,6 @@ def get_data_paths(pdb_info, dataset_path):
 
     for code, info in tqdm(pdb_info.items(), desc="Verifying data paths"):
         year_dir = year_to_dir.get(info['year'], '2011-2019')
-        assert isinstance(code, str)
         base_path = os.path.join(dataset_path, year_dir, code)
         protein_path = os.path.join(base_path, code + '_protein.pdb')
         
@@ -71,7 +69,7 @@ def parse_binding_data(binding_str):
     return -math.log10(molar_value) if molar_value > 0 else 0.0
 
 # =============================================================================
-# PART 2: MOLECULE-TO-GRAPH CONVERSION (NOW WITH GLOBAL DUPLICATE ATOM REMOVAL)
+# PART 2: MOLECULE-TO-GRAPH CONVERSION (WITH INTER-MOLECULE DUPLICATE REMOVAL)
 # =============================================================================
 
 ELEMENTS = ['C', 'O', 'N', 'S', 'P', 'H', 'F', 'Cl', 'Br', 'I', 'UNK']
@@ -111,21 +109,13 @@ def get_ligand_graph(mol, pdb_code="N/A"):
     if not atom_features_list:
         return None
 
-    rows, cols = [], []
-    for bond in mol.GetBonds():
-        start_old, end_old = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
-        if start_old in old_to_new_idx and end_old in old_to_new_idx:
-            start_new, end_new = old_to_new_idx[start_old], old_to_new_idx[end_old]
-            rows.extend([start_new, end_new])
-            cols.extend([end_new, start_new])
-
     return {
         'v': torch.tensor(atom_features_list, dtype=torch.float),
         'pos': torch.tensor(positions_list, dtype=torch.float),
         'seen_pos': seen_positions
     }
 
-def get_protein_graph(protein_path, existing_positions=None):
+def get_protein_graph(protein_path, ligand_positions_set):
     parser = PDBParser(QUIET=True)
     structure = parser.get_structure("protein", protein_path)
     atoms_to_include = [atom for residue in structure.get_residues() if residue.id[0] == ' ' for atom in residue.get_atoms()]
@@ -133,18 +123,22 @@ def get_protein_graph(protein_path, existing_positions=None):
     if not atoms_to_include:
         return None
 
-    seen_positions = set() if existing_positions is None else existing_positions
     atom_features_list, positions_list = [], []
     pdb_code = os.path.basename(protein_path).split('_')[0]
+    protein_positions_seen = set()
 
     for atom in atoms_to_include:
         pos_tuple = tuple(round(c, 4) for c in atom.get_coord())
 
-        if pos_tuple in seen_positions:
-            logging.warning(f"Duplicate protein atom position (overlapping with ligand or other protein atom) found and removed in {pdb_code}: {pos_tuple}")
+        if pos_tuple in ligand_positions_set:
+            logging.warning(f"Protein-Ligand Overlap: Protein atom at {pos_tuple} in {pdb_code} overlaps with ligand and will be removed.")
             continue
         
-        seen_positions.add(pos_tuple)
+        if pos_tuple in protein_positions_seen:
+            logging.warning(f"Intra-Protein Duplicate: Duplicate protein atom at {pos_tuple} in {pdb_code} will be removed.")
+            continue
+        
+        protein_positions_seen.add(pos_tuple)
         element = atom.element.strip().upper() if atom.element else ''
         feat = [0] * len(ELEMENTS)
         feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1
@@ -159,25 +153,9 @@ def get_protein_graph(protein_path, existing_positions=None):
         'pos': torch.tensor(np.array(positions_list), dtype=torch.float)
     }
 
-def count_pdb_atoms(pdb_path):
-    try:
-        with open(pdb_path, 'r') as f:
-            return sum(1 for line in f if line.startswith('ATOM'))
-    except IOError:
-        return 0
-
-def process_item(item, cutoff=8.0):
+def process_item(item):
     pdb_code = item.get('pdb_code', 'N/A')
     try:
-        protein_path = item['protein_path']
-        if os.path.getsize(protein_path) > 100 * 1024 * 1024: # 100MB limit
-            logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
-            return None
-
-        if count_pdb_atoms(protein_path) > 20000: # Relaxed limit
-            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>20,000).")
-            return None
-
         ligand = None
         ligand_path = item['ligand_path']
         if ligand_path.endswith('.mol2'):
@@ -187,28 +165,41 @@ def process_item(item, cutoff=8.0):
             if suppl: ligand = next(suppl, None)
         
         if ligand is None or ligand.GetNumAtoms() == 0:
-            logging.warning(f"Skipping {pdb_code}: Failed to load ligand or ligand has no atoms.")
+            logging.warning(f"Skipping {pdb_code}: Could not load ligand or ligand has no atoms.")
             return None
 
         ligand_graph = get_ligand_graph(ligand, pdb_code)
         if ligand_graph is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to generate ligand graph after filtering.")
+            logging.warning(f"Skipping {pdb_code}: Ligand graph could not be generated.")
             return None
 
-        protein_graph = get_protein_graph(protein_path, existing_positions=ligand_graph['seen_pos'])
+        protein_graph = get_protein_graph(item['protein_path'], ligand_positions_set=ligand_graph['seen_pos'])
         if protein_graph is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to generate protein graph after filtering.")
+            logging.warning(f"Skipping {pdb_code}: Protein graph could not be generated.")
             return None
 
         y = parse_binding_data(item['binding_data'])
-        if y is None: return None
+        if y is None: 
+            logging.warning(f"Skipping {pdb_code}: Could not parse binding data.")
+            return None
         
         data = Data(y=torch.tensor([y], dtype=torch.float), pdb_code=pdb_code)
         data.x = torch.cat([ligand_graph['v'], protein_graph['v']], dim=0)
         data.pos = torch.cat([ligand_graph['pos'], protein_graph['pos']], dim=0)
 
+        final_pos_tensor = data.pos
+        uniques = torch.unique(final_pos_tensor, dim=0)
+        if uniques.shape[0] < final_pos_tensor.shape[0]:
+            logging.error(f"CRITICAL ERROR in {pdb_code}: Duplicate atom positions DETECTED even after filtering.")
+            counts = {tuple(p.tolist()): 0 for p in final_pos_tensor}
+            for p in final_pos_tensor:
+                counts[tuple(p.tolist())] += 1
+            dupes = {pos: count for pos, count in counts.items() if count > 1}
+            logging.error(f"Duplicate positions and their counts: {dupes}")
+            return None
+
         return data
 
     except Exception as e:
-        logging.error(f"ERROR for PDB {pdb_code}: {e}", exc_info=True)
+        logging.error(f"ERROR processing PDB {pdb_code}: {e}", exc_info=True)
         return None

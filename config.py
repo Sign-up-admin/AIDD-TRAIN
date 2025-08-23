@@ -7,7 +7,15 @@ CONFIG = {
     # Force the reprocessing of the entire dataset, ignoring any cached files.
     # This is useful after changing data processing logic in `src/data_processing.py`.
     # The script will automatically set this to False after a successful run.
-    'force_data_reprocessing': False,
+    'force_data_reprocessing': True,
+
+    # --- Data Processing ---
+    # 'strict': Skips any PDB file with unresolvable issues (e.g., atom overlaps). This is the safest mode.
+    # 'permissive': Attempts to apply smart heuristics to repair problematic PDB files. This may increase data yield
+    #               but introduces a small risk of altering molecular structures.
+    'data_processing_mode': 'strict',
+    # Directory to save detailed reports and file snapshots for PDBs that fail processing.
+    'failed_cases_dir': r'failed_cases',
 
     # --- Path Settings ---
     'index_file': r'index/INDEX_general_PL.2020R1.lst',
@@ -27,11 +35,11 @@ CONFIG = {
 
     # --- ViSNet Model Specific ---
     # These parameters control the size and complexity of the ViSNet model.
-    'visnet_hidden_channels': 48,
-    'visnet_num_layers': 3,
-    'max_num_neighbors': 10,
+    'visnet_hidden_channels': 128, # 增加模型宽度以获得更多特征容量
+    'visnet_num_layers': 4,      # 增加模型深度以学习更复杂的相互作用
+    'max_num_neighbors': 32,     # 允许模型看到更丰富的原子邻域环境 (ViSNet 默认值)
     'visnet_cutoff': 8.0,
-    'visnet_num_rbf': 48,
+    'visnet_num_rbf': 64,      # 增加距离表示的分辨率
 
     # --- Hardware & Performance ---
     'processing_num_workers': 28,
