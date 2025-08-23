@@ -50,6 +50,11 @@ CONFIG = {
     # --- Manual Save Trigger ---
     # Create a file with this name in the project root to trigger an immediate checkpoint save.
     'manual_save_trigger_file': 'SAVE_NOW.flag',
+    # --- Periodic Checkpointing ---
+    # Save a checkpoint every N batches to prevent losing progress on long runs.
+    # Set to 0 to disable and only save at the end of each epoch.
+    # A value of 1000 is a reasonable starting point.
+    'save_every_n_batches': 1000,
     # --- Reproducibility ---
     # Set a random seed for consistent data splitting and model initialization.
     'seed': 42,
