@@ -1,127 +1,101 @@
-# AIDD-TRAIN
+# COMPASS: Navigating the Complexities of Protein-Ligand Binding
 
-## Project Overview
+[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange.svg)](https://pytorch.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-This repository, `AIDD-TRAIN`, documents a deep learning project focused on training models for drug discovery, specifically addressing common and complex challenges encountered during development. A significant part of this repository highlights the debugging journey and architectural improvements made to the training pipeline, transforming it into a robust and reliable system.
+**COMPASS** is a deep learning project dedicated to accurately predicting protein-ligand binding affinities. It leverages a state-of-the-art Graph Neural Network (GNN), ViSNet, to learn from the intricate 3D geometry of molecular complexes, aiming to accelerate the process of drug discovery.
 
-## Key Learnings and Architectural Improvements
-
-This project served as a practical case study for building and debugging deep learning training systems. Key insights and improvements include:
-
-*   **Data Pipeline Unification**: A critical architectural flaw was identified and fixed where the data processing for **training** and **prediction** were inconsistent. The training pipeline was modified to generate explicit protein, ligand, and interaction graphs, matching the structure required for prediction. This ensures the model learns relevant physical interactions and that its predictions are valid.
-
-*   **Robust Checkpointing & Recovery**: The system was hardened to save the complete training state (model, optimizer, scheduler, scaler) and to intelligently load the most recent checkpoint, whether from a normal save or a graceful shutdown.
-
-*   **Graceful Shutdown**: The training loop now handles `KeyboardInterrupt` (Ctrl+C) to perform a final, safe save of the training state, preventing loss of progress on manual termination.
-
-*   **Reproducible Data Splits**: The train/validation data split was made deterministic to ensure that validation loss is a consistent and comparable metric across different training runs.
-
-*   **Systematic Debugging**: The project demonstrates a clear methodology for debugging, from surface-level errors (like CUDA OOM) to deep, logical bugs in the data pipeline.
-
-For a detailed, step-by-step account of the debugging process and agent collaboration, please refer to the [Agent Collaboration Log](AGENT.md).
-
-## Setup and Usage
-
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/AIDD-TRAIN.git
-    cd AIDD-TRAIN
-    ```
-2.  **Create a virtual environment and install dependencies:**
-    ```bash
-    # It is recommended to use a conda environment for managing PyTorch and RDKit
-    conda create -n aidd-train python=3.9
-    conda activate aidd-train
-    # Install PyTorch, PyG, RDKit, etc. from requirements.txt
-    pip install -r requirements.txt
-    ```
-3.  **Prepare Data:**
-    *   Place your dataset (e.g., PDBbind) in the directory specified in `config.py`.
-    *   **Important**: The data processing logic is versioned. If you make any changes to the functions in `src/data_processing.py`, you **must** update the `data_processing_version` string in `main.py`. This will trigger a warning and require you to delete the old `processed_data/` directory to force regeneration of the dataset with the correct logic.
-
-4.  **Run Training:**
-    ```bash
-    python main.py
-    ```
-
-5.  **Make Predictions:**
-    ```bash
-    python predict.py --protein_path /path/to/protein.pdb --ligand_path /path/to/ligand.sdf --checkpoint /path/to/model_best.pth.tar
-    ```
-
-## Hardware Configuration Guide
-
-The model's memory footprint, especially for ViSNet, is highly dependent on your GPU's VRAM. The settings in `config.py` need to be adjusted to prevent `CUDA out of memory` errors. Here are some practical guidelines based on different hardware.
-
-### Key Parameters
-
-*   `batch_size`: The number of data samples processed by the GPU at once. **This is the first parameter you should lower when facing memory errors.**
-*   `gradient_accumulation_steps`: Simulates a larger batch size. The "effective batch size" is `batch_size * gradient_accumulation_steps`. If you decrease `batch_size`, you should increase this value proportionally to keep the effective batch size consistent, which helps stabilize training.
-*   `visnet_hidden_channels`: Controls the size of the model's hidden layers. If lowering `batch_size` to 1 is still not enough, **reducing this value (e.g., from 128 to 64) is the next step.** Note that this reduces the model's capacity and may impact its final accuracy.
-
-### Example Configurations
-
-#### Case 1: Low VRAM (e.g., NVIDIA RTX 3060 6GB)
-
-With only 6GB of VRAM, the ViSNet model can easily cause out-of-memory errors even with a single sample. The following configuration was found to work on this hardware:
-
-*   **Problem**: `CUDA out of memory` errors occur even with `batch_size: 2`.
-*   **Solution**:
-    1.  Set `batch_size` to the absolute minimum: `1`.
-    2.  Increase `gradient_accumulation_steps` to `16` to maintain an effective batch size of `1 * 16 = 16`.
-    3.  If memory errors persist, reduce the model's complexity by setting `visnet_hidden_channels` to `64`.
-
-```python
-# config.py for a 6GB VRAM GPU
-CONFIG = {
-    # ...
-    'batch_size': 1,
-    'gradient_accumulation_steps': 16,
-    'visnet_hidden_channels': 64,
-    # ...
-}
-```
-
-#### Case 2: High VRAM (e.g., NVIDIA RTX 4060 Ti 16GB)
-
-With more VRAM, you can afford a larger batch size and a more complex model, which can speed up training and potentially improve results.
-
-*   **Advantage**: Can handle larger batches and a full-sized model.
-*   **Configuration**:
-    1.  Start with a larger `batch_size`, for example, `4` or `8`.
-    2.  Adjust `gradient_accumulation_steps` accordingly. For an effective batch size of 16, you could use `batch_size: 4` and `gradient_accumulation_steps: 4`.
-    3.  You can use the full model complexity with `visnet_hidden_channels: 128`.
-
-```python
-# config.py for a 16GB VRAM GPU
-CONFIG = {
-    # ...
-    'batch_size': 4,
-    'gradient_accumulation_steps': 4,
-    'visnet_hidden_channels': 128,
-    # ...
-}
-```
-
-### Dealing with Numerical Instability (NaN errors)
-
-During training, you might encounter NaN (Not a Number) or Inf (Infinity) values in the loss, especially when using mixed-precision (float16). This is a sign of numerical instability. While the training script is designed to skip these problematic batches, the root cause should be addressed.
-
-1.  **Increase Optimizer Epsilon**: The Adam optimizer uses a small value `eps` to prevent division by zero. The default (`1e-8`) can be too small for `float16`'s limited range. Increasing it can significantly improve stability. In `main.py`, the optimizer is already initialized with a more stable value:
-    ```python
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], eps=1e-7)
-    ```
-
-2.  **Identify Problematic Data**: The training script will now log the PDB codes of batches that produce `NaN` values. Look for these warnings in the output. If you see the same PDB codes appearing repeatedly, it indicates a problem with those specific data files (e.g., unusual geometry). You may need to inspect or exclude them from your dataset.
-
-3.  **Disable Mixed Precision (for Debugging)**: If `NaN` issues persist, you can temporarily disable Automatic Mixed Precision (AMP) to confirm if `float16` is the cause. This involves commenting out the `autocast` and `GradScaler` code in `src/training.py`. This will increase VRAM usage and slow down training but is a reliable way to diagnose the problem.
-
-## Debugging and Development Logs
-
-Comprehensive logs detailing the debugging process and the collaboration with the AI agent are available in the following files:
-
-*   **Agent Collaboration Log**: [AGENT.md](AGENT.md) - A high-level summary of the key problems identified by the user and the solutions implemented by the agent.
-*   **Detailed Debugging Log**: [GEMINI.md](GEMINI.md) - A verbose, step-by-step log of the entire debugging and development conversation.
+This project is built not just on a powerful model, but on a core philosophy of extreme data robustness. Its name, COMPASS, reflects its ability to navigate the often-problematic landscape of real-world structural biology data, ensuring reliable and reproducible results.
 
 ---
-*This README was last updated by Gemini.*
+
+## Key Features
+
+- **State-of-the-Art Model**: Implements the ViSNet architecture for high-precision, geometry-aware predictions.
+- **Robust Data Pipeline**: The cornerstone of COMPASS. The data processing pipeline is meticulously designed to handle common and obscure issues found in PDB data, including:
+    - Filtering of excessively large or malformed structures.
+    - **Automatic detection and resolution of duplicate atom coordinates**, both within a single molecule and, crucially, between protein-ligand pairs upon merging. This prevents numerical instability (`NaN` values) during training.
+- **High-Performance Training**: Utilizes Automatic Mixed Precision (AMP) via `torch.amp` for significant speed-ups on compatible hardware.
+- **Resilient & Manageable**: Features robust checkpointing, graceful exit handling for interruptions, and a clear configuration system.
+
+## The COMPASS Philosophy: A Case Study in Data Robustness
+
+This project was forged through a deep-dive debugging session aimed at solving a common yet elusive problem in deep learning: the sudden appearance of `NaN` (Not a Number) values during training.
+
+#### The Challenge
+
+Initial training runs were plagued by `NaN` losses, which would appear unpredictably for certain data points (e.g., PDB ID `1p06`). A common but ineffective approach is to simply skip these problematic batches. We chose a different path.
+
+#### The Investigation
+
+We adopted a strategy of **"Pause and Autopsy"** over "Skip and Ignore".
+
+1.  **`debug_mode`**: A debug flag was implemented in the training script. When activated, the script would automatically save the exact data batch that caused the `NaN` error and halt execution.
+2.  **Analysis Toolkit**: A dedicated analysis script, `src/analyze_problem_batch.py`, was created to load these saved "crime scenes" and perform a deep inspection of every tensor.
+
+#### The Discovery
+
+Initial analysis confirmed the input data files themselves were clean. The `NaN`s were being generated *during* the model's forward pass. This led to the hypothesis of numerical instability caused by a **division-by-zero** error, likely from two atoms sharing the same coordinates.
+
+Our specialized analysis script confirmed this, detecting duplicate coordinates in the problematic batch. However, the final piece of the puzzle was uncovered through manual inspection: the coordinate collision was not within a single file, but **between a protein atom and a ligand atom**. When the two molecules were merged into a single graph, these two atoms occupied the exact same point in 3D space.
+
+#### The Solution
+
+The data processing pipeline (`src/data_processing.py`) was upgraded to act as a true "compass" for our data. It now intelligently checks for and removes these overlapping atoms at the source, ensuring that every single data point entering the model is geometrically sound and numerically stable.
+
+This journey underscores the COMPASS philosophy: true progress in scientific machine learning comes not just from powerful architectures, but from a relentless commitment to understanding and purifying the data that fuels them.
+
+## Setup and Installation
+
+1.  **Clone the repository:**
+    ```sh
+    git clone <your-repo-url>
+    cd AIDD-TRAIN
+    ```
+
+2.  **Create a virtual environment (recommended):**
+    ```sh
+    python -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
+
+3.  **Install dependencies:**
+    *This project relies on PyTorch and PyTorch Geometric. Please follow their official installation instructions for your specific CUDA version first.*
+    ```sh
+    # Example for CUDA 11.8
+    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    pip install torch_geometric
+    pip install rdkit-pypi biopython tqdm scipy
+    ```
+
+4.  **Data:**
+    - Download the PDBbind dataset (v.2020 or other).
+    - Update the `dataset_path` and `index_file` variables in `config.py` to point to your dataset location.
+
+## Configuration
+
+All project settings, including file paths, model hyperparameters, and training parameters, are managed in the `config.py` file. Key settings include:
+
+- `dataset_path`: Path to the root of the PDBbind dataset.
+- `processed_data_dir`: Directory to save the processed `.pt` graph files.
+- `batch_size`, `epochs`, `learning_rate`: Standard training hyperparameters.
+- `debug_mode`: Set to `True` to enable the "Pause and Autopsy" feature for debugging new data issues.
+
+## Usage
+
+To start the training process, simply run:
+
+```sh
+python main.py
+```
+
+The script will first process the raw PDB/SDF files into graph data and save them to the `processed_data_dir`. Subsequent runs will load these processed files directly, unless the data processing script (`src/data_processing.py`) is modified.
+
+## License
+
+This project is licensed under the MIT License. See the `LICENSE` file for details.
+
+## Acknowledgments
+
+This project utilizes the PDBbind dataset. We gratefully acknowledge the creators and maintainers of this valuable resource.

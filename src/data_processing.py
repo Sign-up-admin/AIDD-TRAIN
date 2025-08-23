@@ -15,7 +15,7 @@ from tqdm import tqdm
 RDLogger.logger().setLevel(RDLogger.CRITICAL)
 
 # =============================================================================
-# PART 1: DATA PATH AND BINDING VALUE PARSING (No changes needed here)
+# PART 1: DATA PATH AND BINDING VALUE PARSING
 # =============================================================================
 
 def get_pdb_info(index_file):
@@ -71,7 +71,7 @@ def parse_binding_data(binding_str):
     return -math.log10(molar_value) if molar_value > 0 else 0.0
 
 # =============================================================================
-# PART 2: MOLECULE-TO-GRAPH CONVERSION (REFACTORED)
+# PART 2: MOLECULE-TO-GRAPH CONVERSION (NOW WITH DUPLICATE ATOM REMOVAL)
 # =============================================================================
 
 ELEMENTS = ['C', 'O', 'N', 'S', 'P', 'H', 'F', 'Cl', 'Br', 'I', 'UNK']
@@ -83,65 +83,83 @@ def get_atom_features(atom):
     feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1
     return feat
 
-def get_ligand_graph(mol):
+def get_ligand_graph(mol, pdb_code="N/A"):
     if mol is None or mol.GetNumConformers() == 0:
         return None
-    
-    # Atom features
-    atom_features = torch.tensor([get_atom_features(atom) for atom in mol.GetAtoms()], dtype=torch.float)
-    
-    # Edge index and features
+
+    conformer = mol.GetConformer()
+    atom_features_list, positions_list = [], []
+    seen_positions = set()
+    old_to_new_idx = {}
+    new_idx_counter = 0
+
+    for atom in mol.GetAtoms():
+        atom_idx = atom.GetIdx()
+        pos = conformer.GetAtomPosition(atom_idx)
+        pos_tuple = (round(pos.x, 4), round(pos.y, 4), round(pos.z, 4))
+
+        if pos_tuple in seen_positions:
+            logging.warning(f"Duplicate ligand atom position found and removed in {pdb_code}: {pos_tuple}")
+            continue
+        
+        seen_positions.add(pos_tuple)
+        old_to_new_idx[atom_idx] = new_idx_counter
+        new_idx_counter += 1
+        atom_features_list.append(get_atom_features(atom))
+        positions_list.append(list(pos_tuple))
+
+    if not atom_features_list:
+        return None
+
     rows, cols, edge_feats = [], [], []
     for bond in mol.GetBonds():
-        start, end = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
-        rows.extend([start, end])
-        cols.extend([end, start])
-        # Use bond type as a simple edge feature
-        bond_type = bond.GetBondTypeAsDouble()
-        edge_feats.extend([bond_type, bond_type])
-        
-    edge_index = torch.tensor([rows, cols], dtype=torch.long)
-    edge_attr = torch.tensor(edge_feats, dtype=torch.float).view(-1, 1)
-    
-    # Atom positions
-    pos = torch.tensor(mol.GetConformer().GetPositions(), dtype=torch.float)
-    
-    return {'v': atom_features, 'edge_index': edge_index, 'edge_attr': edge_attr, 'pos': pos}
+        start_old, end_old = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
+        if start_old in old_to_new_idx and end_old in old_to_new_idx:
+            start_new, end_new = old_to_new_idx[start_old], old_to_new_idx[end_old]
+            rows.extend([start_new, end_new])
+            cols.extend([end_new, start_new])
+            bond_type = bond.GetBondTypeAsDouble()
+            edge_feats.extend([bond_type, bond_type])
+
+    return {
+        'v': torch.tensor(atom_features_list, dtype=torch.float),
+        'edge_index': torch.tensor([rows, cols], dtype=torch.long),
+        'edge_attr': torch.tensor(edge_feats, dtype=torch.float).view(-1, 1),
+        'pos': torch.tensor(positions_list, dtype=torch.float)
+    }
 
 def get_protein_graph(protein_path):
     parser = PDBParser(QUIET=True)
     structure = parser.get_structure("protein", protein_path)
-    
     atoms_to_include = [atom for residue in structure.get_residues() if residue.id[0] == ' ' for atom in residue.get_atoms()]
     
     if not atoms_to_include:
         return None
 
     atom_features_list, positions_list = [], []
+    seen_positions = set()
     for atom in atoms_to_include:
+        pos_tuple = tuple(round(c, 4) for c in atom.get_coord())
+
+        if pos_tuple in seen_positions:
+            pdb_code = os.path.basename(protein_path).split('_')[0]
+            logging.warning(f"Duplicate protein atom position found and removed in {pdb_code}: {pos_tuple}")
+            continue
+        
+        seen_positions.add(pos_tuple)
         element = atom.element.strip().upper() if atom.element else ''
         feat = [0] * len(ELEMENTS)
         feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1
         atom_features_list.append(feat)
-        positions_list.append(atom.get_coord())
+        positions_list.append(list(pos_tuple))
+
+    if not atom_features_list:
+        return None
 
     return {
         'v': torch.tensor(atom_features_list, dtype=torch.float),
         'pos': torch.tensor(np.array(positions_list), dtype=torch.float)
     }
-
-def get_interaction_graph(ligand_pos, protein_pos, cutoff):
-    # Compute pairwise distances
-    dist_matrix = cdist(ligand_pos, protein_pos)
-    
-    # Find interacting atoms
-    interactions = np.where(dist_matrix < cutoff)
-    
-    # Create edge index and attributes (distances)
-    interaction_edge_index = torch.tensor(np.array(interactions), dtype=torch.long)
-    interaction_edge_attr = torch.tensor(dist_matrix[interactions], dtype=torch.float).view(-1, 1)
-    
-    return {'edge_index': interaction_edge_index, 'edge_attr': interaction_edge_attr}
 
 def count_pdb_atoms(pdb_path):
     try:
@@ -162,7 +180,6 @@ def process_item(item, cutoff=8.0):
             logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>20,000).")
             return None
 
-        # 1. Load ligand with hydrogens
         ligand = None
         ligand_path = item['ligand_path']
         if ligand_path.endswith('.mol2'):
@@ -175,30 +192,19 @@ def process_item(item, cutoff=8.0):
             logging.warning(f"Skipping {pdb_code}: Failed to load ligand or ligand has no atoms.")
             return None
 
-        # 2. Get graphs
-        ligand_graph = get_ligand_graph(ligand)
+        ligand_graph = get_ligand_graph(ligand, pdb_code)
         protein_graph = get_protein_graph(protein_path)
         
         if protein_graph is None or ligand_graph is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to generate protein or ligand graph.")
+            logging.warning(f"Skipping {pdb_code}: Failed to generate protein or ligand graph after filtering.")
             return None
 
-        # 3. Parse binding affinity
         y = parse_binding_data(item['binding_data'])
         if y is None: return None
         
-        # 4. Assemble Data object with combined features for the model
         data = Data(y=torch.tensor([y], dtype=torch.float), pdb_code=pdb_code)
-        
-        # Combine node features (x) and positions (pos)
         data.x = torch.cat([ligand_graph['v'], protein_graph['v']], dim=0)
         data.pos = torch.cat([ligand_graph['pos'], protein_graph['pos']], dim=0)
-
-        # The ViSNet model does not require edge_index, it computes neighbors from pos.
-        # We can store them if needed for other purposes, but they are not used by the current model.
-        # data.ligand_edge_index = ligand_graph['edge_index']
-        # data.protein_edge_index = ... (not computed)
-        # data.interaction_edge_index = ... (not computed in this new flow)
 
         return data
 

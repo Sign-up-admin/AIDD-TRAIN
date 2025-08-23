@@ -44,16 +44,23 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
             # --- Automatic Mixed Precision (AMP) ---
             with autocast(device_type=device.type, dtype=torch.float16):
                 output = model(data)
-                if torch.isnan(output).any() or torch.isinf(output).any():
-                    logging.warning(f"NaN/Inf in model output at epoch {epoch}, batch {i}. Skipping.")
-                    if hasattr(data, 'pdb_code'):
-                        logging.warning(f"Problematic PDBs in batch: {data.pdb_code}")
-                    continue
                 loss = F.mse_loss(output, data.y.view(-1, 1)) / grad_accum_steps
-                if torch.isnan(loss).any() or torch.isinf(loss).any():
-                    logging.warning(f"NaN/Inf in loss at epoch {epoch}, batch {i}. Skipping.")
-                    if hasattr(data, 'pdb_code'):
-                        logging.warning(f"Problematic PDBs in batch: {data.pdb_code}")
+
+            # --- NaN/Inf Debugging ---
+            if torch.isnan(output).any() or torch.isinf(output).any() or torch.isnan(loss).any() or torch.isinf(loss).any():
+                logging.warning(f"NaN/Inf detected at epoch {epoch}, batch {i}.")
+                if hasattr(data, 'pdb_code'):
+                    logging.warning(f"Problematic PDBs in batch: {data.pdb_code}")
+
+                if config.get('debug_mode', False):
+                    debug_dir = os.path.join(config.get('checkpoint_dir', '.'), 'debug_batches')
+                    os.makedirs(debug_dir, exist_ok=True)
+                    problem_batch_path = os.path.join(debug_dir, f"problem_batch_epoch_{epoch}_batch_{i}.pt")
+                    torch.save(data.to('cpu'), problem_batch_path)
+                    logging.error(f"NaN detected. Saved problematic batch to {problem_batch_path}. Stopping training.")
+                    raise RuntimeError(f"NaN detected in batch {i} of epoch {epoch}. Batch saved for debugging.")
+                else:
+                    logging.warning("Skipping batch.")
                     continue
 
         with record_function("model_backward_pass"):
