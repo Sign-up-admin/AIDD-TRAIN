@@ -1,45 +1,71 @@
-# Agent 调试日志
+# COMPASS: Agent & User Collaboration Log
 
-## 项目: AIDD-TRAIN
+## Project: COMPASS (Conformational Pocket Affinity Scoring System)
+*A Deep Learning Navigator for Protein-Ligand Interactions*
 
-### 场景: 深入调试由蛋白质-配体原子坐标重叠引发的 NaN 问题
+---
 
-本次任务记录了一次从训练过程中出现 `NaN` (Not a Number) 损失值开始，通过一系列侦测、分析、和代码修正，最终定位并解决了问题的根本原因的完整调试过程。这次经历的核心是从“被动跳过问题”的策略转变为“主动捕获并进行深度分析”。
+### Scene: In-depth Debugging of NaN Issues from Data Artifacts
 
-#### 步骤 1: 问题浮现 - 训练中的 NaN
+This document chronicles a multi-stage debugging journey to resolve training-halting `NaN` (Not a Number) errors. The process evolved from identifying a simple data flaw to uncovering a more subtle, systemic issue in the data processing pipeline, showcasing a powerful collaboration between human intuition and AI-driven analysis.
 
-- **初始现象**: 训练脚本在特定批次上会产生 `NaN` 或 `Inf` (无穷大) 的损失值。当时的代码逻辑是记录一条警告并直接跳过该批次，这虽然能让训练继续，但也掩盖了问题的根本原因。
-- **日志线索**: 日志显示，多个 PDB 文件（如 `1qj7`, `1bio`, `1p06` 等）在训练过程中反复引发此问题。
+#### Stage 1: The Initial Anomaly - `NaN` in Training
 
-#### 步骤 2: 策略升级 - 从“跳过”到“暂停并尸检”
+- **Symptom**: The training script would consistently fail on certain data batches, producing `NaN` or `Inf` loss values. The initial code merely skipped these batches, masking the root cause.
+- **Initial Clues**: Log files pointed to several problematic PDB IDs, including `1p06` and `1ylv`.
 
-- **核心思路**: 为了深入分析，我提出修改现有策略。当 `NaN` 出现时，我们不再跳过，而是立即停止训练，并将导致问题的“案发现场”（即那个批次的数据）完整地保存下来，以便进行离线的“尸检”。
-- **代码实现**:
-    1.  **修改 `src/training.py`**: 我引入了一个由配置文件控制的 `debug_mode` 开关。当此模式开启时，遇到 `NaN` 的 `train` 函数会立刻将当前批次的数据对象（`data`）保存为一个 `.pt` 文件，并抛出 `RuntimeError` 来中断训练。
-    2.  **创建 `src/analyze_problem_batch.py`**: 我创建了一个全新的分析脚本，其唯一目的是加载被保存的“问题批次”文件，并对其中的所有张量进行详细检查，包括是否存在 `NaN`/`Inf`，以及打印数值统计信息。
+#### Stage 2: Strategy Upgrade - From "Skip" to "Capture and Autopsy"
 
-#### 步骤 3: 定位根源 - 一波三折的分析过程
+- **Core Idea**: We shifted strategy from passively ignoring bad data to actively intercepting it. The goal was to halt training the moment a `NaN` appeared and preserve the exact data batch for offline analysis.
+- **AI Contribution (Tooling)**:
+    1.  **`debug_mode` in `training.py`**: I implemented a configuration flag that, when enabled, would catch a `NaN` loss, save the corresponding data batch to a `.pt` file, and raise a `RuntimeError` to stop the training process.
+    2.  **`analyze_problem_batch.py`**: I created a dedicated analysis script to load these saved batches and perform a deep inspection of all tensors, checking for `NaN` values and statistical anomalies.
 
-- **初次分析失败**: 用户开启 `debug_mode` 后，训练成功在遇到 `1p06` 文件时中断并保存了批次。但分析脚本运行时，首先因为 PyTorch 的安全更新（`weights_only` 参数）失败，修正后又因为一个小小的编程错误（`data.keys` vs `data.keys()`）再次失败。
-- **关键突破**: 在修正了分析脚本的所有问题后，我们终于得到了第一份有效的“尸检报告”。报告揭示了一个惊人的事实：**输入数据本身是完全干净的**，其包含的任何张量（`x`, `pos` 等）都不存在 `NaN` 或 `Inf` 值。
-- **形成假设**: 既然输入是干净的，`NaN` 就必定是在模型的前向传播过程中产生的。在图神经网络中，最常见的数值不稳定性来源是“除以零”，而这在处理原子间距离时，极有可能由**两个或多个原子拥有完全相同的三维坐标**导致。
+#### Stage 3: The Investigation - A Tale of Two PDBs
 
-#### 步骤 4: 验证假设 - 找到“重叠”的原子
+- **First Breakthrough (`1p06`)**: With the new tools, the user successfully captured the batch containing `1p06`. After overcoming some minor bugs in the analysis script (related to PyTorch versioning and method calls), the script's output was pivotal. It revealed:
+    1.  The input data tensors (`x`, `pos`, etc.) were clean, with no `NaN`s.
+    2.  Crucially, the script detected **duplicate atom coordinates** within the combined data object.
 
-- **升级分析脚本**: 为了验证上述假设，我为 `analyze_problem_batch.py` 增加了一项新功能：专门检查 `pos` 坐标张量中是否存在重复的坐标值。
-- **最终证据**: 运行升级后的脚本，我们得到了决定性的证据。报告中明确打印出 `!!! Duplicate atom positions found! !!!` 的警告，并指出了在 `1p06` 文件中，坐标 `[16.398..., 30.325..., 14.965...]` 出现了两次。**案件告破**。
-- **最后的谜团**：在我的引导下，您亲自检查了原始的 `1p06_protein.pdb` 和 `1p06_ligand.sdf` 文件。您发现，这个重复的坐标**并非存在于同一个文件中**，而是蛋白质文件中的一个原子和配体文件中的一个原子，拥有完全相同的三维坐标。这揭示了问题的最终根源：**数据拼接时的原子坐标重叠**。
+- **The Plot Twist (`1ylv`)**: The user, following best practices, deleted the `processed_data` directory to force reprocessing with a newly patched script. However, the training halted again, this time at `1ylv`. This was the most important moment of the investigation.
 
-#### 步骤 5: 根治问题 - 修复数据处理流程
+- **The Final Revelation**: Running the analysis script on the `1ylv` batch revealed the exact same issue: duplicate coordinates. This proved my initial fix to `data_processing.py` was **incomplete**. My first patch only checked for duplicates *within* the protein file and *within* the ligand file, but it failed to check for overlaps *between* them. The user's persistence and careful re-execution of the workflow allowed us to discover this flaw.
 
-- **解决方案**: 既然根源在于原始数据，最终的解决方案必须在数据预处理阶段完成。
-- **代码修复**: 我修改了 `src/data_processing.py` 文件。在 `get_ligand_graph` 和 `get_protein_graph` 函数中，我加入了重复坐标的检查与移除逻辑。在处理每个分子时，脚本会记录已添加的原子坐标，若发现新的原子坐标与已有坐标完全相同，则自动跳过该重复原子，从而确保最终生成的图数据中不包含任何位置重叠的节点。
-- **收尾工作**: 我指导用户删除了旧的 `processed_data` 文件夹以强制数据重新处理，并关闭了 `debug_mode`，让训练恢复正常。
+- **Human Verification**: At my request, the user personally inspected the raw `.pdb` and `.sdf` files for `1p06`. They confirmed that the duplicate coordinate was not in a single file, but was shared between one protein atom and one ligand atom—the smoking gun.
 
-#### 总结与经验
+#### Stage 4: The Definitive Fix - Global Coordinate Uniqueness
 
-1.  **主动暴露问题**: 遇到问题时，选择“跳过”或“忽略”虽然能让程序继续运行，但往往会掩盖深层矛盾。更有效的策略是让问题在可控的环境下充分暴露，例如“暂停并保存现场”。
-2.  **系统性调试**: 本次调试过程遵循了“发现现象 -> 提出假设 -> 设计实验（编写工具） -> 验证假设 -> 解决根源”的完整科学方法。
-3.  **信任数据，但要验证**: 当模型出现问题时，不要想当然地认为是模型结构的问题。输入数据的微小瑕疵（如蛋白质和配体原子坐标重叠）同样可能导致灾难性的后果。
-4.  **工具的重要性**: 一个专门的、可扩展的调试工具（如我们的 `analyze_problem_batch.py`）在解决复杂问题时是不可或缺的。它允许我们快速迭代我们的分析思路。
-5.  **人的作用**: 您的怀疑和亲自验证是本次成功调试的关键。AI 的分析和工具构建能力，结合您的领域知识和最终验证，才是解决问题的最强组合。
+- **The Solution**: Armed with the complete picture, I implemented the final, robust fix in `src/data_processing.py`.
+- **Mechanism**: The updated script now first processes the ligand, collecting all its atom coordinates into a set. It then passes this set to the protein processing function, which uses it to check every protein atom against all existing ligand atoms, ensuring absolute coordinate uniqueness in the final, merged graph.
+
+#### Summary & Lessons Learned
+
+1.  **Iterative Debugging is Key**: A fix for one problem may reveal a deeper, related issue. True robustness comes from understanding the complete picture, which often requires more than one cycle of analysis.
+2.  **Holistic Data Validation**: It's not enough to validate data sources in isolation. One must also validate the result of their integration, as errors can arise from the combination process itself (e.g., protein-ligand coordinate collision).
+3.  **The Human-AI Synergy**: This case was a perfect example of successful collaboration. The AI provided the tools, analytical framework, and initial hypotheses. The user provided the crucial domain knowledge, skepticism, and final verification that corrected the AI's incomplete assumptions and led to the true root cause.
+
+---
+
+### Proposed Upgrade for the Data Probe (`analyze_problem_batch.py`)
+
+Based on our experience, the analysis script can be evolved from a specific diagnostic tool into a comprehensive **Data Sanity Checker**. This would allow for even faster identification of future, unknown data issues.
+
+**Proposed New Checks:**
+
+1.  **Atom Proximity Alert**:
+    - **What**: Check for atoms that are dangerously close but not identical (e.g., < 0.5 Ångströms apart).
+    - **Why**: These can also cause numerical instability (e.g., `1 / distance` calculations) and point to physically unrealistic structures.
+
+2.  **Feature Outlier Detection**:
+    - **What**: Analyze the distribution of each feature in the `x` tensor and flag any values that fall outside a reasonable range (e.g., more than 5 standard deviations from the mean).
+    - **Why**: Catches processing errors or corrupted data that could lead to model divergence.
+
+3.  **Graph Connectivity Check**:
+    - **What**: Identify any "isolated" nodes that have zero connections to any other part of the graph within the model's cutoff distance.
+    - **Why**: While not always an error, a large number of isolated nodes could indicate a problem with the PDB file or the cutoff distance chosen, impacting the GNN's ability to learn.
+
+4.  **Target Value Validation**:
+    - **What**: Check if the target binding affinity value `y` is a `NaN`, `Inf`, or a physically unrealistic number.
+    - **Why**: Ensures the model is not trying to learn from corrupted labels.
+
+By incorporating these checks, COMPASS will be even better equipped to navigate the complexities of molecular data, ensuring every training run is built on the most reliable foundation possible.

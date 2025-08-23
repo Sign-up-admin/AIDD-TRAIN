@@ -1,5 +1,6 @@
 import os
 import logging
+import hashlib
 from multiprocessing import Pool
 import torch
 from torch_geometric.data import Dataset
@@ -31,19 +32,36 @@ class PDBBindDataset(Dataset):
         return [os.path.join(item['year_dir'], f"{item['pdb_code']}.pt") for item in self.data_paths]
 
     def process(self):
-        print("Starting data processing...")
-        tasks = [(item, os.path.join(self.processed_dir, rel_path), self.pre_transform)
-                 for item, rel_path in zip(self.data_paths, self.processed_file_names)
-                 if not os.path.exists(os.path.join(self.processed_dir, rel_path))]
+        print("Verifying data integrity and processing new items...")
 
-        for item, dest_path, _ in tasks:
+        # --- Robust Version Checking ---
+        data_processing_script_path = os.path.join(os.path.dirname(__file__), 'data_processing.py')
+        current_version = self._get_file_hash(data_processing_script_path)
+        version_file_path = os.path.join(self.processed_dir, 'processing_version.txt')
+        
+        stored_version = None
+        if os.path.exists(version_file_path):
+            with open(version_file_path, 'r') as f:
+                stored_version = f.read().strip()
+
+        force_reprocess = (stored_version != current_version)
+        if force_reprocess:
+            print("Data processing script has changed. Forcing re-processing of all items.")
+
+        tasks = []
+        for item, rel_path in zip(self.data_paths, self.processed_file_names):
+            dest_path = os.path.join(self.processed_dir, rel_path)
+            if force_reprocess or not os.path.exists(dest_path):
+                tasks.append((item, dest_path, self.pre_transform))
+
+        for _, dest_path, _ in tasks:
             os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
         if not tasks: 
-            print("All data is already processed.")
+            print("All data is up-to-date.")
             return
 
-        print(f"Processing {len(tasks)} new items...")
+        print(f"Processing {len(tasks)} items...")
         success_count = 0
         if self.num_workers > 1:
             print(f"Processing data in parallel with {self.num_workers} cores...")
@@ -59,6 +77,11 @@ class PDBBindDataset(Dataset):
                 success_count += result
                 if error_msg: logging.warning(error_msg)
         
+        # --- Update Version File ---
+        with open(version_file_path, 'w') as f:
+            f.write(current_version)
+        print(f"Updated data version to: {current_version[:12]}...")
+
         print("--- Processing Finished ---")
         skipped_count = len(tasks) - success_count
         print(f"Successfully processed {success_count}/{len(tasks)} items ({skipped_count} skipped due to errors).")
@@ -71,7 +94,6 @@ class PDBBindDataset(Dataset):
             path = os.path.join(self.processed_dir, self.processed_file_names[idx])
             if not os.path.exists(path): return None
             data = torch.load(path, weights_only=False)
-            # Attach the PDB code to the data object for easier debugging
             if data is not None:
                 data.pdb_code = self.data_paths[idx].get('pdb_code', f'index_{idx}')
             return data
@@ -79,3 +101,12 @@ class PDBBindDataset(Dataset):
             pdb_code = self.data_paths[idx].get('pdb_code', f'index {idx}')
             logging.warning(f"Skipping corrupt or incomplete data file for PDB {pdb_code}: {self.processed_file_names[idx]}")
             return None
+
+    def _get_file_hash(self, filepath):
+        if not os.path.exists(filepath):
+            return None
+        sha256_hash = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            for byte_block in iter(lambda: f.read(4096), b""):
+                sha256_hash.update(byte_block)
+        return sha256_hash.hexdigest()

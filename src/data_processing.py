@@ -71,7 +71,7 @@ def parse_binding_data(binding_str):
     return -math.log10(molar_value) if molar_value > 0 else 0.0
 
 # =============================================================================
-# PART 2: MOLECULE-TO-GRAPH CONVERSION (NOW WITH DUPLICATE ATOM REMOVAL)
+# PART 2: MOLECULE-TO-GRAPH CONVERSION (NOW WITH GLOBAL DUPLICATE ATOM REMOVAL)
 # =============================================================================
 
 ELEMENTS = ['C', 'O', 'N', 'S', 'P', 'H', 'F', 'Cl', 'Br', 'I', 'UNK']
@@ -111,24 +111,21 @@ def get_ligand_graph(mol, pdb_code="N/A"):
     if not atom_features_list:
         return None
 
-    rows, cols, edge_feats = [], [], []
+    rows, cols = [], []
     for bond in mol.GetBonds():
         start_old, end_old = bond.GetBeginAtomIdx(), bond.GetEndAtomIdx()
         if start_old in old_to_new_idx and end_old in old_to_new_idx:
             start_new, end_new = old_to_new_idx[start_old], old_to_new_idx[end_old]
             rows.extend([start_new, end_new])
             cols.extend([end_new, start_new])
-            bond_type = bond.GetBondTypeAsDouble()
-            edge_feats.extend([bond_type, bond_type])
 
     return {
         'v': torch.tensor(atom_features_list, dtype=torch.float),
-        'edge_index': torch.tensor([rows, cols], dtype=torch.long),
-        'edge_attr': torch.tensor(edge_feats, dtype=torch.float).view(-1, 1),
-        'pos': torch.tensor(positions_list, dtype=torch.float)
+        'pos': torch.tensor(positions_list, dtype=torch.float),
+        'seen_pos': seen_positions
     }
 
-def get_protein_graph(protein_path):
+def get_protein_graph(protein_path, existing_positions=None):
     parser = PDBParser(QUIET=True)
     structure = parser.get_structure("protein", protein_path)
     atoms_to_include = [atom for residue in structure.get_residues() if residue.id[0] == ' ' for atom in residue.get_atoms()]
@@ -136,14 +133,15 @@ def get_protein_graph(protein_path):
     if not atoms_to_include:
         return None
 
+    seen_positions = set() if existing_positions is None else existing_positions
     atom_features_list, positions_list = [], []
-    seen_positions = set()
+    pdb_code = os.path.basename(protein_path).split('_')[0]
+
     for atom in atoms_to_include:
         pos_tuple = tuple(round(c, 4) for c in atom.get_coord())
 
         if pos_tuple in seen_positions:
-            pdb_code = os.path.basename(protein_path).split('_')[0]
-            logging.warning(f"Duplicate protein atom position found and removed in {pdb_code}: {pos_tuple}")
+            logging.warning(f"Duplicate protein atom position (overlapping with ligand or other protein atom) found and removed in {pdb_code}: {pos_tuple}")
             continue
         
         seen_positions.add(pos_tuple)
@@ -193,10 +191,13 @@ def process_item(item, cutoff=8.0):
             return None
 
         ligand_graph = get_ligand_graph(ligand, pdb_code)
-        protein_graph = get_protein_graph(protein_path)
-        
-        if protein_graph is None or ligand_graph is None:
-            logging.warning(f"Skipping {pdb_code}: Failed to generate protein or ligand graph after filtering.")
+        if ligand_graph is None:
+            logging.warning(f"Skipping {pdb_code}: Failed to generate ligand graph after filtering.")
+            return None
+
+        protein_graph = get_protein_graph(protein_path, existing_positions=ligand_graph['seen_pos'])
+        if protein_graph is None:
+            logging.warning(f"Skipping {pdb_code}: Failed to generate protein graph after filtering.")
             return None
 
         y = parse_binding_data(item['binding_data'])
