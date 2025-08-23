@@ -148,7 +148,7 @@ def main():
         num_layers=config.get('visnet_num_layers', 6),
         num_rbf=config.get('visnet_num_rbf', 64),
         cutoff=config.get('visnet_cutoff', 8.0),
-        max_num_neighbors=config.get('visnet_max_neighbors', 32)
+        max_num_neighbors=config.get('max_num_neighbors', 32)
     ).to(device)
 
     # Increased epsilon for Adam optimizer for better stability with float16/AMP

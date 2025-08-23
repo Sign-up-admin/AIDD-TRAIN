@@ -15,6 +15,7 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
 
     trigger_file = config.get('manual_save_trigger_file')
     checkpoint_dir = config.get('checkpoint_dir')
+    gradient_clip_val = config.get('gradient_clip_val', 0) # Get value, default to 0 (no clipping)
 
     pbar = tqdm(enumerate(loader), desc=f"Training Epoch {epoch}", leave=False, total=len(loader), initial=start_batch)
     if start_batch > 0:
@@ -72,7 +73,9 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
             with record_function("optimizer_step"):
                 if (i + 1) % grad_accum_steps == 0 or (i + 1) == len(loader):
                     scaler.unscale_(optimizer)
-                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                    # Apply gradient clipping if enabled in config
+                    if gradient_clip_val > 0:
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=gradient_clip_val)
                     scaler.step(optimizer)
                     scaler.update()
                     optimizer.zero_grad()
