@@ -3,6 +3,18 @@ import logging
 import random
 import torch
 import numpy as np
+import hashlib
+
+def get_file_hash(filepath):
+    """Computes the SHA256 hash of a file to be used as a version identifier."""
+    if not os.path.exists(filepath):
+        return None
+    sha256_hash = hashlib.sha256()
+    with open(filepath, "rb") as f:
+        # Read and update hash in chunks of 4K
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 # ==============================================================================
 # PART 5B: CHECKPOINTING HELPERS
@@ -19,13 +31,13 @@ def save_checkpoint(state, directory, filename="checkpoint.pth.tar"):
 def load_checkpoint(directory, device):
     """Loads the most recent checkpoint from a directory, ensuring robust recovery."""
     if not os.path.isdir(directory):
-        logging.info(f"=> No checkpoint directory found at '{directory}'")
+        logging.info(f"=> No checkpoint directory found at \'{directory}\'")
         return None
 
     checkpoint_files = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.pth.tar')]
     
     if not checkpoint_files:
-        logging.info(f"=> No checkpoint files (.pth.tar) found in '{directory}'")
+        logging.info(f"=> No checkpoint files (.pth.tar) found in \'{directory}\'")
         return None
 
     latest_checkpoint_path = max(checkpoint_files, key=os.path.getmtime)
@@ -34,13 +46,13 @@ def load_checkpoint(directory, device):
         logging.info(f"=> No valid checkpoints found after checking modification times.")
         return None
 
-    logging.info(f"=> Attempting to load latest checkpoint: '{os.path.basename(latest_checkpoint_path)}'")
+    logging.info(f"=> Attempting to load latest checkpoint: \'{os.path.basename(latest_checkpoint_path)}\'")
     try:
         checkpoint = torch.load(latest_checkpoint_path, map_location=device)
         logging.info(f"=> Successfully loaded checkpoint from epoch {checkpoint.get('epoch', 'N/A')}.")
         return checkpoint
     except Exception as e:
-        logging.error(f"Error loading checkpoint '{os.path.basename(latest_checkpoint_path)}': {e}")
+        logging.error(f"Error loading checkpoint \'{os.path.basename(latest_checkpoint_path)}\': {e}")
         logging.error("The latest checkpoint may be corrupt. Please check the file or remove it to load a previous one.")
         return None
 

@@ -3,6 +3,12 @@ Configuration settings for the data processing and model training script.
 '''
 
 CONFIG = {
+    # --- Data Source ---
+    # Force the reprocessing of the entire dataset, ignoring any cached files.
+    # This is useful after changing data processing logic in `src/data_processing.py`.
+    # The script will automatically set this to False after a successful run.
+    'force_data_reprocessing': False,
+
     # --- Path Settings ---
     'index_file': r'index/INDEX_general_PL.2020R1.lst',
     'dataset_path': r'PDBbind-2025.8.4/P-L/',
@@ -11,21 +17,21 @@ CONFIG = {
     # --- Model & Training Hyperparameters ---
     'epochs': 20,
     # The actual batch size used by the hardware. The effective batch size will be this value multiplied by gradient_accumulation_steps.
-    'batch_size': 4, 
+    'batch_size': 1, 
     'learning_rate': 0.0001,
     'train_split': 0.8,
     'dropout_rate': 0.5,
     # Gradient Accumulation: Simulate a larger batch size to stabilize training.
     # Effective Batch Size = batch_size * gradient_accumulation_steps
-    'gradient_accumulation_steps': 4, # Results in an effective batch size of 4 * 4 = 16
+    'gradient_accumulation_steps': 16, # Results in an effective batch size of 1 * 16 = 16
 
     # --- ViSNet Model Specific ---
     # These parameters control the size and complexity of the ViSNet model.
-    'visnet_hidden_channels': 128,
-    'visnet_num_layers': 4,
-    'visnet_max_neighbors': 16,
+    'visnet_hidden_channels': 48,
+    'visnet_num_layers': 3,
+    'max_num_neighbors': 10,
     'visnet_cutoff': 8.0,
-    'visnet_num_rbf': 64,
+    'visnet_num_rbf': 48,
 
     # --- Hardware & Performance ---
     'processing_num_workers': 28,
@@ -39,4 +45,8 @@ CONFIG = {
     # --- Reproducibility ---
     # Set a random seed for consistent data splitting and model initialization.
     'seed': 42,
+
+    # --- Debugging ---
+    # Set to True to save the batch that causes a NaN/Inf and stop training.
+    'debug_mode': True,
 }

@@ -2,7 +2,6 @@ import os
 import sys
 import signal
 import platform
-import hashlib
 from multiprocessing import set_start_method
 
 import torch
@@ -18,7 +17,7 @@ from src.data_processing import get_pdb_info, get_data_paths
 from src.dataset import PDBBindDataset
 from src.model import ViSNetPDB
 from src.training import train, test
-from src.utils import save_checkpoint, load_checkpoint, set_seed
+from src.utils import save_checkpoint, load_checkpoint, set_seed, get_file_hash
 
 
 def collate_filter_none(batch):
@@ -28,18 +27,6 @@ def collate_filter_none(batch):
     if not batch:
         return None
     return torch_geometric.data.Batch.from_data_list(batch)
-
-
-def get_file_hash(filepath):
-    """Computes the SHA256 hash of a file to be used as a version identifier."""
-    if not os.path.exists(filepath):
-        return None
-    sha256_hash = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        # Read and update hash in chunks of 4K
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
 
 
 def main():
