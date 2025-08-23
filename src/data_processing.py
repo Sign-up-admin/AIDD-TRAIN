@@ -153,9 +153,25 @@ def get_protein_graph(protein_path, ligand_positions_set):
         'pos': torch.tensor(np.array(positions_list), dtype=torch.float)
     }
 
+def count_pdb_atoms(pdb_path):
+    try:
+        with open(pdb_path, 'r') as f:
+            return sum(1 for line in f if line.startswith('ATOM'))
+    except IOError:
+        return 0
+
 def process_item(item):
     pdb_code = item.get('pdb_code', 'N/A')
     try:
+        protein_path = item['protein_path']
+        if os.path.getsize(protein_path) > 100 * 1024 * 1024: # 100MB limit
+            logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
+            return None
+
+        if count_pdb_atoms(protein_path) > 20000: # Relaxed limit
+            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>20,000).")
+            return None
+
         ligand = None
         ligand_path = item['ligand_path']
         if ligand_path.endswith('.mol2'):

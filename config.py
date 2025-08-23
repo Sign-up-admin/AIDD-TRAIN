@@ -42,8 +42,8 @@ CONFIG = {
     'visnet_num_rbf': 64,      # 增加距离表示的分辨率
 
     # --- Hardware & Performance ---
-    'processing_num_workers': 28,
-    'loader_num_workers': 0,
+    'processing_num_workers': 16,
+    'loader_num_workers': 16,
     # --- Performance Profiling ---
     # Set to True to run the profiler on the first epoch to identify bottlenecks.
     'profile': False,
