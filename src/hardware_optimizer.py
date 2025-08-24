@@ -158,7 +158,7 @@ def get_search_space(vram_gb, mode_to_optimize):
         stress_iterations = 15
     else:  # production
         start_batch_size = int(16 * vram_factor)
-        stress_iterations = int(60 * stress_factor)
+        stress_iterations = int(35 * stress_factor) # PRACTICAL ADJUSTMENT: Reduced from 60
 
     return start_batch_size, hidden_channels_list, num_layers_list, stress_iterations
 
@@ -212,7 +212,8 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
     print(f"\n--- Strategy: Final stability check for batch_size={bs_candidate} ---")
     print(f"[3/3] Stability confirmation...", end='')
     config = {**base_config, 'batch_size': bs_candidate}
-    if probe_config(config, stress_iterations=stress_iters + 20, prefix="\t"):
+    # PRACTICAL ADJUSTMENT: The final stability check is important, but doesn't need to be excessively long.
+    if probe_config(config, stress_iterations=35, prefix="\t"):
         print(f"\t> Final configuration is stable.")
         return bs_candidate
     else:
