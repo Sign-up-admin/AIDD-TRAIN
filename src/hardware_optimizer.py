@@ -34,29 +34,24 @@ def prepare_real_data():
         return
 
     print("\n--- Preparing 1JMF Real-World Test Case ---")
-    # We need to create a mock 'item' dictionary that process_item expects.
-    # The paths must be absolute for robustness.
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     item = {
         'pdb_code': '1jmf',
         'protein_path': os.path.join(base_dir, '1jmf', '1jmf_protein.pdb'),
-        'ligand_path': os.path.join(base_dir, '1jmf', '1jmf_ligand.sdf'), # Assuming SDF, will need to verify
-        'binding_data': 'Kd=1.0nM' # Dummy value, not used for hardware test
+        'ligand_path': os.path.join(base_dir, '1jmf', '1jmf_ligand.sdf'),
+        'binding_data': 'Kd=1.0nM'
     }
 
-    # Override the max_atoms check in the config for this specific case
-    # to ensure our large molecule can be processed.
-    print(f"Temporarily setting max_atoms to 20000 to process {item['pdb_code']}...")
+    print(f"Temporarily setting max_atoms to 10000 to process {item['pdb_code']}...")
     original_max_atoms = CONFIG.get('max_atoms')
-    CONFIG['max_atoms'] = 20000 
+    CONFIG['max_atoms'] = 10000 
 
     PROCESSED_1JMF_DATA = process_item(item)
 
-    # Restore the original config value
     if original_max_atoms is not None:
         CONFIG['max_atoms'] = original_max_atoms
     else:
-        del CONFIG['max_atoms'] # Clean up if it wasn't there before
+        del CONFIG['max_atoms']
 
     if PROCESSED_1JMF_DATA is None:
         print("CRITICAL: Failed to process 1jmf data. Aborting.")
@@ -71,15 +66,13 @@ def probe_config(config, stress_iterations=20, prefix=""):
     base_text = f"{prefix}--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3} for {stress_iterations} iterations..."
     bar_length = 20
     try:
-        # --- Use the Real ViSNetPDB Model ---
         model = ViSNetPDB(
             hidden_channels=config['visnet_hidden_channels'],
             num_layers=config['visnet_num_layers'],
-            lmax=2, # Keep other params as needed
+            lmax=2,
             vecnorm_type='max_min'
         ).cuda()
         
-        # --- Create a batch from the real 1jmf data ---
         batch_size = config['batch_size']
         data_list = [PROCESSED_1JMF_DATA] * batch_size
         batch = Batch.from_data_list(data_list).cuda()
@@ -89,7 +82,6 @@ def probe_config(config, stress_iterations=20, prefix=""):
         for i in range(stress_iterations):
             optimizer.zero_grad()
             output = model(batch)
-            # We need a scalar for the loss
             loss = output.sum() * 100
             loss.backward()
             optimizer.step()
@@ -112,69 +104,65 @@ def probe_config(config, stress_iterations=20, prefix=""):
 
 def get_search_space(vram_gb, mode_to_optimize):
     """
-    Generates a mode-specific search space for model architecture and batch size.
-    Each mode has a completely independent set of architectures to try, ensuring
-    that, for example, 'prototyping' finds a genuinely small and fast model,
-    while 'production' searches through powerful, larger models.
+    Generates a VRAM-aware search space. For GPUs with very low VRAM (<= 6GB),
+    it uses an 'ultra-conservative' set of architectures to ensure a baseline is found.
     """
     print(f"\nGenerating dedicated search space for '{mode_to_optimize}' mode...")
 
-    # Base definitions for different levels of model complexity
-    arch_definitions = {
-        'production': {
-            'layers': [8, 7, 6, 5, 4],
-            'channels': [256, 192, 128, 96]
-        },
-        'validation': {
-            'layers': [6, 5, 4, 3],
-            'channels': [128, 96, 64]
-        },
-        'prototyping': {
-            'layers': [4, 3, 2],
-            'channels': [64, 48, 32]
-        },
-        'smoke_test': {
-            'layers': [2, 1],
-            'channels': [32, 24, 16]
+    # This dictionary defines the different search spaces for each mode.
+    # This is a critical part of the multi-stage optimization philosophy.
+    if vram_gb <= 6:
+        print("--- Using ultra-conservative architecture for very low VRAM GPU (<=6GB) ---")
+        arch_definitions = {
+            'production':  {'layers': [4, 3, 2], 'channels': [48, 32, 24]},
+            'validation':  {'layers': [3, 2], 'channels': [32, 24, 16]},
+            'prototyping': {'layers': [2, 1], 'channels': [16, 8]},
+            'smoke_test':  {'layers': [1], 'channels': [8]}
         }
-    }
+    elif vram_gb <= 8:
+        print("--- Using conservative architecture for low VRAM GPU (6-8GB) ---")
+        arch_definitions = {
+            'production':  {'layers': [6, 5, 4], 'channels': [96, 64, 48]},
+            'validation':  {'layers': [4, 3, 2], 'channels': [64, 48, 32]},
+            'prototyping': {'layers': [3, 2, 1], 'channels': [32, 24, 16]},
+            'smoke_test':  {'layers': [1], 'channels': [16, 8]}
+        }
+    else:
+        print("--- Using standard architecture for high VRAM GPU (>8GB) ---")
+        arch_definitions = {
+            'production':  {'layers': [8, 7, 6, 5], 'channels': [256, 192, 128]},
+            'validation':  {'layers': [6, 5, 4, 3], 'channels': [128, 96, 64]},
+            'prototyping': {'layers': [4, 3, 2], 'channels': [64, 48, 32]},
+            'smoke_test':  {'layers': [2, 1], 'channels': [32, 24, 16]}
+        }
 
-    # Base definitions for batch sizes and stress test intensity
     mode_params = {
-        'production':  {'bs': 16, 'stress': 35},
-        'validation':  {'bs': 32, 'stress': 35},
-        'prototyping': {'bs': 64, 'stress': 25},
-        'smoke_test':  {'bs': 128, 'stress': 15}
+        'production':  {'bs': 16, 'stress': 20},
+        'validation':  {'bs': 32, 'stress': 20},
+        'prototyping': {'bs': 64, 'stress': 20},
+        'smoke_test':  {'bs': 128, 'stress': 1} # Minimal stress for smoke test
     }
 
     base_num_layers = arch_definitions[mode_to_optimize]['layers']
     base_hidden_channels = arch_definitions[mode_to_optimize]['channels']
-    
     start_batch_size = mode_params[mode_to_optimize]['bs']
     stress_iterations = mode_params[mode_to_optimize]['stress']
 
-    # --- VRAM Scaling: Adjust parameters based on available VRAM ---
-    # This keeps the relative differences between modes but scales them to the GPU's capacity.
-    if vram_gb > 20: vram_factor = 1.8
-    elif vram_gb > 10: vram_factor = 1.4
-    elif vram_gb > 7: vram_factor = 1.1
+    if vram_gb > 24: vram_factor = 1.5
+    elif vram_gb > 12: vram_factor = 1.2
+    elif vram_gb > 8: vram_factor = 1.1
     else: vram_factor = 1.0
     
     print(f"--- Applying VRAM scaling factor of {vram_factor} (based on {vram_gb:.2f} GB) ---")
 
-    num_attention_heads = 8  # ViSNet default
-
-    # Scale and clean the architecture search space
-    hidden_channels_list = [
-        (int(c * vram_factor) // num_attention_heads) * num_attention_heads
-        for c in base_hidden_channels
-    ]
-    hidden_channels_list = sorted([c for c in list(set(hidden_channels_list)) if c > 0], reverse=True)
-    
-    num_layers_list = sorted(list(set(int(l * vram_factor) for l in base_num_layers)), reverse=True)
-    
-    # Scale the starting batch size
+    num_attention_heads = 8
+    hidden_channels_list = sorted([c for c in list(set((int(c * vram_factor) // num_attention_heads) * num_attention_heads for c in base_hidden_channels)) if c > 0], reverse=True)
+    num_layers_list = sorted([l for l in list(set(int(l * vram_factor) for l in base_num_layers)) if l > 0], reverse=True)
     start_batch_size = int(start_batch_size * vram_factor)
+
+    if not num_layers_list or not hidden_channels_list:
+        print("CRITICAL: Search space is empty. Check VRAM factor and base definitions.")
+        exit()
 
     print(f"Search space: Layers={num_layers_list}, Channels={hidden_channels_list}")
     print(f"Starting BS: {start_batch_size}, Stress Iterations: {stress_iterations}")
@@ -183,12 +171,10 @@ def get_search_space(vram_gb, mode_to_optimize):
 
 def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters):
     """
-    Finds the maximum stable batch size by first forcing an OOM error to find the ceiling,
-    then using binary search to find the highest stable value, and finally confirming stability.
+    Finds the maximum stable batch size using a robust search strategy.
     """
     oom_ceiling = -1
 
-    # Phase 1: Find the OOM ceiling by increasing batch size until it fails.
     print("--- Strategy: Forcing OOM to find VRAM ceiling ---")
     probe_bs = start_batch_size
     while True:
@@ -203,7 +189,6 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
             print(f"\t> OOM at batch_size={oom_ceiling}. Ceiling found.")
             break
 
-    # Phase 2: Use binary search to find the highest stable batch size.
     print(f"\n--- Strategy: Binary searching from ceiling ({oom_ceiling}) to find stable edge ---")
     bs_candidate = 0
     low, high = 1, oom_ceiling - 1
@@ -227,12 +212,10 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
     
     print(f"\t> Stable edge found at batch_size={bs_candidate}.")
 
-    # Phase 3: Confirm the found batch size is stable.
     print(f"\n--- Strategy: Final stability check for batch_size={bs_candidate} ---")
     print(f"[3/3] Stability confirmation...", end='')
     config = {**base_config, 'batch_size': bs_candidate}
-    # PRACTICAL ADJUSTMENT: The final stability check is important, but doesn't need to be excessively long.
-    if probe_config(config, stress_iterations=35, prefix="\t"): # CORRECTED: Fixed to 35 iterations
+    if probe_config(config, stress_iterations=20, prefix="\t"): 
         print(f"\t> Final configuration is stable.")
         return bs_candidate
     else:
@@ -249,12 +232,25 @@ def save_results(final_profile):
         json.dump(final_profile, f, indent=4)
     print("Update complete.")
 
-def find_optimal_configs(modes_to_optimize):
+def get_parameter_cap(dataset_size):
+    """
+    Returns a reasonable parameter cap based on dataset size to prevent overfitting.
+    """
+    if dataset_size < 1000:
+        cap = 50_000  # 50k params
+        level = "small"
+    elif dataset_size < 10000:
+        cap = 100_000 # 100k params
+        level = "medium"
+    else:
+        cap = 250_000 # 250k params
+        level = "large"
+    print(f"--- Dataset size: {dataset_size} ({level}). Capping model parameters at ~{cap/1e3:.0f}k to prevent overfitting. ---")
+    return cap
+
+def find_optimal_configs(modes_to_optimize, dataset_size):
     """
     Finds the best hardware configuration for each specified mode independently.
-    It iterates through each mode, gets a dedicated search space for it, and
-    then performs a full search for the best-performing, stable model architecture
-    and its corresponding maximum batch size.
     """
     if not torch.cuda.is_available():
         print("CUDA is not available. Aborting.")
@@ -265,6 +261,8 @@ def find_optimal_configs(modes_to_optimize):
     gpu_properties = torch.cuda.get_device_properties(0)
     vram_gb = gpu_properties.total_memory / (1024**3)
     print(f"Detected GPU: {gpu_properties.name} with {vram_gb:.2f} GB VRAM.")
+
+    max_params = get_parameter_cap(dataset_size)
 
     output_path = 'hardware_profile.json'
     final_profile = {}
@@ -280,36 +278,128 @@ def find_optimal_configs(modes_to_optimize):
         for mode in modes_to_run:
             print(f"\n================ Optimizing for: {mode.upper()} ================")
             
-            # Each mode gets its own, independent search space. No more inheritance.
             start_bs, hidden_channels, num_layers, stress_iters = get_search_space(vram_gb, mode)
             
             best_config_for_this_mode = None
-
-            # Perform a full, independent search for the best architecture for this mode.
-            print(f"--- Strategy: Full search for best model and batch size for '{mode}' mode ---")
             param_combinations = list(product(num_layers, hidden_channels))
-            
-            for i, (layers, channels) in enumerate(param_combinations):
-                print(f"\n--- Trying Model Architecture {(i+1)}/{len(param_combinations)} (L={layers}, C={channels}) ---")
-                base_config = {
-                    'visnet_hidden_channels': channels, 
-                    'visnet_num_layers': layers
-                }
-                
-                # First, check if the model architecture is viable at all (with batch size 1)
-                if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t"):
-                    print("\t> Model architecture too large even for bs=1, skipping...")
-                    continue
 
-                # If it's viable, find the max batch size for this specific architecture
-                optimal_bs = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
+            if mode == 'production':
+                # [CORE CONCEPT] Two-stage optimization for QUALITY. Goal: Find the highest-quality model that fits data and hardware, then maximize its throughput. This philosophy must not be removed.
+                # 1. Find the highest-quality (largest) model architecture that is both data-appropriate (respects param cap) and fits the hardware (can run with bs=1).
+                # 2. For that single best architecture, find the maximum possible batch size to fully utilize the remaining GPU performance.
+                print(f"--- Strategy: Two-stage optimization for '{mode}' mode. ---")
+
+                # --- Stage 1: Find the best possible architecture ---
+                print("\n[1/2] Searching for the highest-quality model architecture...")
+                best_architecture = None
+                for i, (layers, channels) in enumerate(param_combinations):
+                    print(f"\t> Probing Arch {(i+1)}/{len(param_combinations)} (L={layers}, C={channels})...", end='')
+                    
+                    temp_model = ViSNetPDB(hidden_channels=channels, num_layers=layers)
+                    num_params = sum(p.numel() for p in temp_model.parameters() if p.requires_grad)
+                    del temp_model
+                    
+                    if num_params > max_params:
+                        print(f" SKIPPED (too complex: {num_params/1e3:.0f}k > {max_params/1e3:.0f}k cap)")
+                        continue
+                    
+                    base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
+                    if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix=""):
+                        print(" SKIPPED (too large for VRAM)")
+                        continue
+
+                    print(f" FOUND! (Model has {num_params/1e3:.0f}k params and fits VRAM)")
+                    best_architecture = base_config
+                    break
+
+                # --- Stage 2: Find the max batch size for the chosen architecture ---
+                if best_architecture:
+                    print("\n[2/2] Architecture selected. Now finding max batch size to utilize remaining VRAM...")
+                    optimal_bs = find_max_batch_size_by_stressing(best_architecture, start_bs, stress_iters)
+                    if optimal_bs:
+                        best_config_for_this_mode = {**best_architecture, 'batch_size': optimal_bs}
+                else:
+                    print("\nCould not find any suitable model architecture that fits both data and hardware constraints.")
+
+            elif mode == 'prototyping':
+                # [CORE CONCEPT] Optimization for TIME. Goal: A fast training cycle (~20 mins) for rapid iteration. This philosophy must not be removed.
+                # This is achieved by finding the model in a DEDICATED SMALLER search space that allows for the highest throughput (maximum batch size).
+                # A higher throughput directly translates to a faster training cycle.
+                print(f"--- Strategy: Find model with MAX BATCH SIZE in '{mode}' space for fastest iteration. ---")
+                best_bs_so_far = 0
+                for i, (layers, channels) in enumerate(param_combinations):
+                    print(f"\n--- Trying Model Architecture {(i+1)}/{len(param_combinations)} (L={layers}, C={channels}) ---")
+                    
+                    temp_model = ViSNetPDB(hidden_channels=channels, num_layers=layers)
+                    num_params = sum(p.numel() for p in temp_model.parameters() if p.requires_grad)
+                    del temp_model
+                    
+                    if num_params > max_params:
+                        print(f"\t> SKIPPED: Model has {num_params/1e3:.1f}k params, exceeding the {max_params/1e3:.0f}k cap for this dataset size.")
+                        continue
+                    else:
+                        print(f"\t> OK: Model has {num_params/1e3:.1f}k params (within cap).")
+
+                    base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
+                    if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t"):
+                        print("\t> Model architecture too large even for bs=1, skipping...")
+                        continue
+                    
+                    optimal_bs = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
+
+                    if optimal_bs and optimal_bs > best_bs_so_far:
+                        best_bs_so_far = optimal_bs
+                        best_config_for_this_mode = {**base_config, 'batch_size': optimal_bs}
+                        print(f"\t> New best config for '{mode}': BS={optimal_bs}, L={layers}, C={channels}")
+
+            elif mode == 'validation':
+                # [CORE CONCEPT] Optimization for BALANCE. Goal: A medium training cycle (~90 mins) to validate ideas from prototyping with near-production quality. This philosophy must not be removed.
+                # It acts as a bridge, using a DEDICATED LARGER search space to find the model with the highest throughput.
+                # This allows for a reasonably fast, yet high-quality, check before committing to a full production run.
+                print(f"--- Strategy: Find model with MAX BATCH SIZE in '{mode}' space for a balance of speed and quality. ---")
+                best_bs_so_far = 0
+                for i, (layers, channels) in enumerate(param_combinations):
+                    print(f"\n--- Trying Model Architecture {(i+1)}/{len(param_combinations)} (L={layers}, C={channels}) ---")
+                    
+                    temp_model = ViSNetPDB(hidden_channels=channels, num_layers=layers)
+                    num_params = sum(p.numel() for p in temp_model.parameters() if p.requires_grad)
+                    del temp_model
+                    
+                    if num_params > max_params:
+                        print(f"\t> SKIPPED: Model has {num_params/1e3:.1f}k params, exceeding the {max_params/1e3:.0f}k cap for this dataset size.")
+                        continue
+                    else:
+                        print(f"\t> OK: Model has {num_params/1e3:.1f}k params (within cap).")
+
+                    base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
+                    if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t"):
+                        print("\t> Model architecture too large even for bs=1, skipping...")
+                        continue
+                    
+                    optimal_bs = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
+
+                    if optimal_bs and optimal_bs > best_bs_so_far:
+                        best_bs_so_far = optimal_bs
+                        best_config_for_this_mode = {**base_config, 'batch_size': optimal_bs}
+                        print(f"\t> New best config for '{mode}': BS={optimal_bs}, L={layers}, C={channels}")
+
+            elif mode == 'smoke_test':
+                # [CORE CONCEPT] Smoke Test: Verify environment. Do NOT search. Use the absolute smallest model for a single run.
+                print(f"--- Strategy: Minimal check for '{mode}' mode ---")
+                layers, channels = param_combinations[-1] # Smallest is last in the list
                 
-                if optimal_bs:
-                    # This is the largest, stable architecture found so far for this mode.
-                    # Because we search from largest to smallest, we can stop here.
-                    best_config_for_this_mode = {**base_config, 'batch_size': optimal_bs}
-                    break 
-            
+                temp_model = ViSNetPDB(hidden_channels=channels, num_layers=layers)
+                num_params = sum(p.numel() for p in temp_model.parameters() if p.requires_grad)
+                del temp_model
+                if num_params > max_params:
+                     print(f"\nWARNING: The smallest model ({num_params/1e3:.1f}k params) already exceeds the data cap ({max_params/1e3:.0f}k).")
+
+                base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': 1}
+                print(f"\n--- Trying smallest model (L={layers}, C={channels}, BS=1) for a single iteration ---")
+                if probe_config(base_config, stress_iterations=1, prefix="\t"): # Override to 1 iteration
+                    best_config_for_this_mode = base_config
+
+            # --- REPORTING RESULTS ---
             if best_config_for_this_mode:
                 final_profile[mode] = best_config_for_this_mode
                 print(f"\n>>> Found optimal configuration for '{mode}'!")
@@ -326,7 +416,10 @@ def find_optimal_configs(modes_to_optimize):
         print("\nNo valid configurations were found.")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Find the optimal hardware configuration for each specified mode.")
+    parser = argparse.ArgumentParser(
+        description="Find the optimal hardware configuration for each specified mode, respecting both hardware and data constraints.",
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     parser.add_argument(
         '--modes',
         nargs='+',
@@ -334,5 +427,25 @@ if __name__ == '__main__':
         choices=['production', 'validation', 'prototyping', 'smoke_test'],
         help="A list of development modes to optimize for. Runs in hierarchical order."
     )
+    parser.add_argument(
+        '--dataset-size',
+        type=int,
+        default=None,
+        help="The total number of samples in the dataset.\nThis is crucial for preventing overfitting by pruning overly complex models.\nIf not provided, you will be prompted to enter it."
+    )
     args = parser.parse_args()
-    find_optimal_configs(args.modes)
+
+    dataset_size = args.dataset_size
+    if dataset_size is None:
+        while True:
+            try:
+                raw_input = input("Please enter the dataset size (number of samples): ")
+                dataset_size = int(raw_input)
+                if dataset_size > 0:
+                    break
+                else:
+                    print("Please enter a positive number.")
+            except (ValueError, TypeError):
+                print("Invalid input. Please enter a valid integer.")
+    
+    find_optimal_configs(args.modes, dataset_size)

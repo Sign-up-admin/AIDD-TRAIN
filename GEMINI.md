@@ -1,180 +1,23 @@
-# Gemini 大模型调试日志
+# AIDD-TRAIN Hardware Optimizer: The Guiding Philosophy
 
-## 项目: AIDD-TRAIN
+This document records the core development philosophy embedded into the `hardware_optimizer.py` script. This philosophy was established by the project's architect and implemented by the Gemini agent, creating a tool that understands the nuanced demands of a machine learning development workflow.
 
----
+## The Core Philosophy
 
-### 场景: 实现高级日志系统以增强可追溯性与调试效率
+The optimizer's intelligence is rooted in a hierarchical development philosophy. It rejects the notion of a single "best" configuration, instead providing tailored trade-offs for each specific phase of development.
 
-- **目标**: 将项目的监控能力从简单的控制台输出，升级为一个持久化、结构化、且具备双重用途的日志系统。其核心目标是为每一次训练运行自动创建永久记录，同时提供一个专门的、高信噪比的文件用于快速定位问题。
+The workflow is defined by three core stages:
 
-- **代码实现**:
-    1.  **创建 `src/logger.py` 模块**: 我设计并创建了一个全新的、独立的模块 `src/logger.py`，用于封装所有日志记录相关的逻辑。这使得主代码库保持整洁，也让日志系统未来易于扩展。
-    2.  **设计 `TrainingLogger` 类**: 作为新系统的核心，该类在实例化时，会自动在项目根目录下创建 `logs/` 文件夹，并为当前运行生成两个带有时间戳的日志文件：
-        -   `training_log_[时间戳].txt`: 一份 **综合日志**，负责捕获所有输出信息，包括配置详情、数据处理步骤、周期性的训练/验证结果，以及所有警告和错误。它构成了本次运行的完整、无删减的全记录。
-        -   `training_errors_[时间戳].txt`: 一份 **错误与警告专属日志**，它只记录被明确标记为 `WARNING` 或 `ERROR` 的信息。该文件专为快速诊断而设计，让用户能迅速定位问题，而无需在繁杂的通用日志中搜寻。
-    3.  **无缝集成**: 我将 `TrainingLogger` 系统性地集成到了整个代码库中（包括 `main.py`, `src/training.py`, `src/utils.py`），将原有的 `print()` 调用和日志记录，替换为具备等级意识的新方法 (`logger.log`, `logger.log_warning`, `logger.log_error`)。
+1.  **`prototyping` (Goal: ~20 minute training cycle)**
+    *   **Philosophy**: **Time is the ruler.** This stage is for rapid trial and error. The configuration must be fast enough to allow developers to quickly test ideas and observe results without significant waiting. It should not be so fast that the model is trivial, nor so slow that it overlaps with validation.
+    *   **Strategy**: In its dedicated **small model search space**, it finds the configuration with the **highest throughput (max batch size)**, as this directly translates to the fastest training cycle.
 
-- **成果与收益**:
-    -   **完全的可追溯性**: 现在，每一次训练都会生成一份永久且详细的运行记录，这对于比较实验结果和保证科研的可复现性至关重要。
-    -   **高效的调试流程**: 当训练出现问题时，专属的错误日志提供了一个即时的、无干扰的视图，能显著缩短定位问题根源所需的时间。
-    -   **提升的代码质量**: 将日志记录逻辑集中到一个专门的类中，使整体代码更加清晰和易于维护。
+2.  **`validation` (Goal: ~90 minute training cycle)**
+    *   **Philosophy**: **Balance is the key.** This stage acts as the crucial bridge between a promising prototype and a full-scale production run. It must be close enough to production quality to give meaningful results, but fast enough to not halt the development flow. It serves to seriously validate the findings from the `prototyping` stage.
+    *   **Strategy**: In its dedicated **large model search space**, it also finds the configuration with the **highest throughput (max batch size)** to strike the perfect balance between speed and quality.
 
----
+3.  **`production` (Goal: Time-unlimited)**
+    *   **Philosophy**: **Quality is the ultimate goal.** Time is no longer the primary constraint. This stage is for building the best possible model that the hardware and data can support, ready for deployment.
+    *   **Strategy**: It employs a **two-stage optimization**: first, it finds the highest-quality (largest) model that respects both data and hardware limits. Second, it squeezes all remaining performance out of the hardware by finding the maximum possible batch size for that single best model.
 
-### 场景: 解决深度学习训练过程中的 CUDA 显存溢出及后续错误
-
-本次任务记录了从一个棘手的 `CUDA out of memory` 错误开始，逐步诊断并最终成功运行训练脚本的完整过程。这个过程涉及了多种调试策略，从简单的参数调整到深入数据处理流程和模型输出的分析。
-
-### 步骤 1: 初步诊断 - 显存溢出
-
-- **初始错误**: `torch.OutOfMemoryError: CUDA out of memory`。
-- **初步分析**: 这是深度学习中非常常见的错误，通常由过大的批处理大小（Batch Size）导致。
-- **首次尝试**: 我检查了 `config.py` 文件，并将 `batch_size` 从 `16` 减小到 `8`。但这并未解决问题，说明显存压力远超预期。
-
-### 步骤 2: 深度诊断 - 模型与数据
-
-- **二次尝试**: 我意识到仅调整批处理大小是不够的。`ViSNet` 是一个复杂的图模型，其自身的计算复杂度也很高。因此，我修改了 `config.py`，引入了模型的超参数（如 `visnet_hidden_channels`, `visnet_num_layers`, `visnet_max_neighbors`），并显著降低了它们的值，以减小模型的体积和计算量。
-- **根本原因分析**: 尽管模型参数量大幅减少（从 1.6M 降至 304k），显存溢出问题依然存在。这让我断定，问题的根源不在于**平均**的计算负载，而在于**个别**的极端情况。最可能的原因是数据集中存在少数异常巨大的蛋白质图，当这些图被加载时，会瞬间耗尽显存。
-- **解决方案 (数据)**:
-    1.  **过滤大数据**: 我修改了 `main.py` 中的 `process_item` 函数，将蛋白质原子数的上限设置为 `20000`。(之前为了解决显存问题曾一度降至 `10000`)
-    2.  **强制数据重新处理**: 为了让修改生效，我更新了 `main.py` 中的 `DATA_PROCESSING_VERSION` 字符串。这个版本号机制会强制脚本在检测到处理逻辑变更时，要求用户删除旧的已处理数据文件夹 (`processed_data`)，从而触发数据重新生成。
-
-### 步骤 3: 修复新出现的 Bug
-
-- **新错误**: 在解决了显存问题后，出现了一个新的、更清晰的错误：`AttributeError: 'tuple' object has no attribute 'size'`。
-- **错误分析**: 这个错误发生在损失函数计算环节。它明确指出，模型返回的 `output` 是一个元组（Tuple），而不是损失函数所期望的张量（Tensor）。这是因为 `ViSNet` 模型的设计会同时返回最终预测值和一些中间结果。
-- **解决方案 (代码)**: 我修改了 `main.py` 中的 `ViSNetPDB` 封装模型。在其 `forward` 方法中，我增加了一个判断逻辑：如果 `visnet` 的输出是元组，就只提取并返回其第一个元素（即我们需要的预测值），否则直接返回输出。这样就确保了损失函数总能接收到正确的数据类型。
-
-### 总结与经验
-
-1.  **调试由表及里**: 从最常见的原因（批处理大小）入手，逐步深入到更复杂的原因（模型参数、数据分布）。
-2.  **关注极端情况**: 当常规优化手段失效时，应考虑数据集中是否存在导致问题的“离群点”或异常样本。
-3.  **理解代码机制**: 注意代码中可能存在的安全或缓存机制（如本项目中的 `DATA_PROCESSING_VERSION`），这些机制在修改数据处理流程时必须被考虑到。
-4.  **仔细阅读错误信息**: 后续的 `AttributeError` 比起宽泛的“显存溢出”提供了更精确的线索，是定位问题的关键。
-
----
-
-### 场景: 深入调试由蛋白质-配体原子坐标重叠引发的 NaN 问题
-
-本次任务记录了一次从训练过程中出现 `NaN` (Not a Number) 损失值开始，通过一系列侦测、分析、和代码修正，最终定位并解决了问题的根本原因的完整调试过程。这次经历的核心是从“被动跳过问题”的策略转变为“主动捕获并进行深度分析”。
-
-#### 步骤 1: 问题浮现 - 训练中的 NaN
-
-- **初始现象**: 训练脚本在特定批次上会产生 `NaN` 或 `Inf` (无穷大) 的损失值。当时的代码逻辑是记录一条警告并直接跳过该批次，这虽然能让训练继续，但也掩盖了问题的根本原因。
-- **日志线索**: 日志显示，多个 PDB 文件（如 `1qj7`, `1bio`, `1p06` 等）在训练过程中反复引发此问题。
-
-#### 步骤 2: 策略升级 - 从“跳过”到“暂停并尸检”
-
-- **核心思路**: 为了深入分析，我提出修改现有策略。当 `NaN` 出现时，我们不再跳过，而是立即停止训练，并将导致问题的“案发现场”（即那个批次的数据）完整地保存下来，以便进行离线的“尸检”。
-- **代码实现**:
-    1.  **修改 `src/training.py`**: 我引入了一个由配置文件控制的 `debug_mode` 开关。当此模式开启时，遇到 `NaN` 的 `train` 函数会立刻将当前批次的数据对象（`data`）保存为一个 `.pt` 文件，并抛出 `RuntimeError` 来中断训练。
-    2.  **创建 `src/analyze_problem_batch.py`**: 我创建了一个全新的分析脚本，其唯一目的是加载被保存的“问题批次”文件，并对其中的所有张量进行详细检查，包括是否存在 `NaN`/`Inf`，以及打印数值统计信息。
-
-#### 步骤 3: 定位根源 - 一波三折的分析过程
-
-- **初次分析失败**: 用户开启 `debug_mode` 后，训练成功在遇到 `1p06` 文件时中断并保存了批次。但分析脚本运行时，首先因为 PyTorch 的安全更新（`weights_only` 参数）失败，修正后又因为一个小小的编程错误（`data.keys` vs `data.keys()`）再次失败。
-- **关键突破**: 在修正了分析脚本的所有问题后，我们终于得到了第一份有效的“尸检报告”。报告揭示了一个惊人的事实：**输入数据本身是完全干净的**，其包含的任何张量（`x`, `pos` 等）都不存在 `NaN` 或 `Inf` 值。
-- **形成假设**: 既然输入是干净的，`NaN` 就必定是在模型的前向传播过程中产生的。在图神经网络中，最常见的数值不稳定性来源是“除以零”，而这在处理原子间距离时，极有可能由**两个或多个原子拥有完全相同的三维坐标**导致。
-
-#### 步骤 4: 验证假设 - 找到“重叠”的原子
-
-- **升级分析脚本**: 为了验证上述假设，我为 `analyze_problem_batch.py` 增加了一项新功能：专门检查 `pos` 坐标张量中是否存在重复的坐标值。
-- **最终证据**: 运行升级后的脚本，我们得到了决定性的证据。报告中明确打印出 `!!! Duplicate atom positions found! !!!` 的警告，并指出了在 `1p06` 文件中，坐标 `[16.398..., 30.325..., 14.965...]` 出现了两次。**案件告破**。
-- **最后的谜团**：在我的引导下，您亲自检查了原始的 `1p06_protein.pdb` 和 `1p06_ligand.sdf` 文件。您发现，这个重复的坐标**并非存在于同一个文件中**，而是蛋白质文件中的一个原子和配体文件中的一个原子，拥有完全相同的三维坐标。这揭示了问题的最终根源：**数据拼接时的原子坐标重叠**。
-
-#### 步骤 5: 根治问题 - 修复数据处理流程
-
-- **解决方案**: 既然根源在于原始数据，最终的解决方案必须在数据预处理阶段完成。
-- **代码修复**: 我修改了 `src/data_processing.py` 文件。在 `get_ligand_graph` 和 `get_protein_graph` 函数中，我加入了重复坐标的检查与移除逻辑。在处理每个分子时，脚本会记录已添加的原子坐标，若发现新的原子坐标与已有坐标完全相同，则自动跳过该重复原子，从而确保最终生成的图数据中不包含任何位置重叠的节点。
-- **收尾工作**: 我指导用户删除了旧的 `processed_data` 文件夹以强制数据重新处理，并关闭了 `debug_mode`，让训练恢复正常。
-
-#### 总结与经验
-
-1.  **主动暴露问题**: 遇到问题时，选择“跳过”或“忽略”虽然能让程序继续运行，但往往会掩盖深层矛盾。更有效的策略是让问题在可控的环境下充分暴露，例如“暂停并保存现场”。
-2.  **系统性调试**: 本次调试过程遵循了“发现现象 -> 提出假设 -> 设计实验（编写工具） -> 验证假设 -> 解决根源”的完整科学方法。
-3.  **信任数据，但要验证**: 当模型出现问题时，不要想当然地认为是模型结构的问题。输入数据的微小瑕疵（如蛋白质和配体原子坐标重叠）同样可能导致灾难性的后果。
-4.  **工具的重要性**: 一个专门的、可扩展的调试工具（如我们的 `analyze_problem_batch.py`）在解决复杂问题时是不可或缺的。它允许我们快速迭代我们的分析思路。
-5.  **人的作用**: 您的怀疑和亲自验证是本次成功调试的关键。AI 的分析和工具构建能力，结合您的领域知识和最终验证，才是解决问题的最强组合。
-
----
-
-### 数据探针 (`analyze_problem_batch.py`) 未来升级建议
-
-根据我们的经验，分析脚本可以从一个特定的诊断工具，演变为一个更全面的**数据健全性检查器**。这将有助于更快地识别未来可能出现的未知数据问题。
-
-**建议的新增检查项:**
-
-1.  **原子邻近警报**:
-    - **内容**: 检查那些位置极其接近但又不完全相同的原子（例如，相距小于 0.5 Ångströms）。
-    - **原因**: 这些情况同样可能导致数值不稳定（例如，在计算 `1 / 距离` 时），并指向物理上不切实际的结构。
-
-2.  **特征值异常检测**:
-    - **内容**: 分析 `x` 张量中每个特征的分布，并标记出任何超出合理范围的数值（例如，与均值相差超过 5 个标准差）。
-    - **原因**: 这能捕捉到可能导致模型发散的预处理错误或损坏数据。
-
-3.  **图连通性检查**:
-    - **内容**: 识别出在模型的截断距离内，与图的任何其他部分都没有连接的“孤立”节点。
-    - **原因**: 虽然不总是错误，但大量的孤立节点可能表明 PDB 文件或所选的截断距离存在问题，从而影响图神经网络的学习效果。
-
-4.  **目标值验证**:
-    - **内容**: 检查目标结合亲和力值 `y` 是否为 `NaN`、`Inf` 或一个物理上不切实际的数字。
-    - **原因**: 确保模型不会试图从损坏的标签中学习。
-
-通过整合这些检查，COMPASS 将能更好地驾驭分子数据的复杂性，确保每一次训练都建立在最可靠的基础之上。
-
----
-
-### 场景: 构建分阶段、模式化的开发工作流
-
-为了解决快速迭代与训练耗时之间的核心矛盾，我们共同设计并实现了一个分阶段、模式化的开发工作流。该工作流旨在将开发过程从“手动调整、反复试错”转变为“目标明确、一键切换”的系统化流程。
-
-#### 核心思想：三种开发模式
-
-我们将整个开发和训练过程分解为三个逻辑阶段，每个阶段都有一个明确的目标，并通过 `config.py` 中的 `DEVELOPMENT_MODE` 开关进行控制。
-
-1.  **`smoke_test` (烟雾测试模式)**
-    *   **核心目标**: **代码能跑通吗？**
-    *   **工作思路**: 这是代码的“健康检查”。使用极小的模型和数据子集，快速验证整个代码管线（数据加载、预处理、模型构建、训练步骤）是否能无技术性错误地运行。此阶段完全不关心模型性能。
-    *   **产出**: 对代码流程可靠性的信心。
-
-2.  **`prototyping` (原型设计模式)**
-    *   **核心目标**: **我的想法有效果吗？训练趋势健康吗？**
-    *   **工作思路**: 这是“科学家的实验室”。使用中等大小、训练速度较快的模型，快速验证新想法、调整超参数。追求的不是绝对性能，而是方向性的信号和可观察的趋势（例如，损失曲线的走向、不同配置的相对优劣）。
-    *   **产出**: 一套有希望的超参数和训练策略。
-
-3.  **`production` (生产运行模式)**
-    *   **核心目标**: **用最好的配置，获得最终的、可靠的结果。**
-    *   **工作思路**: 这是“工程师的最终产品构建”。在原型设计阶段验证了想法和参数后，切换到此模式。使用完整尺寸的模型和大量的训练周期，投入充足的计算资源和时间，以获取最佳性能的模型，用于最终评估或部署。
-    *   **产出**: 最终的模型文件和可靠的性能指标。
-
-#### 实现细节与收益
-
--   **集中化配置**: 所有与模式相关的参数（如模型大小、批次、周期）都集中在 `config.py` 的 `MODES` 字典中，通过一个开关即可切换，极大降低了手动修改的复杂性和出错率。
--   **硬件感知**: `src/hardware_utils.py` 脚本被重构为一个智能诊断助手。它能检测用户硬件（如 GPU VRAM），并根据当前选择的 `DEVELOPMENT_MODE` 给出建议和警告，有效避免了因配置与硬件不匹配导致的内存溢出等问题。
--   **自动化实验管理**: `main.py` 会根据当前的 `run_name`（由模式和关键参数生成）自动创建独立的日志和检查点目录，确保了不同实验的结果不会相互覆盖，使实验管理清晰、可追溯。
-
-#### 总结
-
-该工作流将一个复杂的机器学习项目分解为一系列目标明确、风险可控的步骤。它通过 **定义开发阶段**、**集中控制**、**主动适应硬件** 和 **自动化管理**，为您打造了一个高效、可靠且易于使用的开发环境，让您可以将更多精力投入到模型和算法的创新上。
-
----
-
-### 场景: 优化开发工作流——从理论到实践
-
-- **目标**: 解决我们已建立的模式化工作流中的一个关键缺陷。原 `prototyping` 模式，本意用于快速实验，但实际每个 epoch 的训练时间超过1.5小时并导致CUDA显存溢出，这使其完全违背了敏捷开发的初衷。
-
-- **人机协作**: 您敏锐地指出了问题的核心：当前的“prototyping”模式实际上是“validation”（验证）模式的伪装，它破坏了快速反馈的核心原则。您基于实际训练时长的亲身体验，提出了这个至关重要的观察，成为本次优化的催化剂。
-
-- **AI 贡献 (工作流优化与实现)**:
-    1.  **诊断与提议**: 我立刻确认了您的诊断。为了让各个模式“名副其实”，我提议将现有的 `prototyping` 模式重命名为 `validation`，并引入一个全新的、更轻量的 `prototyping` 模式。
-    2.  **`config.py` 中的实现**: 我通过以下步骤在代码中完成了这一构想：
-        *   创建了一个新的 `prototyping` 配置，大幅降低了其模型参数、批处理大小和数据量限制，目标是将每个 epoch 的训练时间缩短到几分钟。
-        *   将之前较重的配置重命名为 `validation`，将其定位为原型设计和最终生产运行之间的中间验证步骤。
-        *   更新了 `config.py` 中的所有注释和文档，以清晰地阐述现在四个模式 (`smoke_test`, `prototyping`, `validation`, `production`) 的不同职责。
-        *   将默认的 `DEVELOPMENT_MODE` 设置为新的 `prototyping` 模式，以便您能立即使用。
-
-- **成果与收益**:
-    -   **真正的敏捷开发**: 项目现在拥有了一个名副其实的 `prototyping` 模式，它能在几分钟内提供反馈，极大地加速了“想法-验证”的迭代周期。
-    -   **更逻辑化的流程**: 工作流现在拥有了更合理、更符合实践的四阶段演进路径，消除了从简单的“烟雾测试”到重度的“准生产”运行之间的巨大鸿沟。
-    -   **清晰度提升**: 所有开发模式的角色都得到了明确的定义和实现，减少了模糊性，也避免了未来的配置错误。这标志着我们的开发流程走向成熟——从一个良好的理论框架，演进为一个经过实战检验的、更贴合实际的高效工作流。
+This structured approach, born from our collaboration, ensures that from the earliest idea to the final deployment, there is a perfectly optimized configuration to support the task at hand.
