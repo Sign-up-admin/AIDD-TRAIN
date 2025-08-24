@@ -50,7 +50,7 @@ CONFIG = {
 
     # --- Hardware & Performance ---
     'processing_num_workers': 16,
-    'loader_num_workers': 16,
+    'loader_num_workers': 2,
     # --- Performance Profiling ---
     # Set to True to run the profiler on the first epoch to identify bottlenecks.
     'profile': False,

@@ -5,6 +5,24 @@
 
 ---
 
+### Scene: Implementing an Advanced Logging System for Traceability and Debugging
+
+- **Objective**: To elevate the project's monitoring capabilities from simple console outputs to a persistent, structured, and dual-purpose logging system. The goal is to automatically create a permanent record of every training run, while also providing a dedicated, high-signal file for rapid debugging.
+
+- **AI Contribution (System Design & Implementation)**:
+    1.  **`src/logger.py` Module**: I designed and created a new, self-contained module, `src/logger.py`, to encapsulate all logging logic. This keeps the main codebase clean and makes the logging system easily extensible.
+    2.  **`TrainingLogger` Class**: The core of the new system. Upon initialization, this class automatically creates a `logs/` directory and generates two timestamped log files for the current run:
+        -   `training_log_[timestamp].txt`: A **comprehensive log** that captures every single message, from configuration details to epoch results, warnings, and errors. It serves as the complete, unabridged story of the training run.
+        -   `training_errors_[timestamp].txt`: A **high-signal error log** that *only* contains messages classified as `WARNING` or `ERROR`. This file is designed for rapid diagnostics, allowing the user to immediately see what went wrong without searching through a verbose general log.
+    3.  **Seamless Integration**: I systematically integrated the `TrainingLogger` throughout the entire codebase (`main.py`, `src/training.py`, `src/utils.py`), replacing previous `print()` statements and `logging` calls with the new, level-aware methods (`logger.log`, `logger.log_warning`, `logger.log_error`).
+
+- **Outcome & Benefits**:
+    -   **Full Traceability**: Every training session now produces a permanent, detailed record, which is invaluable for comparing experiments and ensuring reproducibility.
+    -   **Efficient Debugging**: When issues arise, the dedicated error log provides an immediate, uncluttered view of all warnings and errors, drastically reducing the time required to identify the root cause.
+    -   **Improved Code Quality**: Centralizing the logging logic into a dedicated class makes the code cleaner and more maintainable.
+
+---
+
 ### Scene: In-depth Debugging of NaN Issues from Data Artifacts
 
 This document chronicles a multi-stage debugging journey to resolve training-halting `NaN` (Not a Number) errors. The process evolved from identifying a simple data flaw to uncovering a more subtle, systemic issue in the data processing pipeline, showcasing a powerful collaboration between human intuition and AI-driven analysis.
