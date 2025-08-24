@@ -10,6 +10,8 @@ from rdkit import Chem, RDLogger
 from Bio.PDB import PDBParser
 from tqdm import tqdm
 
+from config import CONFIG
+
 # Suppress RDKit warnings
 RDLogger.logger().setLevel(RDLogger.CRITICAL)
 
@@ -162,14 +164,16 @@ def count_pdb_atoms(pdb_path):
 
 def process_item(item):
     pdb_code = item.get('pdb_code', 'N/A')
+    max_atoms = CONFIG.get('max_atoms', 10000)
     try:
         protein_path = item['protein_path']
         if os.path.getsize(protein_path) > 100 * 1024 * 1024: # 100MB limit
             logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
             return None
 
-        if count_pdb_atoms(protein_path) > 20000: # Relaxed limit
-            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms (>20,000).")
+        atom_count = count_pdb_atoms(protein_path)
+        if atom_count > max_atoms:
+            logging.warning(f"Skipping {pdb_code}: Protein has too many atoms ({atom_count} > {max_atoms}).")
             return None
 
         ligand = None

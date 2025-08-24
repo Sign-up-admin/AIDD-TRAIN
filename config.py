@@ -14,6 +14,8 @@ CONFIG = {
     # 'permissive': Attempts to apply smart heuristics to repair problematic PDB files. This may increase data yield
     #               but introduces a small risk of altering molecular structures.
     'data_processing_mode': 'strict',
+    # Maximum number of atoms allowed in a complex. Complexes exceeding this limit will be skipped.
+    'max_atoms': 10000,
     # Directory to save detailed reports and file snapshots for PDBs that fail processing.
     'failed_cases_dir': r'failed_cases',
 
@@ -23,7 +25,7 @@ CONFIG = {
     'processed_data_dir': r'processed_data',
 
     # --- Model & Training Hyperparameters ---
-    'epochs': 20,
+    'epochs': 100,
     # The actual batch size used by the hardware. The effective batch size will be this value multiplied by gradient_accumulation_steps.
     'batch_size': 1, 
     'learning_rate': 0.0001,
@@ -31,14 +33,17 @@ CONFIG = {
     'dropout_rate': 0.5,
     # Gradient Accumulation: Simulate a larger batch size to stabilize training.
     # Effective Batch Size = batch_size * gradient_accumulation_steps
-    'gradient_accumulation_steps': 16, # Results in an effective batch size of 1 * 16 = 16
+    'gradient_accumulation_steps': 64, # Results in an effective batch size of 1 * 64 = 64
+    # Gradient Clipping: Prevent exploding gradients by capping the norm of the gradients.
+    # A value of 1.0 is a common and effective starting point.
+    'gradient_clip_val': 1.0,
 
     # --- ViSNet Model Specific ---
     # These parameters control the size and complexity of the ViSNet model.
-    'visnet_hidden_channels': 128, # 增加模型宽度以获得更多特征容量
+    'visnet_hidden_channels': 64, # 增加模型宽度以获得更多特征容量
     'visnet_num_layers': 4,      # 增加模型深度以学习更复杂的相互作用
     'max_num_neighbors': 32,     # 允许模型看到更丰富的原子邻域环境 (ViSNet 默认值)
-    'visnet_cutoff': 8.0,
+    'visnet_cutoff': 5.0,
     'visnet_num_rbf': 64,      # 增加距离表示的分辨率
 
     # --- Hardware & Performance ---
