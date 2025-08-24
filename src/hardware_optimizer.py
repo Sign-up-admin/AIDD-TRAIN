@@ -21,7 +21,7 @@ class MockViSNet(torch.nn.Module):
 
 def probe_config(config, quiet=False, stress_iterations=100):
     """
-    Tests a given configuration for OOM errors under sustained load.
+    Tests a given configuration for OOM errors under sustained load to ensure thermal and power stability.
     """
     if not quiet:
         print(f"--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3}...", end='')
@@ -46,7 +46,7 @@ def probe_config(config, quiet=False, stress_iterations=100):
             scaled_output = output * 100
             scaled_output.backward()
             optimizer.step()
-            if not quiet and (i + 1) % 20 == 0:
+            if not quiet and (i + 1) % (stress_iterations // 5) == 0:
                 print(".", end='', flush=True)
 
         if not quiet:
@@ -63,7 +63,8 @@ def probe_config(config, quiet=False, stress_iterations=100):
 
 def find_optimal_config(mode_to_optimize):
     """
-    Finds the best hardware configuration based on the philosophy of the chosen mode.
+    Finds the best hardware configuration by dynamically creating a search space
+    based on available VRAM and then using an efficient search strategy.
     """
     if not torch.cuda.is_available():
         print("CUDA is not available. Aborting hardware optimization.")
@@ -73,67 +74,101 @@ def find_optimal_config(mode_to_optimize):
     vram_gb = gpu_properties.total_memory / (1024**3)
     print(f"Detected GPU: {gpu_properties.name} with {vram_gb:.2f} GB VRAM.")
 
-    # --- Define Search Spaces per Mode ---
-    if mode_to_optimize == 'validation':
-        batch_sizes = [64, 48, 32, 24, 16, 12, 8, 4, 2, 1]
-        max_atoms_target = 5000
-    elif mode_to_optimize == 'prototyping':
-        batch_sizes = [128, 96, 64, 48, 32, 24, 16, 8]
-        max_atoms_target = 1024
-    elif mode_to_optimize == 'smoke_test':
-        batch_sizes = [256, 128, 64, 32, 16, 8]
-        max_atoms_target = 128
-    else:  # production
-        batch_sizes = [32, 24, 16, 12, 8, 6, 4, 2, 1]
-        max_atoms_target = 10000
+    # --- 1. Dynamic Search Space Generation ---
+    # We dynamically create the search space based on VRAM to ensure the optimizer
+    # can leverage high-end hardware like A100s effectively.
+    print(f"Generating search space for {vram_gb:.2f} GB VRAM and '{mode_to_optimize}' mode...")
 
-    hidden_channels_list = [256, 192, 128, 96, 64]
-    num_layers_list = [8, 7, 6, 5, 4, 3]
+    # Base search spaces for a mid-range GPU (~12GB)
+    base_hidden_channels = [256, 192, 128, 96, 64]
+    base_num_layers = [8, 7, 6, 5, 4, 3]
+
+    # Dynamically adjust based on VRAM
+    if vram_gb > 30:  # For high-end GPUs like A100/H100 (40GB+)
+        print("High-end GPU detected. Expanding search space for maximum performance.")
+        vram_factor = 2.0
+        stress_iterations_factor = 1.5
+    elif vram_gb > 16:  # For high-VRAM GPUs like 3090/4090 (24GB)
+        print("High-VRAM GPU detected. Expanding search space.")
+        vram_factor = 1.5
+        stress_iterations_factor = 1.2
+    else:  # For mid-to-low range GPUs
+        vram_factor = 1.0
+        stress_iterations_factor = 1.0
+
+    hidden_channels_list = sorted([int(c * vram_factor) for c in base_hidden_channels], reverse=True)
+    num_layers_list = sorted(list(set(int(l * vram_factor) for l in base_num_layers)), reverse=True)
+
+    # Mode-specific settings are also scaled by VRAM
+    if mode_to_optimize == 'validation':
+        batch_sizes = [int(bs * vram_factor) for bs in [64, 48, 32, 24, 16, 12, 8, 4, 2, 1]]
+        max_atoms_target = int(5000 * vram_factor)
+        stress_iterations = int(500 * stress_iterations_factor)
+    elif mode_to_optimize == 'prototyping':
+        batch_sizes = [int(bs * vram_factor) for bs in [128, 96, 64, 48, 32, 24, 16, 8]]
+        max_atoms_target = int(1024 * vram_factor)
+        stress_iterations = int(100 * stress_iterations_factor)
+    elif mode_to_optimize == 'smoke_test':
+        batch_sizes = [int(bs * vram_factor) for bs in [256, 128, 64, 32, 16, 8]]
+        max_atoms_target = 128  # Keep this small for a quick test
+        stress_iterations = 20   # Keep this small
+    else:  # production
+        batch_sizes = [int(bs * vram_factor) for bs in [32, 24, 16, 12, 8, 6, 4, 2, 1]]
+        max_atoms_target = int(10000 * vram_factor)
+        stress_iterations = int(500 * stress_iterations_factor)
+
+    # Clean up lists to ensure they are unique, positive, and sorted
+    batch_sizes = sorted(list(set(bs for bs in batch_sizes if bs > 0)), reverse=True)
+
+    print("\n--- Generated Search Space ---")
+    print(f"  - Batch Sizes: {batch_sizes}")
+    print(f"  - Hidden Channels: {hidden_channels_list}")
+    print(f"  - Num Layers: {num_layers_list}")
+    print(f"  - Max Atoms: {max_atoms_target}")
+    print(f"  - Stress Iterations: {stress_iterations}\n")
 
     best_config = None
 
-    # --- Select Optimization Strategy Based on Mode Philosophy ---
+    # --- 2. Optimized Search Strategy ---
+    # The search strategy is now more efficient. Instead of exhaustively searching all
+    # combinations, we use smarter ordering and break on the first success.
 
     if mode_to_optimize == 'production':
-        print(f"\n--- Optimizing for '{mode_to_optimize}' (Strategy: Find Most Complex Model) ---")
+        print(f"--- Optimizing for '{mode_to_optimize}' (Strategy: Find Most Complex Model) ---")
+        # Search order: most complex model (layers, channels), highest batch size first.
         param_combinations = list(product(num_layers_list, hidden_channels_list, batch_sizes))
         for i, (layers, channels, bs) in enumerate(param_combinations):
             print(f"[{(i+1):>3}/{len(param_combinations)}] ", end='')
             current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms_target}
-            if probe_config(current_config, stress_iterations=100):
+            if probe_config(current_config, stress_iterations=stress_iterations):
                 best_config = current_config
                 print(f"\n>>> Found optimal configuration for '{mode_to_optimize}'!")
                 break
 
     elif mode_to_optimize == 'smoke_test':
-        print(f"\n--- Optimizing for '{mode_to_optimize}' (Strategy: Find Quickest Success) ---")
+        print(f"--- Optimizing for '{mode_to_optimize}' (Strategy: Find Quickest Success) ---")
+        # Search order: least complex model, highest batch size first.
         param_combinations = list(product(sorted(num_layers_list), sorted(hidden_channels_list), batch_sizes))
         for i, (layers, channels, bs) in enumerate(param_combinations):
             print(f"[{(i+1):>3}/{len(param_combinations)}] ", end='')
             current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms_target}
-            if probe_config(current_config, stress_iterations=10, quiet=True):
+            if probe_config(current_config, stress_iterations=stress_iterations, quiet=True):
                 best_config = current_config
                 print(f"\n>>> Found optimal configuration for '{mode_to_optimize}'!")
                 break
 
-    else: # validation & prototyping
-        print(f"\n--- Optimizing for '{mode_to_optimize}' (Strategy: Find Max Batch Size) ---")
-        successful_configs = []
-        model_param_combinations = list(product(num_layers_list, hidden_channels_list))
-        for i, (layers, channels) in enumerate(model_param_combinations):
-            print(f"\n--- [{(i+1):>2}/{len(model_param_combinations)}] Testing Model: {layers} layers, {channels} channels ---")
-            max_bs_for_this_model = 0
-            for bs in batch_sizes:
-                current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms_target}
-                if probe_config(current_config, stress_iterations=100, quiet=True):
-                    max_bs_for_this_model = bs
-                    successful_configs.append(current_config)
-                    print(f"  - Found stable batch size: {max_bs_for_this_model}")
-                    break
-            if max_bs_for_this_model == 0:
-                print("  - This model is too large for any batch size.")
-        if successful_configs:
-            best_config = sorted(successful_configs, key=lambda c: (c['batch_size'], c['visnet_num_layers'], c['visnet_hidden_channels']), reverse=True)[0]
+    else:  # validation & prototyping
+        print(f"--- Optimizing for '{mode_to_optimize}' (Strategy: Find Max Batch Size, Efficiently) ---")
+        # This new strategy is much faster. It iterates through batch sizes from high to low,
+        # and for each, tries models from most to least complex. The first success is the optimal one.
+        param_combinations = list(product(batch_sizes, num_layers_list, hidden_channels_list))
+        for i, (bs, layers, channels) in enumerate(param_combinations):
+            print(f"[{(i+1):>3}/{len(param_combinations)}] ", end='')
+            current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms_target}
+            if probe_config(current_config, stress_iterations=stress_iterations):
+                best_config = current_config
+                print(f"\n>>> Found optimal configuration for '{mode_to_optimize}'!")
+                break
 
     # --- Display and Save Results ---
     if best_config:
