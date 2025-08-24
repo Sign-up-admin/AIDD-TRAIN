@@ -123,6 +123,7 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
     # Phase 2: Step down from the ceiling to find the highest stable batch size.
     print(f"\n--- Strategy: Stepping down from ceiling ({oom_ceiling}) to find stable edge ---")
     bs_candidate = 0
+    # Start from oom_ceiling - 1, step down by 1.
     for current_bs in range(oom_ceiling - 1, 0, -1):
         print(f"[2/3] Probing edge...", end='')
         config = {**base_config, 'batch_size': current_bs}
@@ -132,13 +133,14 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
             break
 
     if bs_candidate == 0:
-        print("Could not find a stable configuration. This model may be too large for VRAM.")
+        print("Could not find a stable configuration for this model architecture.")
         return None
 
     # Phase 3: Confirm the found batch size is stable with a more rigorous test.
     print(f"\n--- Strategy: Final stability check for batch_size={bs_candidate} ---")
     print(f"[3/3] Stability confirmation...", end='')
     config = {**base_config, 'batch_size': bs_candidate}
+    # Add 20 more iterations to be extra sure.
     if probe_config(config, stress_iterations=stress_iters + 20, prefix="\t"):
         print(f"\t> Final configuration is stable.")
         return bs_candidate
@@ -208,6 +210,7 @@ def find_optimal_configs(modes_to_optimize):
                         'visnet_num_layers': layers, 
                         'max_atoms': max_atoms
                     }
+                    # Quickly check if the model is viable at all (bs=1)
                     if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t"):
                         print("\t> Model architecture too large for bs=1, skipping...")
                         continue
@@ -215,6 +218,7 @@ def find_optimal_configs(modes_to_optimize):
                     optimal_bs = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
                     if optimal_bs:
                         best_config_for_this_mode = {**base_config, 'batch_size': optimal_bs}
+                        # In a large-to-small search, the first success is the best model architecture
                         break
             
             if best_config_for_this_mode:
