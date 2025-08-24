@@ -12,3 +12,5 @@ failed_cases/
 logs/
 
 .idea/
+
+hardware_profile.json

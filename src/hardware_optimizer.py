@@ -5,160 +5,166 @@ import gc
 from itertools import product
 import argparse
 
-# 这是一个简化的模型定义，仅用于内存测试，无需加载整个项目代码
 class MockViSNet(torch.nn.Module):
     def __init__(self, hidden_channels, num_layers, lmax, vecnorm_type):
         super().__init__()
-        # 模拟模型参数量，这是影响显存占用的关键
         self.layers = torch.nn.ModuleList([
             torch.nn.Linear(hidden_channels, hidden_channels) for _ in range(num_layers)
         ])
         self.embedding = torch.nn.Embedding(100, hidden_channels)
-        print(f"  - Mock model initialized: {num_layers} layers, {hidden_channels} channels.")
 
     def forward(self, x, pos, batch):
-        # 模拟前向传播
         h = self.embedding(x)
         for layer in self.layers:
             h = layer(h)
-        return torch.sum(h) # 返回一个标量以模拟损失计算
+        return torch.sum(h)
 
-def probe_config(config):
+def probe_config(config, quiet=False, stress_iterations=100):
     """
-    使用给定的配置尝试运行一个训练步骤，测试是否会导致显存溢出。
+    Tests a given configuration for OOM errors under sustained load.
     """
-    print(f"\n--- Probing config: batch_size={config['batch_size']}, hidden_channels={config['visnet_hidden_channels']}, layers={config['visnet_num_layers']} ---")
+    if not quiet:
+        print(f"--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3}...", end='')
     try:
-        # 1. 创建模型并移至GPU
         model = MockViSNet(
             hidden_channels=config['visnet_hidden_channels'],
             num_layers=config['visnet_num_layers'],
             lmax=2,
             vecnorm_type='max_min'
         ).cuda()
-
-        # 2. 创建模拟数据并移至GPU
-        # 模拟一个批次中包含的大分子图
         num_atoms = config['max_atoms']
         batch_size = config['batch_size']
-        
-        # 模拟原子特征 (整数)
         x = torch.randint(0, 100, (num_atoms * batch_size,)).cuda()
-        # 模拟原子坐标 (浮点数)
         pos = torch.randn(num_atoms * batch_size, 3).cuda()
-        # 模拟批次索引
         batch = torch.repeat_interleave(torch.arange(batch_size), num_atoms).cuda()
-        
-        print(f"  - Simulating data: {batch_size} graphs, {num_atoms} atoms each.")
-
-        # 3. 模拟训练步骤 (前向传播 + 反向传播)
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-        optimizer.zero_grad()
-        
-        output = model(x, pos, batch)
-        output.backward() # 反向传播是显存占用的主要部分
-        optimizer.step()
 
-        print("  - SUCCESS: Configuration is stable.")
+        # Sustained load simulation to heat up the GPU and test stability
+        for i in range(stress_iterations):
+            optimizer.zero_grad()
+            output = model(x, pos, batch)
+            scaled_output = output * 100
+            scaled_output.backward()
+            optimizer.step()
+            if not quiet and (i + 1) % 20 == 0:
+                print(".", end='', flush=True)
+
+        if not quiet:
+            print(" SUCCESS")
         return True
-
     except torch.cuda.OutOfMemoryError:
-        print("  - FAILED: CUDA out of memory. This configuration is too large.")
+        if not quiet:
+            print(" FAILED (OOM)")
         return False
     finally:
-        # 清理显存，为下一次测试做准备
+        del model, x, pos, batch, optimizer
         gc.collect()
         torch.cuda.empty_cache()
 
 def find_optimal_config(mode_to_optimize):
     """
-    主函数，用于搜索给定模式的最佳配置。
+    Finds the best hardware configuration based on the philosophy of the chosen mode.
     """
     if not torch.cuda.is_available():
         print("CUDA is not available. Aborting hardware optimization.")
         return
 
-    # 获取GPU信息
     gpu_properties = torch.cuda.get_device_properties(0)
     vram_gb = gpu_properties.total_memory / (1024**3)
     print(f"Detected GPU: {gpu_properties.name} with {vram_gb:.2f} GB VRAM.")
-    print(f"--- Starting optimization for '{mode_to_optimize}' mode ---")
 
-
-    # 定义搜索空间 (从大到小，优先保证模型复杂度)
-    # 对于验证模式，我们可能希望使用更大的批处理大小
+    # --- Define Search Spaces per Mode ---
     if mode_to_optimize == 'validation':
-        batch_sizes = [32, 24, 16, 12, 8, 4, 2, 1]
-        max_atoms_target = 5000 # 验证可能使用较小的分子
-    else: # production 或其他模式
-        batch_sizes = [16, 12, 8, 6, 4, 2, 1]
+        batch_sizes = [64, 48, 32, 24, 16, 12, 8, 4, 2, 1]
+        max_atoms_target = 5000
+    elif mode_to_optimize == 'prototyping':
+        batch_sizes = [128, 96, 64, 48, 32, 24, 16, 8]
+        max_atoms_target = 1024
+    elif mode_to_optimize == 'smoke_test':
+        batch_sizes = [256, 128, 64, 32, 16, 8]
+        max_atoms_target = 128
+    else:  # production
+        batch_sizes = [32, 24, 16, 12, 8, 6, 4, 2, 1]
         max_atoms_target = 10000
 
-    search_space = {
-        'visnet_hidden_channels': [128, 96, 64, 48],
-        'visnet_num_layers': [6, 5, 4, 3],
-        'batch_size': batch_sizes,
-        'max_atoms': [max_atoms_target]
-    }
+    hidden_channels_list = [256, 192, 128, 96, 64]
+    num_layers_list = [8, 7, 6, 5, 4, 3]
 
     best_config = None
 
-    # 从最大的模型开始尝试
-    param_combinations = product(
-        search_space['visnet_num_layers'],
-        search_space['visnet_hidden_channels'],
-        search_space['batch_size']
-    )
+    # --- Select Optimization Strategy Based on Mode Philosophy ---
 
-    for layers, channels, bs in param_combinations:
-        current_config = {
-            'visnet_hidden_channels': channels,
-            'visnet_num_layers': layers,
-            'batch_size': bs,
-            'max_atoms': search_space['max_atoms'][0]
-        }
-        
-        if probe_config(current_config):
-            best_config = current_config
-            print(f"\n>>> Found optimal configuration for '{mode_to_optimize}' mode!")
-            break
-    
+    if mode_to_optimize == 'production':
+        print(f"\n--- Optimizing for '{mode_to_optimize}' (Strategy: Find Most Complex Model) ---")
+        param_combinations = list(product(num_layers_list, hidden_channels_list, batch_sizes))
+        for i, (layers, channels, bs) in enumerate(param_combinations):
+            print(f"[{(i+1):>3}/{len(param_combinations)}] ", end='')
+            current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms_target}
+            if probe_config(current_config, stress_iterations=100):
+                best_config = current_config
+                print(f"\n>>> Found optimal configuration for '{mode_to_optimize}'!")
+                break
+
+    elif mode_to_optimize == 'smoke_test':
+        print(f"\n--- Optimizing for '{mode_to_optimize}' (Strategy: Find Quickest Success) ---")
+        param_combinations = list(product(sorted(num_layers_list), sorted(hidden_channels_list), batch_sizes))
+        for i, (layers, channels, bs) in enumerate(param_combinations):
+            print(f"[{(i+1):>3}/{len(param_combinations)}] ", end='')
+            current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms_target}
+            if probe_config(current_config, stress_iterations=10, quiet=True):
+                best_config = current_config
+                print(f"\n>>> Found optimal configuration for '{mode_to_optimize}'!")
+                break
+
+    else: # validation & prototyping
+        print(f"\n--- Optimizing for '{mode_to_optimize}' (Strategy: Find Max Batch Size) ---")
+        successful_configs = []
+        model_param_combinations = list(product(num_layers_list, hidden_channels_list))
+        for i, (layers, channels) in enumerate(model_param_combinations):
+            print(f"\n--- [{(i+1):>2}/{len(model_param_combinations)}] Testing Model: {layers} layers, {channels} channels ---")
+            max_bs_for_this_model = 0
+            for bs in batch_sizes:
+                current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms_target}
+                if probe_config(current_config, stress_iterations=100, quiet=True):
+                    max_bs_for_this_model = bs
+                    successful_configs.append(current_config)
+                    print(f"  - Found stable batch size: {max_bs_for_this_model}")
+                    break
+            if max_bs_for_this_model == 0:
+                print("  - This model is too large for any batch size.")
+        if successful_configs:
+            best_config = sorted(successful_configs, key=lambda c: (c['batch_size'], c['visnet_num_layers'], c['visnet_hidden_channels']), reverse=True)[0]
+
+    # --- Display and Save Results ---
     if best_config:
-        # 加载现有的配置文件（如果存在）
+        print(f"\n--- Optimization Complete for '{mode_to_optimize}' ---")
+        print("Selected optimal configuration based on mode philosophy:")
+        print(json.dumps(best_config, indent=4))
         output_path = 'hardware_profile.json'
+        final_profile = {}
         if os.path.exists(output_path):
             try:
                 with open(output_path, 'r') as f:
                     final_profile = json.load(f)
             except json.JSONDecodeError:
-                final_profile = {} # 处理空文件或损坏的文件
-        else:
-            final_profile = {}
-
-        # 更新或添加当前模式的配置
+                pass
         final_profile[mode_to_optimize] = best_config
-
-        print(f"\n--- Optimization Complete for '{mode_to_optimize}' ---")
-        print(f"Optimal configuration for your hardware:")
-        print(json.dumps(best_config, indent=4))
-        print(f"Updating settings in '{output_path}'...")
-
+        print(f"\nUpdating settings in '{output_path}'...")
         with open(output_path, 'w') as f:
             json.dump(final_profile, f, indent=4)
-        
-        print(f"\nRun 'python src/hardware_optimizer.py --mode <another_mode>' to optimize for other modes.")
+        print("Update complete.")
     else:
         print(f"\n--- Optimization Failed for '{mode_to_optimize}' ---")
-        print("Could not find any stable configuration even with the smallest settings.")
-        print("Please consider reducing 'max_atoms' or using a smaller model.")
+        print("Could not find any stable configuration.")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Find the optimal hardware configuration for a given mode.")
+    parser = argparse.ArgumentParser(description="Find the optimal hardware configuration based on the philosophy of the chosen mode.")
     parser.add_argument(
         '--mode',
         type=str,
-        default='production',
-        help="The development mode to optimize for (e.g., 'production', 'validation')."
+        required=True,
+        choices=['production', 'validation', 'prototyping', 'smoke_test'],
+        help="The development mode to optimize for, which determines the optimization strategy."
     )
     args = parser.parse_args()
     find_optimal_config(args.mode)
