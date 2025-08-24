@@ -13,4 +13,6 @@ logs/
 
 .idea/
 
+__pycache__/
+
 hardware_profile.json
