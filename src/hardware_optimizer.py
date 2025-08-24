@@ -25,6 +25,7 @@ def probe_config(config, stress_iterations=20, prefix=""):
     Tests a given configuration for a specific number of iterations to ensure stability.
     """
     base_text = f"{prefix}--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3} for {stress_iterations} iterations..."
+    bar_length = 20  # Define bar_length here to ensure it's always available
     try:
         model = MockViSNet(
             hidden_channels=config['visnet_hidden_channels'],
@@ -47,7 +48,6 @@ def probe_config(config, stress_iterations=20, prefix=""):
             optimizer.step()
             
             progress = (i + 1) / stress_iterations
-            bar_length = 20
             filled_length = int(bar_length * progress)
             bar = '█' * filled_length + '-' * (bar_length - filled_length)
             print(f'\r{base_text} [{bar}] {progress: >4.0%}', end='', flush=True)
@@ -58,9 +58,11 @@ def probe_config(config, stress_iterations=20, prefix=""):
         print(f'\r{base_text} FAILED (OOM)' + ' ' * (bar_length + 10))
         return False
     finally:
-        del model, x, pos, batch, optimizer
-        gc.collect()
-        torch.cuda.empty_cache()
+        # Ensure cleanup happens even if there's an error
+        if 'model' in locals():
+            del model, x, pos, batch, optimizer
+            gc.collect()
+            torch.cuda.empty_cache()
 
 def get_search_space(vram_gb, mode_to_optimize):
     """
@@ -123,7 +125,6 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
     # Phase 2: Step down from the ceiling to find the highest stable batch size.
     print(f"\n--- Strategy: Stepping down from ceiling ({oom_ceiling}) to find stable edge ---")
     bs_candidate = 0
-    # Start from oom_ceiling - 1, step down by 1.
     for current_bs in range(oom_ceiling - 1, 0, -1):
         print(f"[2/3] Probing edge...", end='')
         config = {**base_config, 'batch_size': current_bs}
@@ -133,14 +134,13 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
             break
 
     if bs_candidate == 0:
-        print("Could not find a stable configuration for this model architecture.")
+        print("Could not find a stable configuration. This model may be too large for VRAM.")
         return None
 
     # Phase 3: Confirm the found batch size is stable with a more rigorous test.
     print(f"\n--- Strategy: Final stability check for batch_size={bs_candidate} ---")
     print(f"[3/3] Stability confirmation...", end='')
     config = {**base_config, 'batch_size': bs_candidate}
-    # Add 20 more iterations to be extra sure.
     if probe_config(config, stress_iterations=stress_iters + 20, prefix="\t"):
         print(f"\t> Final configuration is stable.")
         return bs_candidate
@@ -210,7 +210,6 @@ def find_optimal_configs(modes_to_optimize):
                         'visnet_num_layers': layers, 
                         'max_atoms': max_atoms
                     }
-                    # Quickly check if the model is viable at all (bs=1)
                     if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t"):
                         print("\t> Model architecture too large for bs=1, skipping...")
                         continue
@@ -218,7 +217,6 @@ def find_optimal_configs(modes_to_optimize):
                     optimal_bs = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
                     if optimal_bs:
                         best_config_for_this_mode = {**base_config, 'batch_size': optimal_bs}
-                        # In a large-to-small search, the first success is the best model architecture
                         break
             
             if best_config_for_this_mode:
