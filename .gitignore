@@ -1,2 +1,9 @@
 processed_data/
 PDBbind-2025.8.4/
+# Python
+ __pycache__/
+ *.pyc
+
+ checkpoints/
+ failed_cases/
+

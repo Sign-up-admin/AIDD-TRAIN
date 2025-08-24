@@ -45,6 +45,8 @@ CONFIG = {
     'max_num_neighbors': 32,     # 允许模型看到更丰富的原子邻域环境 (ViSNet 默认值)
     'visnet_cutoff': 5.0,
     'visnet_num_rbf': 64,      # 增加距离表示的分辨率
+    'visnet_lmax': 2, # Use higher-order spherical harmonics (lmax > 1)
+    'visnet_vecnorm_type': 'max_min', # 'max_min' or None. Corrected from invalid 'rms'.
 
     # --- Hardware & Performance ---
     'processing_num_workers': 16,

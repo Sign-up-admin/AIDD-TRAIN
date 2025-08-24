@@ -10,7 +10,7 @@ class ViSNetPDB(torch.nn.Module):
     """
     A wrapper for the ViSNet model to handle the combined protein-ligand graph data.
     """
-    def __init__(self, hidden_channels=128, num_layers=6, num_rbf=64, cutoff=8.0, max_num_neighbors=32):
+    def __init__(self, hidden_channels=128, num_layers=6, num_rbf=64, cutoff=8.0, max_num_neighbors=32, lmax=1, vecnorm_type='max_min'):
         super().__init__()
         self.visnet = ViSNet(
             hidden_channels=hidden_channels,
@@ -18,8 +18,8 @@ class ViSNetPDB(torch.nn.Module):
             num_rbf=num_rbf,
             cutoff=cutoff,
             max_num_neighbors=max_num_neighbors,
-            lmax=1,
-            vecnorm_type='rms', # Changed from 'max_min' for better stability
+            lmax=lmax,
+            vecnorm_type=vecnorm_type, # Using a valid and configurable vecnorm_type
             trainable_vecnorm=True, # Enabled for adaptive normalization
             num_heads=8,
             trainable_rbf=False,

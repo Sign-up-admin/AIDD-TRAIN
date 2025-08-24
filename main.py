@@ -18,36 +18,27 @@ from src.dataset import PDBBindDataset
 from src.model import ViSNetPDB
 from src.training import train, test
 from src.utils import save_checkpoint, load_checkpoint, set_seed, get_file_hash
+from src.hardware_utils import generate_suggested_config, get_hardware_recommendations
 
 
 def collate_filter_none(batch):
     """Filters out None values from a batch and returns a new batch."""
     batch = list(filter(lambda x: x is not None, batch))
-    # If the batch is empty after filtering, return None
     if not batch:
         return None
     return torch_geometric.data.Batch.from_data_list(batch)
 
-
 def main():
+    # Generate suggested config file and print recommendations before loading user config
+    generate_suggested_config()
+    
     config = CONFIG
-
-    # Dynamically set processing and loader workers based on CPU cores
-    num_cpu_cores = os.cpu_count()
-    if num_cpu_cores is not None:
-        if num_cpu_cores < 4:
-            config['processing_num_workers'] = 2
-            config['loader_num_workers'] = 2
-        else:
-            config['processing_num_workers'] = num_cpu_cores
-            config['loader_num_workers'] = num_cpu_cores
-    else:
-        print("Warning: Could not detect number of CPU cores. Using default worker settings from config.py.")
+    get_hardware_recommendations(config)
 
     # --- Reproducibility ---
     set_seed(config.get('seed', 42))
 
-    print("--- Configuration Loaded ---")
+    print("--- Configuration Loaded (from config.py) ---")
     print(f"Processing Cores: {config['processing_num_workers']}")
     print(f"Loader Cores: {config['loader_num_workers']}")
     print(f"Batch Size: {config['batch_size']} (Effective: {config['batch_size'] * config['gradient_accumulation_steps']})")
@@ -65,7 +56,6 @@ def main():
 
     print("Step 2: Verifying data consistency and creating dataset...")
 
-    # Use the hash of the data processing script as the version
     data_processing_script_path = os.path.join(os.path.dirname(__file__), 'src', 'data_processing.py')
     data_processing_version = get_file_hash(data_processing_script_path)
     if data_processing_version is None:
@@ -74,7 +64,6 @@ def main():
         
     version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
 
-    # Check for existing data and compare versions
     if any(os.path.exists(os.path.join(config['processed_data_dir'], item['year_dir'], f"{item['pdb_code']}.pt")) for item in all_data_paths):
         if os.path.exists(version_file_path):
             with open(version_file_path, 'r') as f:
@@ -127,7 +116,6 @@ def main():
     train_dataset = dataset.index_select(train_subset.indices)
     val_dataset = dataset.index_select(val_subset.indices)
     
-    # Force num_workers to 0 on Windows to prevent instability
     loader_num_workers = config['loader_num_workers']
     if platform.system() == 'Windows' and loader_num_workers > 0:
         print("Warning: Using multiple workers for DataLoader on Windows can be unstable. Forcing num_workers to 0.")
@@ -148,10 +136,11 @@ def main():
         num_layers=config.get('visnet_num_layers', 6),
         num_rbf=config.get('visnet_num_rbf', 64),
         cutoff=config.get('visnet_cutoff', 8.0),
-        max_num_neighbors=config.get('max_num_neighbors', 32)
+        max_num_neighbors=config.get('max_num_neighbors', 32),
+        lmax=config.get('visnet_lmax', 1),
+        vecnorm_type=config.get('visnet_vecnorm_type', 'max_min')
     ).to(device)
 
-    # Increased epsilon for Adam optimizer for better stability with float16/AMP
     optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], eps=1e-7)
     scaler = GradScaler()
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.5)
