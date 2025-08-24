@@ -50,51 +50,34 @@ This project is built not just on a powerful model, but on a core philosophy of 
 
 ---
 
-## Step 2: Automated Hardware Optimization (Recommended)
+## Step 2: Automated Hardware Optimization (Highly Recommended)
 
-Before running a full training, it is highly recommended to calibrate the model for your specific hardware. This step eliminates `CUDA out of memory` errors and ensures you are always using the most performant configuration.
+Before the first training run, you should calibrate the model for your specific hardware. This crucial one-time step runs a series of benchmarks to find the most performant and stable configuration (batch size, model complexity, etc.) your GPU can handle, effectively eliminating `CUDA out of memory` errors.
 
-This process only needs to be run once. You can either run the optimizer for all modes at once or for individual modes.
+The optimizer is now fully automated and uses a hierarchical strategy. It starts by finding the best configuration for the most demanding `production` mode and then uses those results to intelligently and rapidly find the optimal settings for the less demanding modes.
 
-### One-Command Optimization (Recommended)
+### Running the Optimizer
 
-To generate the optimal configuration for all modes in a single step, run the command appropriate for your terminal.
+1.  Open your terminal.
+2.  Navigate to the project's root directory (`AIDD-TRAIN`).
+3.  Run the following single command:
 
-**For Linux/macOS (bash) or Windows (cmd.exe):**
+    ```sh
+    python src/hardware_optimizer.py
+    ```
+
+This command will optimize for all four modes (`production`, `validation`, `prototyping`, and `smoke_test`) in the correct order. The process may take some time, especially the initial `production` mode test, which runs for a high number of iterations (e.g., 500+) to ensure the configuration is truly stable under sustained load.
+
+The script will create or update a `hardware_profile.json` file. The main training script (`main.py`) will automatically load the appropriate settings from this file based on the `DEVELOPMENT_MODE` you select in `config.py`.
+
+### (Optional) Optimizing for Specific Modes
+
+If you wish to re-run the optimization for only specific modes, you can use the `--modes` argument:
+
 ```sh
-python src/hardware_optimizer.py --mode production && python src/hardware_optimizer.py --mode validation && python src/hardware_optimizer.py --mode prototyping && python src/hardware_optimizer.py --mode smoke_test
+# Example: Optimize only for production and validation
+python src/hardware_optimizer.py --modes production validation
 ```
-
-**For Windows PowerShell:**
-```powershell
-python src/hardware_optimizer.py --mode production; python src/hardware_optimizer.py --mode validation; python src/hardware_optimizer.py --mode prototyping; python src/hardware_optimizer.py --mode smoke_test
-```
-
-### Individual Mode Optimization
-
-If you only need to optimize for a specific mode, you can run the commands individually:
-
--   **Production Mode:** For generating final, high-quality results.
-    ```sh
-    python src/hardware_optimizer.py --mode production
-    ```
-
--   **Validation Mode:** For thorough testing under realistic conditions.
-    ```sh
-    python src/hardware_optimizer.py --mode validation
-    ```
-
--   **Prototyping Mode:** For rapid experimentation and testing new ideas.
-    ```sh
-    python src/hardware_optimizer.py --mode prototyping
-    ```
-
--   **Smoke Test Mode:** For a quick check to ensure the pipeline runs.
-    ```sh
-    python src/hardware_optimizer.py --mode smoke_test
-    ```
-
-**Note:** Running the optimizer will create or update the `hardware_profile.json` file. The main training script will automatically use these settings based on your selected mode.
 
 ---
 

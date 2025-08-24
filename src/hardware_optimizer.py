@@ -2,6 +2,7 @@ import torch
 import os
 import json
 import gc
+import time
 from itertools import product
 import argparse
 
@@ -19,11 +20,11 @@ class MockViSNet(torch.nn.Module):
             h = layer(h)
         return torch.sum(h)
 
-def probe_config(config, stress_iterations=100):
+def probe_config(config, stress_iterations=20):
     """
-    Tests a given configuration for OOM errors under sustained load.
+    Tests a given configuration for a specific number of iterations to ensure stability.
     """
-    print(f"--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3}...", end='')
+    print(f"--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3} for {stress_iterations} iterations...", end='')
     try:
         model = MockViSNet(
             hidden_channels=config['visnet_hidden_channels'],
@@ -38,16 +39,20 @@ def probe_config(config, stress_iterations=100):
         batch = torch.repeat_interleave(torch.arange(batch_size), num_atoms).cuda()
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
+        last_progress_print_time = time.time()
         for i in range(stress_iterations):
             optimizer.zero_grad()
             output = model(x, pos, batch)
             scaled_output = output * 100
             scaled_output.backward()
             optimizer.step()
-            if (i + 1) % (max(1, stress_iterations // 5)) == 0:
+            
+            current_time = time.time()
+            if current_time - last_progress_print_time > 2:
                 print(".", end='', flush=True)
+                last_progress_print_time = current_time
 
-        print(" SUCCESS")
+        print(f" SUCCESS")
         return True
     except torch.cuda.OutOfMemoryError:
         print(" FAILED (OOM)")
@@ -59,7 +64,7 @@ def probe_config(config, stress_iterations=100):
 
 def get_search_space(vram_gb, mode_to_optimize):
     """
-    Generates a dynamic search space based on VRAM and optimization mode.
+    Generates a dynamic search space, including stress iterations, based on VRAM and mode.
     """
     print(f"\nGenerating search space for {vram_gb:.2f} GB VRAM and '{mode_to_optimize}' mode...")
     base_hidden_channels = [256, 192, 128, 96, 64]
@@ -75,19 +80,19 @@ def get_search_space(vram_gb, mode_to_optimize):
     if mode_to_optimize == 'validation':
         batch_sizes = [int(bs * vram_factor) for bs in [64, 48, 32, 24, 16, 12, 8, 4, 2, 1]]
         max_atoms_target = int(5000 * vram_factor)
-        stress_iterations = int(100 * stress_factor)
+        stress_iterations = int(30 * stress_factor)
     elif mode_to_optimize == 'prototyping':
         batch_sizes = [int(bs * vram_factor) for bs in [128, 96, 64, 48, 32, 24, 16, 8]]
         max_atoms_target = int(1024 * vram_factor)
-        stress_iterations = int(50 * stress_factor)
+        stress_iterations = int(20 * stress_factor)
     elif mode_to_optimize == 'smoke_test':
         batch_sizes = [int(bs * vram_factor) for bs in [256, 128, 64, 32, 16, 8]]
         max_atoms_target = 128
-        stress_iterations = 20
+        stress_iterations = 10
     else:  # production
         batch_sizes = [int(bs * vram_factor) for bs in [32, 24, 16, 12, 8, 6, 4, 2, 1]]
         max_atoms_target = int(10000 * vram_factor)
-        stress_iterations = int(150 * stress_factor)
+        stress_iterations = int(50 * stress_factor)
 
     batch_sizes = sorted(list(set(bs for bs in batch_sizes if bs > 0)), reverse=True)
     return batch_sizes, hidden_channels_list, num_layers_list, max_atoms_target, stress_iterations
@@ -104,7 +109,7 @@ def save_results(final_profile):
 
 def find_optimal_configs(modes_to_optimize):
     """
-    Finds the best hardware configuration using a hierarchical, inheritance-based strategy.
+    Finds the best hardware configuration using a hierarchical, VRAM-aware strategy.
     """
     if not torch.cuda.is_available():
         print("CUDA is not available. Aborting.")
@@ -123,61 +128,60 @@ def find_optimal_configs(modes_to_optimize):
         except (json.JSONDecodeError, IOError):
             pass
 
-    # Hierarchical optimization order
     optimization_hierarchy = ['production', 'validation', 'prototyping', 'smoke_test']
     modes_to_run = [m for m in optimization_hierarchy if m in modes_to_optimize]
-
-    best_config_so_far = None
 
     try:
         for mode in modes_to_run:
             print(f"\n================ Optimizing for: {mode.upper()} ================")
             batch_sizes, hidden_channels, num_layers, max_atoms, stress_iters = get_search_space(vram_gb, mode)
             
-            # --- Configuration Inheritance & Pruning --- 
             if mode == 'smoke_test' and 'prototyping' in final_profile:
                 print("--- Strategy: Inheriting from 'prototyping' config. ---")
-                best_config_so_far = final_profile['prototyping']
-                final_profile[mode] = best_config_so_far
+                final_profile[mode] = final_profile['prototyping']
                 print(f">>> Directly adopted config for '{mode}'!")
                 continue
 
-            # Seed search with results from a higher-tier mode
             seed_config = final_profile.get('production') or final_profile.get('validation')
-            
             best_config_for_this_mode = None
 
-            # For validation/prototyping, we can use a much faster, seeded search if a higher-tier config exists.
             if mode in ['validation', 'prototyping'] and seed_config:
                 print(f"--- Strategy: Seeding with a higher-tier config to find max batch size ---")
-                # Find max batch size for the best model found so far.
                 seeded_model = {'visnet_hidden_channels': seed_config['visnet_hidden_channels'], 'visnet_num_layers': seed_config['visnet_num_layers']}
                 for i, bs in enumerate(batch_sizes):
                     print(f"[{(i+1):>2}/{len(batch_sizes)}] ", end='')
                     current_config = {**seeded_model, 'batch_size': bs, 'max_atoms': max_atoms}
                     if probe_config(current_config, stress_iterations=stress_iters):
                         best_config_for_this_mode = current_config
-                        break # Found max batch size for this model
+                        break
             
-            # Fallback to full search if no seed or if it's production mode
             if not best_config_for_this_mode:
-                print(f"--- Strategy: Full search for '{mode}' ---")
-                param_combinations = list(product(num_layers, hidden_channels, batch_sizes))
+                # VRAM-Aware Search Strategy
+                search_from_smallest = (vram_gb < 10)
+                if search_from_smallest:
+                    print(f"--- Strategy: Full search (small-to-large) for low-VRAM GPU ---")
+                    param_combinations = list(product(sorted(num_layers), sorted(hidden_channels), sorted(batch_sizes, reverse=True)))
+                else:
+                    print(f"--- Strategy: Full search (large-to-small) for high-VRAM GPU ---")
+                    param_combinations = list(product(num_layers, hidden_channels, batch_sizes))
+                
                 for i, (layers, channels, bs) in enumerate(param_combinations):
                     print(f"[{(i+1):>3}/{len(param_combinations)}] ", end='')
                     current_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': bs, 'max_atoms': max_atoms}
                     if probe_config(current_config, stress_iterations=stress_iters):
-                        best_config_for_this_mode = current_config
-                        break
+                        # For small-to-large search, we save the current best and continue searching for better ones
+                        if search_from_smallest:
+                            best_config_for_this_mode = current_config
+                        else: # For large-to-small, the first success is the best one
+                            best_config_for_this_mode = current_config
+                            break
             
             if best_config_for_this_mode:
-                best_config_so_far = best_config_for_this_mode
-                final_profile[mode] = best_config_so_far
+                final_profile[mode] = best_config_for_this_mode
                 print(f"\n>>> Found optimal configuration for '{mode}'!")
-                print(json.dumps(best_config_so_far, indent=4))
+                print(json.dumps(best_config_for_this_mode, indent=4))
             else:
                 print(f"\n--- Optimization Failed for '{mode}'. No stable configuration found. ---")
-                # If a mode fails, we can't proceed down the hierarchy
                 print("Aborting further optimization as it depends on this result.")
                 break
 
@@ -190,7 +194,7 @@ def find_optimal_configs(modes_to_optimize):
         print("\nNo valid configurations were found.")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Find the optimal hardware configuration using a hierarchical, inheritance-based strategy.")
+    parser = argparse.ArgumentParser(description="Find the optimal hardware configuration using a hierarchical, VRAM-aware strategy.")
     parser.add_argument(
         '--modes',
         nargs='+',
