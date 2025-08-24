@@ -213,7 +213,7 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
     print(f"[3/3] Stability confirmation...", end='')
     config = {**base_config, 'batch_size': bs_candidate}
     # PRACTICAL ADJUSTMENT: The final stability check is important, but doesn't need to be excessively long.
-    if probe_config(config, stress_iterations=35, prefix="\t"):
+    if probe_config(config, stress_iterations=35, prefix="\t"): # CORRECTED: Fixed to 35 iterations
         print(f"\t> Final configuration is stable.")
         return bs_candidate
     else:
