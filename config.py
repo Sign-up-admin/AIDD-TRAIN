@@ -28,7 +28,7 @@ MODES = {
         'batch_size': 1,  # 每个 GPU 的批处理大小。对于 smoke_test，设置为 1。
         'gradient_accumulation_steps': 2,  # 梯度累积步数。模拟更大的批次大小，例如 batch_size * steps = 1 * 2 = 2。
         'loader_num_workers': 0,  # 数据加载器的工作进程数。设置为0以避免多进程问题。
-        'visnet_hidden_channels': 8,  # ViSNet 模型的隐藏层通道数。值越小，模型越简单。
+        'visnet_hidden_channels': 8,  # ViSNet 模型的隐藏层通道数。必须是注意力头数（默认为8）的倍数。
         'visnet_num_layers': 1,  # ViSNet 模型的层数。值越小，模型越简单。
         'visnet_num_rbf': 8,  # 径向基函数的数量。用于表示原子间的距离。
         'force_data_reprocessing': False,  # 是否强制重新处理数据。在 smoke_test 中通常为 False。
@@ -41,7 +41,7 @@ MODES = {
         'batch_size': 2, # 每个 GPU 的批处理大小。根据显存大小调整。
         'gradient_accumulation_steps': 4, # 梯度累积步数。
         'loader_num_workers': 0, # 数据加载器的工作进程数。设置为0以避免多进程问题。
-        'visnet_hidden_channels': 32, # ViSNet 模型的隐藏层通道数。
+        'visnet_hidden_channels': 32, # ViSNet 模型的隐藏层通道数。必须是注意力头数（默认为8）的倍数。
         'visnet_num_layers': 2, # ViSNet 模型的层数。
         'visnet_num_rbf': 32, # 径向基函数的数量。
         'force_data_reprocessing': False, # 是否强制重新处理数据。
@@ -54,7 +54,7 @@ MODES = {
         'batch_size': 4,
         'gradient_accumulation_steps': 8,
         'loader_num_workers': 0,
-        'visnet_hidden_channels': 48,
+        'visnet_hidden_channels': 48, # ViSNet 模型的隐藏层通道数。必须是注意力头数（默认为8）的倍数。
         'visnet_num_layers': 3,
         'visnet_num_rbf': 48,
         'force_data_reprocessing': False,
@@ -67,7 +67,7 @@ MODES = {
         'batch_size': 8,
         'gradient_accumulation_steps': 8,
         'loader_num_workers': 0,
-        'visnet_hidden_channels': 64,
+        'visnet_hidden_channels': 64, # ViSNet 模型的隐藏层通道数。必须是注意力头数（默认为8）的倍数。
         'visnet_num_layers': 4,
         'visnet_num_rbf': 64,
         'force_data_reprocessing': False,
@@ -119,6 +119,8 @@ CONFIG = {
     'gradient_clip_val': 1.0,
 
     # --- ViSNet 模型特定参数 ---
+    # 注意：ViSNet 的注意力机制要求 `visnet_hidden_channels` 必须能被 `visnet_num_heads` 整除。
+    # `visnet_num_heads` 在模型内部定义，默认为 8。请确保 `visnet_hidden_channels` 是 8 的倍数。
     # 在构建分子图时，每个原子考虑的最大邻居数。值越大，计算成本越高，但可能捕捉更复杂的相互作用。
     'max_num_neighbors': 32,
     # ViSNet 模型中邻居搜索的截断半径（单位：埃）。只有在此半径内的原子才被视为邻居。

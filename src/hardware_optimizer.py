@@ -116,18 +116,34 @@ def get_search_space(vram_gb, mode_to_optimize):
     The number of hidden channels is ensured to be divisible by 8 for ViSNet compatibility.
     """
     print(f"\nGenerating search space for {vram_gb:.2f} GB VRAM and '{mode_to_optimize}' mode...")
-    base_hidden_channels = [256, 192, 128, 96, 64]
-    base_num_layers = [8, 7, 6, 5, 4, 3]
+    
+    # --- NEW, MORE CONSERVATIVE BASE PARAMETERS ---
+    # The previous base parameters were too large for GPUs with <= 8GB VRAM.
+    # This new set starts from a much smaller baseline.
+    if vram_gb <= 8:
+        print("--- Using conservative search space for lower VRAM GPU ---")
+        base_hidden_channels = [128, 96, 64, 48, 32]
+        base_num_layers = [6, 5, 4, 3]
+    else:
+        base_hidden_channels = [256, 192, 128, 96, 64]
+        base_num_layers = [8, 7, 6, 5, 4, 3]
+
     num_attention_heads = 8 # ViSNet default
 
-    if vram_gb > 20: vram_factor, stress_factor = 2.0, 1.5
-    elif vram_gb > 10: vram_factor, stress_factor = 1.5, 1.2
-    elif vram_gb > 5: vram_factor, stress_factor = 1.2, 1.1
-    else: vram_factor, stress_factor = 1.0, 1.0
+    # --- Scaling factors based on VRAM ---
+    if vram_gb > 20: vram_factor, stress_factor = 1.8, 1.5
+    elif vram_gb > 10: vram_factor, stress_factor = 1.4, 1.2
+    elif vram_gb > 7: vram_factor, stress_factor = 1.1, 1.1 # Covers 8GB cards
+    else: vram_factor, stress_factor = 1.0, 1.0 # Covers 6GB cards without scaling up
 
     # --- FIX: Ensure hidden channels are divisible by the number of attention heads ---
-    raw_channels = [int(c * vram_factor) for c in base_hidden_channels]
-    hidden_channels_list = sorted(list(set([c - (c % num_attention_heads) for c in raw_channels])), reverse=True)
+    hidden_channels_list = [
+        (int(c * vram_factor) // num_attention_heads) * num_attention_heads
+        for c in base_hidden_channels
+    ]
+    # Filter out channels that become 0 after rounding down
+    hidden_channels_list = [c for c in hidden_channels_list if c > 0]
+    hidden_channels_list = sorted(list(set(hidden_channels_list)), reverse=True)
     
     num_layers_list = sorted(list(set(int(l * vram_factor) for l in base_num_layers)), reverse=True)
 

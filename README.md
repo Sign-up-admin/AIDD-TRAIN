@@ -18,6 +18,7 @@ This project is built not just on a powerful model, but on a core philosophy of 
 - **Mode-Driven Workflow**: A four-stage development process (`smoke_test`, `prototyping`, `validation`, `production`) that allows for seamless switching between quick checks, rapid experimentation, and full-scale training.
 - **High-Performance Training**: Utilizes Automatic Mixed Precision (AMP) for significant speed-ups.
 - **Resilient & Manageable**: Features robust checkpointing, graceful exit handling, and automated log/checkpoint organization.
+- **Important ViSNet Constraint**: The ViSNet model requires that the number of hidden channels be divisible by the number of attention heads. This is a key consideration when configuring the model.
 
 ---
 

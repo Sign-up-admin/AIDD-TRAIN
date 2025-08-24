@@ -25,6 +25,7 @@ CONFIG = {
     'gradient_clip_val': 1.0,
 
     # --- ViSNet Model Specific ---
+    # Note: The ViSNet attention mechanism requires that 'visnet_hidden_channels' is divisible by the number of attention heads (default is 8).
     'visnet_lmax': 2,  # Use higher-order spherical harmonics (lmax > 1) for better geometric representation.
     'visnet_num_layers': 4,
     'max_num_neighbors': 32,
