@@ -1,17 +1,14 @@
 processed_data/
 PDBbind-2025.8.4/
 
-# Python
-__pycache__/
+# Python cache
+**/__pycache__/
 *.pyc
-__pycache__
 
 checkpoints/
 
 failed_cases/
 
-src\__pycache__/
-
 logs/
 
-.idea
+.idea/

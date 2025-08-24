@@ -5,7 +5,7 @@ import platform
 from multiprocessing import set_start_method
 
 import torch
-import torch_geometric
+from torch_geometric.data import Batch
 from torch.utils.data import random_split
 from torch_geometric.loader import DataLoader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -21,12 +21,22 @@ from src.utils import save_checkpoint, load_checkpoint, set_seed, get_file_hash
 from src.hardware_utils import get_hardware_recommendations
 from src.logger import TrainingLogger
 
+
 def collate_filter_none(batch):
     """Filters out None values from a batch and returns a new batch."""
     batch = list(filter(lambda x: x is not None, batch))
     if not batch:
         return None
-    return torch_geometric.data.Batch.from_data_list(batch)
+    return Batch.from_data_list(batch)
+
+
+def worker_init_fn(worker_id):
+    """
+    Prevents worker processes from catching KeyboardInterrupt.
+    This is a common solution for multiprocessing data loading issues.
+    """
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
 
 def main():
     config = CONFIG
@@ -124,10 +134,11 @@ def main():
     val_dataset = dataset.index_select(val_subset.indices)
 
     loader_num_workers = config['loader_num_workers']
+    init_fn = worker_init_fn if loader_num_workers > 0 else None
 
     pin_memory = True if device.type == 'cuda' else False
-    train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=loader_num_workers, pin_memory=pin_memory, collate_fn=collate_filter_none)
-    val_loader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False, num_workers=loader_num_workers, pin_memory=pin_memory, collate_fn=collate_filter_none)
+    train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True, num_workers=loader_num_workers, pin_memory=pin_memory, collate_fn=collate_filter_none, worker_init_fn=init_fn)
+    val_loader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False, num_workers=loader_num_workers, pin_memory=pin_memory, collate_fn=collate_filter_none, worker_init_fn=init_fn)
     logger.log(f"-> Train: {len(train_dataset)} | Validation: {len(val_dataset)}")
 
     logger.log("Step 4: Setting up model, optimizer, and scheduler...")
@@ -145,7 +156,7 @@ def main():
         vecnorm_type=config.get('visnet_vecnorm_type', 'max_min')
     ).to(device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], eps=1e-7)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config['learning_rate'], eps=1e-7, weight_decay=1e-5)
     scaler = GradScaler()
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=3, factor=0.5)
     logger.log(f"-> Model initialized with {sum(p.numel() for p in model.parameters()):,} parameters.")
@@ -223,53 +234,50 @@ def main():
         logger.log("--> No checkpoint found, starting from scratch.")
 
     logger.log("Step 5: Starting training...")
-    try:
-        for epoch in range(start_epoch, config['epochs'] + 1):
-            training_state['epoch'] = epoch
-            training_state['batch_idx'] = 0
+    for epoch in range(start_epoch, config['epochs'] + 1):
+        training_state['epoch'] = epoch
+        training_state['batch_idx'] = 0
 
-            is_profiling_epoch = (epoch == 1 and start_batch == 0 and config.get('profile', False))
+        is_profiling_epoch = (epoch == 1 and start_batch == 0 and config.get('profile', False))
 
-            if is_profiling_epoch:
-                logger.log("--- Profiling enabled for the first epoch ---")
-                with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
-                    train_loss = train(model, train_loader, optimizer, device, scaler, config['gradient_accumulation_steps'], epoch, best_val_loss, config, scheduler, training_state, start_batch=start_batch, logger=logger)
-
-                logger.log("--- Profiler Results ---")
-                logger.log(prof.key_averages().table(sort_by="cuda_time_total", row_limit=15))
-            else:
+        if is_profiling_epoch:
+            logger.log("--- Profiling enabled for the first epoch ---")
+            with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
                 train_loss = train(model, train_loader, optimizer, device, scaler, config['gradient_accumulation_steps'], epoch, best_val_loss, config, scheduler, training_state, start_batch=start_batch, logger=logger)
 
-            start_batch = 0
+            logger.log("--- Profiler Results ---")
+            logger.log(prof.key_averages().table(sort_by="cuda_time_total", row_limit=15))
+        else:
+            train_loss = train(model, train_loader, optimizer, device, scaler, config['gradient_accumulation_steps'], epoch, best_val_loss, config, scheduler, training_state, start_batch=start_batch, logger=logger)
 
-            val_loss = test(model, val_loader, device, logger=logger)
+        start_batch = 0
 
-            scheduler.step(val_loss)
+        val_loss = test(model, val_loader, device, logger=logger)
 
-            logger.log(f"Epoch {epoch:02d}/{config['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
+        scheduler.step(val_loss)
 
-            is_best = val_loss < best_val_loss
-            if is_best:
-                best_val_loss = val_loss
+        logger.log(f"Epoch {epoch:02d}/{config['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
-            checkpoint_data = {
-                'epoch': epoch,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'scaler_state_dict': scaler.state_dict(),
-                'scheduler_state_dict': scheduler.state_dict(),
-                'val_loss': val_loss,
-            }
+        is_best = val_loss < best_val_loss
+        if is_best:
+            best_val_loss = val_loss
 
-            save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'checkpoint.pth.tar', logger)
-            if is_best:
-                save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'model_best.pth.tar', logger)
-                logger.log(f"-> New best model saved with validation loss: {val_loss:.4f}")
+        checkpoint_data = {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'scaler_state_dict': scaler.state_dict(),
+            'scheduler_state_dict': scheduler.state_dict(),
+            'val_loss': val_loss,
+        }
 
-    except KeyboardInterrupt:
-        graceful_exit_handler()
+        save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'checkpoint.pth.tar', logger)
+        if is_best:
+            save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'model_best.pth.tar', logger)
+            logger.log(f"-> New best model saved with validation loss: {val_loss:.4f}")
 
     logger.log("--- Training Finished ---")
+
 
 if __name__ == '__main__':
     try:
