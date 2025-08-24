@@ -207,16 +207,38 @@ def process_item(item):
         data.x = torch.cat([ligand_graph['v'], protein_graph['v']], dim=0)
         data.pos = torch.cat([ligand_graph['pos'], protein_graph['pos']], dim=0)
 
+        # Final check for duplicate positions before returning the data object.
+        # This is a critical safeguard against data corruption.
         final_pos_tensor = data.pos
-        uniques = torch.unique(final_pos_tensor, dim=0)
-        if uniques.shape[0] < final_pos_tensor.shape[0]:
-            logging.error(f"CRITICAL ERROR in {pdb_code}: Duplicate atom positions DETECTED even after filtering.")
-            counts = {tuple(p.tolist()): 0 for p in final_pos_tensor}
-            for p in final_pos_tensor:
-                counts[tuple(p.tolist())] += 1
-            dupes = {pos: count for pos, count in counts.items() if count > 1}
-            logging.error(f"Duplicate positions and their counts: {dupes}")
-            return None
+        
+        # We use numpy's unique function here because it provides the indices of the unique elements,
+        # which is essential for keeping the 'pos' and 'x' tensors synchronized.
+        _, unique_indices = np.unique(final_pos_tensor.numpy(), axis=0, return_index=True)
+
+        # If the number of unique indices is less than the total number of atoms, we have duplicates.
+        if len(unique_indices) < final_pos_tensor.shape[0]:
+            original_atom_count = final_pos_tensor.shape[0]
+            logging.warning(f"Duplicate atom positions detected in {pdb_code}. Attempting automatic repair...")
+
+            # --- Attempt Repair ---
+            # We filter both the position and feature tensors using the indices of the unique atoms.
+            # This ensures that the data remains consistent.
+            data.pos = final_pos_tensor[unique_indices]
+            data.x = data.x[unique_indices]
+            
+            # --- Final Verification ---
+            # After attempting the repair, we perform one last check to ensure the data is clean.
+            # This is the "trust but verify" principle in action.
+            final_pos_tensor_after_fix = data.pos
+            if torch.unique(final_pos_tensor_after_fix, dim=0).shape[0] < final_pos_tensor_after_fix.shape[0]:
+                # This is our final, critical safeguard. If this check fails, it means our repair
+                # logic has a flaw, and we must stop to avoid corrupting the dataset.
+                logging.error(f"CRITICAL ERROR in {pdb_code}: Automatic repair of duplicate positions FAILED. "
+                              f"The data for this entry will be discarded.")
+                return None
+            
+            removed_count = original_atom_count - len(unique_indices)
+            logging.warning(f"Successfully repaired {pdb_code}. Removed {removed_count} duplicate atom(s).")
 
         return data
 

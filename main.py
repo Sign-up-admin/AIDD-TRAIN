@@ -18,7 +18,7 @@ from src.dataset import PDBBindDataset
 from src.model import ViSNetPDB
 from src.training import train, test
 from src.utils import save_checkpoint, load_checkpoint, set_seed, get_file_hash
-from src.hardware_utils import generate_suggested_config, get_hardware_recommendations
+from src.hardware_utils import get_hardware_recommendations
 from src.logger import TrainingLogger
 
 def collate_filter_none(batch):
@@ -29,30 +29,32 @@ def collate_filter_none(batch):
     return torch_geometric.data.Batch.from_data_list(batch)
 
 def main():
+    config = CONFIG
+
+    # --- Dynamic Directory Setup ---
+    # Create run-specific directories for logs and checkpoints to avoid overwrites.
+    run_name = config.get('run_name', 'default_run')
+    log_dir = os.path.join('logs', run_name)
+    checkpoint_dir = os.path.join('checkpoints', run_name)
+    config['checkpoint_dir'] = checkpoint_dir
+    os.makedirs(log_dir, exist_ok=True)
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    os.makedirs(config['processed_data_dir'], exist_ok=True)
+
     # --- Logger Setup ---
-    log_dir = os.path.join(os.path.dirname(CONFIG.get('processed_data_dir', '.')), 'logs')
     logger = TrainingLogger(log_dir=log_dir)
     logger.log("--- Training Process Started ---")
 
-    # Generate suggested config file and print recommendations before loading user config
-    generate_suggested_config()
-    
-    config = CONFIG
-    get_hardware_recommendations(config)
-
-    # --- Reproducibility ---
+    # --- Hardware & Config Logging ---
+    get_hardware_recommendations(config, logger)
     set_seed(config.get('seed', 42), logger)
 
-    logger.log("--- Configuration Loaded (from config.py) ---")
-    logger.log(f"Processing Cores: {config['processing_num_workers']}")
-    logger.log(f"Loader Cores: {config['loader_num_workers']}")
-    logger.log(f"Batch Size: {config['batch_size']} (Effective: {config['batch_size'] * config['gradient_accumulation_steps']})")
-    logger.log(f"Epochs: {config['epochs']}")
+    logger.log("--- Configuration Loaded ---")
+    logger.log(f"Run Name: {run_name}")
+    logger.log(f"Development Mode: {config.get('development_mode', 'N/A')}")
+    logger.log(f"Effective Batch Size: {config['batch_size'] * config['gradient_accumulation_steps']}")
+    logger.log(f"Target Epochs: {config['epochs']}")
     logger.log("--------------------------")
-    
-    config['checkpoint_dir'] = os.path.join(os.path.dirname(config.get('processed_data_dir', '.')), 'checkpoints')
-    os.makedirs(config['processed_data_dir'], exist_ok=True)
-    os.makedirs(config['checkpoint_dir'], exist_ok=True)
 
     logger.log("Step 1: Parsing PDBbind index...")
     pdb_info = get_pdb_info(config['index_file'])
@@ -66,7 +68,7 @@ def main():
     if data_processing_version is None:
         logger.log_error(f"Could not find data processing script at '{data_processing_script_path}' to generate version hash.")
         return
-        
+
     version_file_path = os.path.join(config['processed_data_dir'], 'processing_version.txt')
 
     if any(os.path.exists(os.path.join(config['processed_data_dir'], item['year_dir'], f"{item['pdb_code']}.pt")) for item in all_data_paths):
@@ -92,7 +94,7 @@ def main():
             return
 
     dataset = PDBBindDataset(
-        root=config['processed_data_dir'], 
+        root=config['processed_data_dir'],
         data_paths=all_data_paths,
         num_workers=config['processing_num_workers']
     )
@@ -115,12 +117,12 @@ def main():
 
     train_size = int(config['train_split'] * len(dataset))
     val_size = len(dataset) - train_size
-    
+
     generator = torch.Generator().manual_seed(config.get('seed', 42))
     train_subset, val_subset = random_split(dataset, [train_size, val_size], generator=generator)
     train_dataset = dataset.index_select(train_subset.indices)
     val_dataset = dataset.index_select(val_subset.indices)
-    
+
     loader_num_workers = config['loader_num_workers']
 
     pin_memory = True if device.type == 'cuda' else False
@@ -132,7 +134,7 @@ def main():
     if len(train_dataset) == 0:
         logger.log_error("Training dataset is empty. Cannot proceed.")
         return
-        
+
     model = ViSNetPDB(
         hidden_channels=config.get('visnet_hidden_channels', 128),
         num_layers=config.get('visnet_num_layers', 6),
@@ -151,7 +153,7 @@ def main():
     start_epoch = 1
     start_batch = 0
     best_val_loss = float('inf')
-    
+
     training_state = {'epoch': 0, 'batch_idx': 0}
 
     def graceful_exit_handler(sig=None, _frame=None):
@@ -165,7 +167,7 @@ def main():
 
         epoch_to_save = training_state.get('epoch', 0)
         batch_idx_to_save = training_state.get('batch_idx', 0)
-        
+
         if epoch_to_save > 0:
             interrupt_checkpoint_data = {
                 'epoch': epoch_to_save,
@@ -181,7 +183,7 @@ def main():
             logger.log(f"--- Final state for epoch {epoch_to_save}, batch {batch_idx_to_save} saved to INTERRUPTED.pth.tar. Exiting. ---")
         else:
             logger.log_warning("--- Interruption occurred before training loop. No state to save. Exiting. ---")
-        
+
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, graceful_exit_handler)
@@ -192,7 +194,7 @@ def main():
         try:
             model.load_state_dict(checkpoint['model_state_dict'])
             optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            
+
             if checkpoint.get('interrupted', False):
                 start_epoch = checkpoint['epoch']
                 start_batch = checkpoint.get('batch_idx', 0)
@@ -208,7 +210,7 @@ def main():
             if 'scheduler_state_dict' in checkpoint:
                 scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
                 logger.log("--> Resumed LR Scheduler state.")
-            
+
             logger.log(f"--> Checkpoint states (model, optimizer, etc.) loaded successfully.")
             logger.log(f"--> Will start/resume training at epoch {start_epoch}. Last best validation loss: {best_val_loss:.4f}")
 
@@ -226,13 +228,13 @@ def main():
             training_state['epoch'] = epoch
             training_state['batch_idx'] = 0
 
-            is_profiling_epoch = (epoch == 1 and start_batch == 0 and config.get('profile', True))
-            
+            is_profiling_epoch = (epoch == 1 and start_batch == 0 and config.get('profile', False))
+
             if is_profiling_epoch:
                 logger.log("--- Profiling enabled for the first epoch ---")
                 with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
                     train_loss = train(model, train_loader, optimizer, device, scaler, config['gradient_accumulation_steps'], epoch, best_val_loss, config, scheduler, training_state, start_batch=start_batch, logger=logger)
-                
+
                 logger.log("--- Profiler Results ---")
                 logger.log(prof.key_averages().table(sort_by="cuda_time_total", row_limit=15))
             else:
@@ -241,15 +243,15 @@ def main():
             start_batch = 0
 
             val_loss = test(model, val_loader, device, logger=logger)
-            
+
             scheduler.step(val_loss)
-            
+
             logger.log(f"Epoch {epoch:02d}/{config['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
 
             is_best = val_loss < best_val_loss
             if is_best:
                 best_val_loss = val_loss
-            
+
             checkpoint_data = {
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
@@ -258,7 +260,7 @@ def main():
                 'scheduler_state_dict': scheduler.state_dict(),
                 'val_loss': val_loss,
             }
-            
+
             save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'checkpoint.pth.tar', logger)
             if is_best:
                 save_checkpoint(checkpoint_data, config['checkpoint_dir'], 'model_best.pth.tar', logger)
@@ -274,5 +276,5 @@ if __name__ == '__main__':
         set_start_method('spawn')
     except RuntimeError:
         pass
-    
+
     main()

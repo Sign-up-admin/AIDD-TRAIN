@@ -87,3 +87,43 @@ Based on our experience, the analysis script can be evolved from a specific diag
     - **Why**: Ensures the model is not trying to learn from corrupted labels.
 
 By incorporating these checks, COMPASS will be even better equipped to navigate the complexities of molecular data, ensuring every training run is built on the most reliable foundation possible.
+
+---
+
+### Scene: Building a Phased, Mode-Driven Development Workflow
+
+- **Objective**: To resolve the core conflict between the need for rapid iteration and the time-consuming nature of model training. We co-designed and implemented a phased, mode-driven workflow to transform the development process from "manual tweaking and repeated trial-and-error" to a systematic approach of "clear objectives, one-click switching".
+
+- **AI Contribution (Workflow Design & Implementation)**:
+    1.  **Conceptual Framework**: I proposed the core idea of decomposing the development process into three distinct logical stages: `smoke_test`, `prototyping`, and `production`, each with a specific goal and a corresponding set of configurations.
+    2.  **Centralized Configuration (`config.py`)**: I implemented this framework by creating a `MODES` dictionary in the config file. This allows all mode-specific hyperparameters (model size, batch size, epochs, etc.) to be controlled by a single `DEVELOPMENT_MODE` switch, drastically simplifying the process of changing experimental setups.
+    3.  **Hardware-Aware Intelligence (`hardware_utils.py`)**: I refactored the hardware script to be an active participant in the workflow. Instead of just suggesting a static config, it now analyzes the user's live hardware against the chosen `DEVELOPMENT_MODE` and provides actionable warnings and recommendations, preventing common errors like VRAM exhaustion.
+    4.  **Automated Organization (`main.py`)**: I modified the main script to automatically create unique, named subdirectories for logs and checkpoints based on the current run's mode and parameters. This ensures that experimental results are always organized and never overwrite each other.
+
+- **User-AI Collaboration**: The user's initial problem—the tension between fast debugging and reliable production results—was the catalyst for this entire initiative. The user's clear articulation of this core challenge allowed the AI to propose a comprehensive, architectural solution. The final, refined modes were a product of a tight feedback loop, ensuring the resulting workflow was both powerful and practical for the user's specific hardware (RTX 3060) and research needs.
+
+- **Outcome & Benefits**:
+    -   **Systematic Process**: The project now has a clear, repeatable, and logical progression from initial code check, to rapid experimentation, to final production run.
+    -   **Reduced Errors**: Proactive, hardware-aware warnings prevent common configuration mistakes, saving significant debugging time.
+    -   **Enhanced Productivity**: The ability to switch between well-defined experimental modes with a single line change allows the user to focus on scientific questions rather than on tedious configuration management.
+
+---
+
+### Scene: Refining the Development Workflow - From Theory to Practice
+
+- **Objective**: To address a critical flaw in our established mode-driven workflow. The `prototyping` mode, intended for rapid experimentation, was taking over 1.5 hours per epoch and causing CUDA memory errors, making it impractical for its purpose. The goal was to refine the workflow to truly match the practical needs of agile development.
+
+- **User-AI Collaboration**: The user astutely identified the core issue: the "prototyping" mode was a "validation" mode in disguise, violating the principle of a fast feedback loop. This critical observation from the user, based on their hands-on experience with the training times, was the catalyst for this refinement.
+
+- **AI Contribution (Workflow Refinement & Implementation)**:
+    1.  **Diagnosis & Proposal**: I immediately confirmed the user's diagnosis. I proposed a solution to make the modes more "true to their name": rename the existing `prototyping` mode to `validation` and introduce a brand-new, much lighter `prototyping` mode.
+    2.  **Implementation in `config.py`**: I implemented this change by:
+        *   Creating a new `prototyping` configuration with significantly reduced model parameters, batch size, and data limits, specifically targeting epoch times of just a few minutes.
+        *   Renaming the previous, heavier configuration to `validation`, positioning it as an intermediate step between prototyping and full production.
+        *   Updating all comments and documentation within `config.py` to clearly articulate the purpose of the now four distinct modes: `smoke_test`, `prototyping`, `validation`, and `production`.
+        *   Setting the default `DEVELOPMENT_MODE` to the new `prototyping` mode for immediate usability.
+
+- **Outcome & Benefits**:
+    -   **True Agility**: The project now possesses a genuine `prototyping` mode that provides feedback in minutes, not hours, dramatically accelerating the idea-to-validation cycle.
+    -   **Logical Progression**: The workflow now has a more logical and practical four-stage progression, removing the jarring leap from a simple smoke test to a heavy, near-production run.
+    -   **Enhanced Clarity**: The roles of all development modes are now clearly defined and implemented, reducing ambiguity and preventing future configuration errors. This represents a maturation of our development process, moving from a good theoretical framework to a battle-tested, practical one.

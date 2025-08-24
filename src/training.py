@@ -61,12 +61,12 @@ def train(model, loader, optimizer, device, scaler, grad_accum_steps, epoch, bes
                         torch.save(data.to('cpu'), problem_batch_path)
                         _log_error(f"NaN detected. Saved problematic batch to {problem_batch_path}. Stopping training.")
                         
-                        # --- AUTOMATIC ANALYSIS ---
+                        # --- OFFLINE ANALYSIS INSTRUCTION ---
                         _log("="*80)
-                        _log(f"AUTOMATICALLY ANALYZING PROBLEMATIC BATCH: {problem_batch_path}")
-                        os.system(f"python src/analyze_problem_batch.py {problem_batch_path}")
+                        _log(f"To analyze the problematic batch, run the following command:")
+                        _log(f"python src/analyze_problem_batch.py {problem_batch_path}")
                         _log("="*80)
-                        # --- END AUTOMATIC ANALYSIS ---
+                        # --- END OFFLINE ANALYSIS INSTRUCTION ---
 
                         raise RuntimeError(f"NaN detected in batch {i} of epoch {epoch}. Batch saved for debugging.")
                     else:

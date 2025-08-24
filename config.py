@@ -2,21 +2,89 @@
 Configuration settings for the data processing and model training script.
 '''
 
+import os
+
+# --- Development Mode Switch ---
+# Select the operating mode. This single switch controls all major hyperparameters.
+# - 'smoke_test': A minimal configuration to ensure the entire pipeline runs without errors.
+#                 Use this for initial setup and debugging code logic. Runs in minutes.
+# - 'prototyping': A lightweight configuration for rapid experimentation and idea validation.
+#                  Aims for a fast feedback loop (minutes per epoch) on smaller datasets.
+# - 'validation': A medium-sized configuration to validate model performance before full-scale training.
+#                 Optimized for GPUs with 6-8GB of VRAM.
+# - 'production': The full-scale configuration for generating final results. Tuned for GPUs
+#                 with >8GB of VRAM.
+DEVELOPMENT_MODE = 'prototyping'  # Options: 'smoke_test', 'prototyping', 'validation', 'production'
+
+
+# --- Mode-Specific Hyperparameter Sets ---
+# Defines the core settings for each development mode.
+MODES = {
+    'smoke_test': {
+        'epochs': 2,
+        'batch_size': 1,
+        'gradient_accumulation_steps': 2,
+        'loader_num_workers': 2,
+        'visnet_hidden_channels': 8,
+        'visnet_num_layers': 1,
+        'visnet_num_rbf': 8,
+        'force_data_reprocessing': False,
+        'profile': False,
+        'max_atoms': 1000,
+    },
+    # Recommended for rapid idea testing. Aims for epochs in minutes.
+    'prototyping': {
+        'epochs': 10,
+        'batch_size': 2,
+        'gradient_accumulation_steps': 4,
+        'loader_num_workers': 4,
+        'visnet_hidden_channels': 32,
+        'visnet_num_layers': 2,
+        'visnet_num_rbf': 32,
+        'force_data_reprocessing': False,
+        'profile': False,
+        'max_atoms': 5000,
+    },
+    # Recommended for GPUs with ~6-8GB VRAM (e.g., RTX 3060).
+    'validation': {
+        'epochs': 20,
+        'batch_size': 4,
+        'gradient_accumulation_steps': 8,
+        'loader_num_workers': 4,
+        'visnet_hidden_channels': 48,
+        'visnet_num_layers': 3,
+        'visnet_num_rbf': 48,
+        'force_data_reprocessing': False,
+        'profile': False,
+        'max_atoms': 10000,
+    },
+    # Tuned for GPUs with >8GB VRAM. May run on 6GB but can be slow or unstable.
+    'production': {
+        'epochs': 100,
+        'batch_size': 8,
+        'gradient_accumulation_steps': 8,
+        'loader_num_workers': 4,
+        'visnet_hidden_channels': 64,
+        'visnet_num_layers': 4,
+        'visnet_num_rbf': 64,
+        'force_data_reprocessing': False,
+        'profile': False,
+        'max_atoms': 10000,
+    }
+}
+
+# --- Base Configuration ---
+# Contains settings that are common across all modes.
 CONFIG = {
+    # --- Development Mode ---
+    'development_mode': DEVELOPMENT_MODE,
+
     # --- Data Source ---
-    # Force the reprocessing of the entire dataset, ignoring any cached files.
-    # This is useful after changing data processing logic in `src/data_processing.py`.
-    # The script will automatically set this to False after a successful run.
-    'force_data_reprocessing': True,
+    'force_data_reprocessing': False,
 
     # --- Data Processing ---
-    # 'strict': Skips any PDB file with unresolvable issues (e.g., atom overlaps). This is the safest mode.
-    # 'permissive': Attempts to apply smart heuristics to repair problematic PDB files. This may increase data yield
-    #               but introduces a small risk of altering molecular structures.
     'data_processing_mode': 'strict',
-    # Maximum number of atoms allowed in a complex. Complexes exceeding this limit will be skipped.
     'max_atoms': 10000,
-    # Directory to save detailed reports and file snapshots for PDBs that fail processing.
     'failed_cases_dir': r'failed_cases',
 
     # --- Path Settings ---
@@ -25,48 +93,39 @@ CONFIG = {
     'processed_data_dir': r'processed_data',
 
     # --- Model & Training Hyperparameters ---
-    'epochs': 100,
-    # The actual batch size used by the hardware. The effective batch size will be this value multiplied by gradient_accumulation_steps.
-    'batch_size': 1, 
     'learning_rate': 0.0001,
     'train_split': 0.8,
     'dropout_rate': 0.5,
-    # Gradient Accumulation: Simulate a larger batch size to stabilize training.
-    # Effective Batch Size = batch_size * gradient_accumulation_steps
-    'gradient_accumulation_steps': 64, # Results in an effective batch size of 1 * 64 = 64
-    # Gradient Clipping: Prevent exploding gradients by capping the norm of the gradients.
-    # A value of 1.0 is a common and effective starting point.
     'gradient_clip_val': 1.0,
 
     # --- ViSNet Model Specific ---
-    # These parameters control the size and complexity of the ViSNet model.
-    'visnet_hidden_channels': 64, # 增加模型宽度以获得更多特征容量
-    'visnet_num_layers': 4,      # 增加模型深度以学习更复杂的相互作用
-    'max_num_neighbors': 32,     # 允许模型看到更丰富的原子邻域环境 (ViSNet 默认值)
+    'max_num_neighbors': 32,
     'visnet_cutoff': 5.0,
-    'visnet_num_rbf': 64,      # 增加距离表示的分辨率
-    'visnet_lmax': 2, # Use higher-order spherical harmonics (lmax > 1)
-    'visnet_vecnorm_type': 'max_min', # 'max_min' or None. Corrected from invalid 'rms'.
+    'visnet_lmax': 2,
+    'visnet_vecnorm_type': 'max_min',
 
     # --- Hardware & Performance ---
     'processing_num_workers': 16,
-    'loader_num_workers': 2,
-    # --- Performance Profiling ---
-    # Set to True to run the profiler on the first epoch to identify bottlenecks.
     'profile': False,
-    # --- Manual Save Trigger ---
-    # Create a file with this name in the project root to trigger an immediate checkpoint save.
     'manual_save_trigger_file': 'SAVE_NOW.flag',
-    # --- Periodic Checkpointing ---
-    # Save a checkpoint every N batches to prevent losing progress on long runs.
-    # Set to 0 to disable and only save at the end of each epoch.
-    # A value of 1000 is a reasonable starting point.
     'save_every_n_batches': 1000,
+
     # --- Reproducibility ---
-    # Set a random seed for consistent data splitting and model initialization.
     'seed': 42,
 
     # --- Debugging ---
-    # Set to True to save the batch that causes a NaN/Inf and stop training.
     'debug_mode': True,
 }
+
+# --- Merge Mode-Specific Settings ---
+mode_settings = MODES.get(DEVELOPMENT_MODE)
+if mode_settings is None:
+    raise ValueError(f"Invalid DEVELOPMENT_MODE: '{DEVELOPMENT_MODE}'. Please choose from {list(MODES.keys())}.")
+
+CONFIG.update(mode_settings)
+
+# --- Post-Processing and Validation ---
+CONFIG['run_name'] = f"visnet_{DEVELOPMENT_MODE}_lr{CONFIG['learning_rate']}_bs{CONFIG['batch_size']}x{CONFIG['gradient_accumulation_steps']}"
+
+if not os.path.exists(CONFIG['failed_cases_dir']):
+    os.makedirs(CONFIG['failed_cases_dir'])
