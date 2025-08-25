@@ -8,24 +8,20 @@ import argparse
 import sys
 import logging
 
-# --- PATH CORRECTION ---
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-# --- END PATH CORRECTION ---
-
 # --- IMPORTS ---
 try:
-    from bayes_opt import BayesianOptimization
+    from skopt import gp_minimize
+    from skopt.space import Integer
 except ImportError:
-    print("ERROR: Bayesian Optimization library not found. Please install it with: pip install bayesian-optimization")
+    gp_minimize, Integer = None, None
+    print("ERROR: scikit-optimize library not found. Please install it with: pip install scikit-optimize")
     sys.exit(1)
 
-from torch_geometric.data import Batch
-from src.model import ViSNetPDB
-from src.data_processing import process_item
-from config import CONFIG
-from src.optimizer_config import (
+from torch_geometric.data import Batch # type: ignore
+from ..training.model import ViSNetPDB
+from ..data.processing import process_item
+from ..config import CONFIG
+from .config import (
     ARCH_DEFINITIONS, VRAM_SCALING_FACTORS, MODE_PARAMS, TIME_RANGES,
     CYCLE_BATCHES, PARAMETER_CAPS, OPTIMIZATION_HIERARCHY, TEST_SAMPLE_CONFIG
 )
@@ -40,7 +36,12 @@ def setup_logging(log_level="INFO"):
     logger.propagate = False
     progress_logger.propagate = False
     if not logger.handlers:
-        file_handler = logging.FileHandler("hardware_optimizer.log", mode='w')
+        # Ensure the main logs directory exists and place the log file inside it.
+        log_dir = 'logs'
+        os.makedirs(log_dir, exist_ok=True)
+        log_file_path = os.path.join(log_dir, "hardware_optimizer.log")
+ 
+        file_handler = logging.FileHandler(log_file_path, mode='w')
         file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
@@ -55,23 +56,27 @@ def setup_logging(log_level="INFO"):
 
 PROCESSED_TEST_DATA = None
 
-def prepare_real_data():
+def prepare_real_data(project_root_path):
     global PROCESSED_TEST_DATA
-    if PROCESSED_TEST_DATA is not None: return
 
     sample_name = TEST_SAMPLE_CONFIG['pdb_code']
     logger.info(f"--- Preparing Real-World Test Case: '{sample_name}' ---")
 
-    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    # --- WORKAROUND for path issue ---
+    protein_path = os.path.join(project_root_path, 'compass', 'optimizer', '1jmf', '1jmf_pocket.pdb')
+    ligand_path = os.path.join(project_root_path, 'compass', 'optimizer', '1jmf', '1jmf_ligand.sdf')
     item = {
         'pdb_code': sample_name,
-        'protein_path': os.path.join(base_dir, TEST_SAMPLE_CONFIG['protein_path']),
-        'ligand_path': os.path.join(base_dir, TEST_SAMPLE_CONFIG['ligand_path']),
+        'protein_path': protein_path,
+        'ligand_path': ligand_path,
         'binding_data': TEST_SAMPLE_CONFIG['binding_data']
     }
 
     max_atoms_for_sample = TEST_SAMPLE_CONFIG['max_atoms']
     logger.info(f"Temporarily setting max_atoms to {max_atoms_for_sample} to process {sample_name}...")
+    # TODO: Refactor `process_item` to accept a config dictionary directly,
+    # which would remove this temporary and fragile patching of the global CONFIG.
+    # For now, this maintains existing behavior.
     original_max_atoms = CONFIG.get('max_atoms')
     try:
         CONFIG['max_atoms'] = max_atoms_for_sample
@@ -88,13 +93,14 @@ def prepare_real_data():
     logger.info(f"--- Successfully processed {sample_name}. Atom count: {PROCESSED_TEST_DATA.num_nodes} ---")
 
 def _setup_probe_environment(config):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = ViSNetPDB(
         hidden_channels=config['visnet_hidden_channels'],
         num_layers=config['visnet_num_layers'],
         lmax=2, vecnorm_type='max_min'
-    ).cuda()
+    ).to(device)
     data_list = [PROCESSED_TEST_DATA] * config['batch_size']
-    batch = Batch.from_data_list(data_list).cuda()
+    batch = Batch.from_data_list(data_list).to(device)  # type: ignore
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     return model, batch, optimizer
 
@@ -144,11 +150,10 @@ def get_search_space(vram_gb, mode_to_optimize):
 def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters):
     logger.debug("--- Strategy: Finding max batch size and associated cycle time ---")
     logger.debug("[1/2] Finding OOM ceiling...")
-    oom_ceiling = -1
     probe_bs = start_batch_size
     while True:
         config = {**base_config, 'batch_size': probe_bs}
-        success, _ = probe_config(config, stress_iterations=5, prefix="\t")
+        success, _ = probe_config(config, stress_iterations=5, prefix="	")
         if success:
             logger.debug(f"> OK. Trying batch_size={probe_bs * 2}")
             probe_bs = probe_bs * 2 if probe_bs > 1 else 2
@@ -163,7 +168,7 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
         mid = (low + high) // 2
         if mid == 0: break
         config = {**base_config, 'batch_size': mid}
-        success, avg_time = probe_config(config, stress_iterations=stress_iters, prefix="\t")
+        success, avg_time = probe_config(config, stress_iterations=stress_iters, prefix="	")
         if success:
             bs_candidate, time_at_candidate = mid, avg_time
             low = mid + 1
@@ -172,38 +177,39 @@ def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters
             high = mid - 1
             logger.debug(f"> OOM at batch_size={mid}. Trying lower.")
 
-    if bs_candidate == 0:
+    if bs_candidate == .0:
         logger.warning("Could not find any stable batch size for this architecture.")
         return None, float('inf')
     
     logger.debug(f"> Max stable batch size found: {bs_candidate}.")
     return bs_candidate, time_at_candidate
 
-def save_results(final_profile):
-    output_path = 'hardware_profile.json'
+def save_results(final_profile, project_root_path):
+    output_path = os.path.join(project_root_path, 'hardware_profile.json')
     logger.info(f"--- Saving Final Results to '{output_path}' ---")
-    with open(output_path, 'w') as f: json.dump(final_profile, f, indent=4)
+    with open(output_path, 'w') as f:
+        json.dump(final_profile, f, indent=4)
     logger.info("Update complete.")
 
-def get_parameter_cap(dataset_size):
+def get_parameter_cap(current_dataset_size):
     level, cap = "large", PARAMETER_CAPS[float('inf')]
     for size_thresh in sorted(PARAMETER_CAPS.keys()):
-        if dataset_size < size_thresh:
+        if current_dataset_size < size_thresh:
             cap, level = PARAMETER_CAPS[size_thresh], f"small (<{size_thresh})"
             break
-    logger.info(f"--- Dataset size: {dataset_size} ({level}). Capping model parameters at ~{cap/1e3:.0f}k to prevent overfitting. ---")
+    logger.info(f"--- Dataset size: {current_dataset_size} ({level}). Capping model parameters at ~{cap/1e3:.0f}k to prevent overfitting. ---")
     return cap
 
 def _optimize_for_production(param_combinations, max_params, start_bs, stress_iters):
     logger.info("--- Strategy: Two-stage optimization for 'production' mode. ---")
     logger.info("[1/2] Searching for the highest-quality model architecture...")
     best_architecture = None
-    for i, (layers, channels) in enumerate(param_combinations):
-        logger.info(f"> Probing Arch {(i+1)}/{len(param_combinations)} (L={layers}, C={channels})...")
-        num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=channels, num_layers=layers).parameters() if p.requires_grad)
+    for i, (num_layers, hidden_channels) in enumerate(param_combinations):
+        logger.info(f"> Probing Arch {(i+1)}/{len(param_combinations)} (L={num_layers}, C={hidden_channels})...")
+        num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=hidden_channels, num_layers=num_layers).parameters() if p.requires_grad)
         if num_params > max_params:
             logger.info(f"SKIPPED (too complex: {num_params/1e3:.0f}k > {max_params/1e3:.0f}k cap)"); continue
-        base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
+        base_config = {'visnet_hidden_channels': hidden_channels, 'visnet_num_layers': num_layers}
         success, _ = probe_config({**base_config, 'batch_size': 1}, stress_iterations=5)
         if not success:
             logger.info("SKIPPED (too large for VRAM)"); continue
@@ -221,9 +227,12 @@ def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, 
     min_time, max_time = TIME_RANGES[mode]
     logger.info(f"--- Strategy: Bayesian Optimization to find most EFFICIENT config in 'sweet spot' ({min_time}-{max_time} mins) for '{mode}' mode. ---")
     
-    def evaluate_config(layer_idx, channel_idx):
-        layers = num_layers_list[int(round(layer_idx))]
-        channels = hidden_channels_list[int(round(channel_idx))]
+    evaluation_cache = {}
+
+    def evaluate_config(params):
+        layer_idx, channel_idx = params
+        layers = num_layers_list[layer_idx]
+        channels = hidden_channels_list[channel_idx]
 
         logger.info(f"--- Bayesian Probe: Trying Model Architecture (L={layers}, C={channels}) ---")
         
@@ -232,44 +241,57 @@ def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, 
             logger.info(f"> SKIPPED: Model has {num_params/1e3:.1f}k params, exceeding cap."); return 0.0
 
         base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
-        success, _ = probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t")
+        success, _ = probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="	")
         if not success:
             logger.warning(f"> SKIPPED: Model architecture too large for bs=1."); return 0.0
         
-        optimal_bs, avg_time_per_iter = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
-        if not optimal_bs:
+        found_bs, avg_time_per_iter = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
+        if not found_bs:
             logger.warning("> Could not find a stable batch size for this architecture."); return 0.0
 
-        estimated_time = (avg_time_per_iter * CYCLE_BATCHES) / 60
-        if estimated_time > max_time * 1.2: # Allow some leeway
-            logger.info(f"> PRUNING: Estimated time ({estimated_time:.2f}m) too high."); return 0.0
+        eval_estimated_time = (avg_time_per_iter * CYCLE_BATCHES) / 60
+        eval_efficiency_score = found_bs / eval_estimated_time if eval_estimated_time > 0 else 0.0
+        
+        # Populate the cache with detailed results
+        evaluation_cache[(layers, channels)] = {
+            'config': {**base_config, 'batch_size': found_bs},
+            'time': eval_estimated_time,
+            'efficiency': eval_efficiency_score
+        }
 
-        efficiency_score = optimal_bs / estimated_time if estimated_time > 0 else 0.0
-        return efficiency_score
+        if eval_estimated_time > max_time * 1.2: # Allow some leeway
+            logger.info(f"> PRUNING: Estimated time ({eval_estimated_time:.2f}m) too high."); return 0.0
 
-    pbounds = {
-        'layer_idx': (0, len(num_layers_list) - 1),
-        'channel_idx': (0, len(hidden_channels_list) - 1),
-    }
+        return -eval_efficiency_score
 
-    optimizer = BayesianOptimization(f=evaluate_config, pbounds=pbounds, random_state=1)
-    optimizer.maximize(init_points=5, n_iter=15)
+    search_space = [
+        Integer(0, len(num_layers_list) - 1),
+        Integer(0, len(hidden_channels_list) - 1),
+    ]
+
+    # The optimizer will call evaluate_config and populate the cache
+    gp_minimize(
+        func=evaluate_config,
+        dimensions=search_space,
+        n_calls=20,
+        n_initial_points=5,
+        random_state=1
+    )
 
     best_in_sweet_spot, best_overall = None, None
     best_efficiency_in_sweet_spot, best_overall_efficiency = -1.0, -1.0
 
-    for res in optimizer.res:
-        params = res['params']
-        layers = num_layers_list[int(round(params['layer_idx']))]
-        channels = hidden_channels_list[int(round(params['channel_idx']))]
-        
-        base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
-        optimal_bs, avg_time_per_iter = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
-        if not optimal_bs: continue
+    # Iterate through the cache instead of re-running tests
+    for eval_data in evaluation_cache.values():
+        if eval_data['efficiency'] <= 0: continue
 
-        estimated_time = (avg_time_per_iter * CYCLE_BATCHES) / 60
-        efficiency_score = optimal_bs / estimated_time if estimated_time > 0 else 0.0
-        candidate_config = {**base_config, 'batch_size': optimal_bs}
+        candidate_config = eval_data['config']
+        estimated_time = eval_data['time']
+        efficiency_score = eval_data['efficiency']
+        
+        cfg_layers = candidate_config['visnet_num_layers']
+        cfg_channels = candidate_config['visnet_hidden_channels']
+        cfg_optimal_bs = candidate_config['batch_size']
 
         if efficiency_score > best_overall_efficiency:
             best_overall_efficiency, best_overall = efficiency_score, candidate_config
@@ -277,35 +299,42 @@ def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, 
         if min_time <= estimated_time <= max_time:
             if efficiency_score > best_efficiency_in_sweet_spot:
                 best_efficiency_in_sweet_spot, best_in_sweet_spot = efficiency_score, candidate_config
-                logger.info(f"> NEW BEST in '{mode}' sweet spot: BS={optimal_bs}, L={layers}, C={channels} (Time: {estimated_time:.2f}m, Score: {efficiency_score:.2f})")
+                logger.info(f"> NEW BEST in '{mode}' sweet spot: BS={cfg_optimal_bs}, L={cfg_layers}, C={cfg_channels} (Time: {estimated_time:.2f}m, Score: {efficiency_score:.2f})")
 
-    if best_in_sweet_spot: logger.info("--- Final Decision: Selecting best configuration from the 'sweet spot'. ---"); return best_in_sweet_spot
-    if best_overall: logger.info("--- Final Decision: No config hit the 'sweet spot'. Falling back to best overall efficiency. ---"); return best_overall
+    if best_in_sweet_spot:
+        logger.info("--- Final Decision: Selecting best configuration from the 'sweet spot'. ---")
+        return best_in_sweet_spot
+    if best_overall:
+        logger.info("--- Final Decision: No config hit the 'sweet spot'. Falling back to best overall efficiency. ---")
+        return best_overall
+    
     return None
 
 def _optimize_for_smoke_test(param_combinations, max_params):
     logger.info("--- Strategy: Minimal check for 'smoke_test' mode ---")
-    layers, channels = param_combinations[-1]
-    num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=channels, num_layers=layers).parameters() if p.requires_grad)
+    num_layers, hidden_channels = param_combinations[-1]
+    num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=hidden_channels, num_layers=num_layers).parameters() if p.requires_grad)
     if num_params > max_params: logger.warning(f"Smallest model ({num_params/1e3:.1f}k params) exceeds data cap ({max_params/1e3:.0f}k).")
-    base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': 1}
-    logger.info(f"--- Trying smallest model (L={layers}, C={channels}, BS=1) for a single iteration ---")
-    success, _ = probe_config(base_config, stress_iterations=1, prefix="\t")
+    base_config = {'visnet_hidden_channels': hidden_channels, 'visnet_num_layers': num_layers, 'batch_size': 1}
+    logger.info(f"--- Trying smallest model (L={num_layers}, C={hidden_channels}, BS=1) for a single iteration ---")
+    success, _ = probe_config(base_config, stress_iterations=1, prefix="	")
     if success: return base_config
     return None
 
-def find_optimal_configs(modes_to_optimize, dataset_size):
+def find_optimal_configs(modes_to_optimize, current_dataset_size, project_root_path):
     if not torch.cuda.is_available(): logger.critical("CUDA is not available. Aborting."); return
     logger.warning(f"This optimizer uses a single data sample ('{TEST_SAMPLE_CONFIG['pdb_code']}') for all tests. For best results, ensure this sample is representative of your dataset.")
-    prepare_real_data()
+    prepare_real_data(project_root_path)
     gpu_properties = torch.cuda.get_device_properties(0)
     vram_gb = gpu_properties.total_memory / (1024**3)
     logger.info(f"Detected GPU: {gpu_properties.name} with {vram_gb:.2f} GB VRAM.")
-    max_params = get_parameter_cap(dataset_size)
-    output_path = 'hardware_profile.json'
+    max_params = get_parameter_cap(current_dataset_size)
+    output_path = os.path.join(project_root_path, 'hardware_profile.json')
     final_profile = {}
     if os.path.exists(output_path):
-        try: final_profile = json.load(open(output_path, 'r'))
+        try:
+            with open(output_path, 'r') as f:
+                final_profile = json.load(f)
         except (json.JSONDecodeError, IOError): pass
     modes_to_run = [m for m in OPTIMIZATION_HIERARCHY if m in modes_to_optimize]
     
@@ -325,13 +354,13 @@ def find_optimal_configs(modes_to_optimize, dataset_size):
             optimizer_func = optimizer_map[mode]
             
             if mode == 'production':
-                args = (param_combinations, max_params, start_bs, stress_iters)
+                optimizer_args = (param_combinations, max_params, start_bs, stress_iters)
             elif mode in ['validation', 'prototyping']:
-                args = (mode, num_layers, hidden_channels, max_params, start_bs, stress_iters)
+                optimizer_args = (mode, num_layers, hidden_channels, max_params, start_bs, stress_iters)
             else: # smoke_test
-                args = (param_combinations, max_params)
+                optimizer_args = (param_combinations, max_params)
 
-            best_config_for_this_mode = optimizer_func(*args)
+            best_config_for_this_mode = optimizer_func(*optimizer_args)
 
             if best_config_for_this_mode:
                 final_profile[mode] = best_config_for_this_mode
@@ -345,7 +374,7 @@ def find_optimal_configs(modes_to_optimize, dataset_size):
     except KeyboardInterrupt:
         logger.warning("--- User interrupted optimization. Saving best configuration found so far. ---")
     
-    if final_profile: save_results(final_profile)
+    if final_profile: save_results(final_profile, project_root_path)
     else: logger.warning("No valid configurations were found.")
 
 if __name__ == '__main__':
@@ -365,11 +394,14 @@ if __name__ == '__main__':
         '--log-level', type=str, default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Set the logging level."
     )
-    args = parser.parse_args()
+    cli_args = parser.parse_args()
 
-    setup_logging(args.log_level)
+    setup_logging(cli_args.log_level)
 
-    dataset_size = args.dataset_size
+    # Determine the project root from the script's location within the package structure
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+
+    dataset_size = cli_args.dataset_size
     if dataset_size is None:
         while True:
             try:
@@ -380,4 +412,4 @@ if __name__ == '__main__':
             except (ValueError, TypeError):
                 print("Invalid input. Please enter a valid integer.")
     
-    find_optimal_configs(args.modes, dataset_size)
+    find_optimal_configs(cli_args.modes, dataset_size, project_root)
