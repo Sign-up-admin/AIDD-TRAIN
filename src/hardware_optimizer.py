@@ -6,34 +6,59 @@ import time
 from itertools import product
 import argparse
 import sys
+import logging
 
 # --- PATH CORRECTION ---
-# Add project root to the Python path to resolve 'src' module not found
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 # --- END PATH CORRECTION ---
 
-# --- Real Model and Data Processing Imports ---
+# --- IMPORTS ---
+try:
+    from bayes_opt import BayesianOptimization
+except ImportError:
+    print("ERROR: Bayesian Optimization library not found. Please install it with: pip install bayesian-optimization")
+    sys.exit(1)
+
 from torch_geometric.data import Batch
 from src.model import ViSNetPDB
 from src.data_processing import process_item
 from config import CONFIG
+from src.optimizer_config import (
+    ARCH_DEFINITIONS, VRAM_SCALING_FACTORS, MODE_PARAMS, TIME_RANGES,
+    CYCLE_BATCHES, PARAMETER_CAPS, OPTIMIZATION_HIERARCHY
+)
 
-# --- Global variable for the processed 1jmf data ---
-# We process it once and reuse it to avoid I/O overhead in each probe.
+# --- GLOBAL LOGGER SETUP ---
+logger = logging.getLogger("HardwareOptimizer")
+progress_logger = logging.getLogger("ProgressBar")
+
+def setup_logging(log_level="INFO"):
+    logger.setLevel(log_level)
+    progress_logger.setLevel(log_level)
+    logger.propagate = False
+    progress_logger.propagate = False
+    if not logger.handlers:
+        file_handler = logging.FileHandler("hardware_optimizer.log", mode='w')
+        file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+        console_handler = logging.StreamHandler(sys.stdout)
+        console_formatter = logging.Formatter("%(levelname)s: %(message)s")
+        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
+    if not progress_logger.handlers:
+        progress_handler = logging.StreamHandler(sys.stdout)
+        progress_handler.setFormatter(logging.Formatter('%(message)s'))
+        progress_logger.addHandler(progress_handler)
+
 PROCESSED_1JMF_DATA = None
 
 def prepare_real_data():
-    """
-    Loads and processes the 1jmf PDB data to be used for all stress tests.
-    This function will run only once.
-    """
     global PROCESSED_1JMF_DATA
-    if PROCESSED_1JMF_DATA is not None:
-        return
-
-    print("\n--- Preparing 1JMF Real-World Test Case ---")
+    if PROCESSED_1JMF_DATA is not None: return
+    logger.info("--- Preparing 1JMF Real-World Test Case ---")
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     item = {
         'pdb_code': '1jmf',
@@ -41,449 +66,301 @@ def prepare_real_data():
         'ligand_path': os.path.join(base_dir, '1jmf', '1jmf_ligand.sdf'),
         'binding_data': 'Kd=1.0nM'
     }
-
-    print(f"Temporarily setting max_atoms to 10200 to process {item['pdb_code']}...")
+    logger.info(f"Temporarily setting max_atoms to 10200 to process {item['pdb_code']}...")
     original_max_atoms = CONFIG.get('max_atoms')
     try:
         CONFIG['max_atoms'] = 10200
         PROCESSED_1JMF_DATA = process_item(item)
     finally:
-        if original_max_atoms is not None:
-            CONFIG['max_atoms'] = original_max_atoms
-        elif 'max_atoms' in CONFIG:
-            del CONFIG['max_atoms']
-
+        if original_max_atoms is not None: CONFIG['max_atoms'] = original_max_atoms
+        elif 'max_atoms' in CONFIG: del CONFIG['max_atoms']
     if PROCESSED_1JMF_DATA is None:
-        print("CRITICAL: Failed to process 1jmf data. Aborting.")
-        exit()
-    
-    print(f"--- Successfully processed 1jmf. Atom count: {PROCESSED_1JMF_DATA.num_nodes} ---")
+        logger.critical("Failed to process 1jmf data. Aborting."); exit()
+    logger.info(f"--- Successfully processed 1jmf. Atom count: {PROCESSED_1JMF_DATA.num_nodes} ---")
 
 def _setup_probe_environment(config):
-    """Helper to create model, batch, and optimizer for probing."""
     model = ViSNetPDB(
         hidden_channels=config['visnet_hidden_channels'],
         num_layers=config['visnet_num_layers'],
-        lmax=2,
-        vecnorm_type='max_min'
+        lmax=2, vecnorm_type='max_min'
     ).cuda()
-    
-    batch_size = config['batch_size']
-    data_list = [PROCESSED_1JMF_DATA] * batch_size
+    data_list = [PROCESSED_1JMF_DATA] * config['batch_size']
     batch = Batch.from_data_list(data_list).cuda()
-
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     return model, batch, optimizer
 
 def probe_config(config, stress_iterations=20, prefix=""):
-    """
-    Tests a given configuration using the real 1jmf data.
-    """
     base_text = f"{prefix}--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3} for {stress_iterations} iterations..."
     bar_length = 20
     model, batch, optimizer = None, None, None
     try:
         model, batch, optimizer = _setup_probe_environment(config)
-
+        torch.cuda.synchronize()
+        start_time = time.time()
         for i in range(stress_iterations):
-            optimizer.zero_grad()
-            output = model(batch)
-            loss = output.sum() * 100
-            loss.backward()
-            optimizer.step()
-            
+            optimizer.zero_grad(); output = model(batch); loss = output.sum() * 100; loss.backward(); optimizer.step()
             progress = (i + 1) / stress_iterations
             filled_length = int(bar_length * progress)
             bar = '█' * filled_length + '-' * (bar_length - filled_length)
-            print(f'\r{base_text} [{bar}] {progress: >4.0%}', end='', flush=True)
-
-        print(f'\r{base_text} SUCCESS' + ' ' * (bar_length + 10))
-        return True
-    except torch.cuda.OutOfMemoryError:
-        print(f'\r{base_text} FAILED (OOM)' + ' ' * (bar_length + 10))
-        return False
-    finally:
-        if model is not None:
-            del model, batch, optimizer
-            gc.collect()
-            torch.cuda.empty_cache()
-
-def estimate_cycle_time(config, num_batches=450, warmup_iters=10, timed_iters=30):
-    """
-    Estimates the time for a training cycle of a given number of batches.
-    """
-    print(f"\t\t> Estimating cycle time for {num_batches} batches...")
-    model, batch, optimizer = None, None, None
-    try:
-        model, batch, optimizer = _setup_probe_environment(config)
-
-        # Warm-up runs
-        for _ in range(warmup_iters):
-            optimizer.zero_grad()
-            output = model(batch)
-            loss = output.sum()
-            loss.backward()
-            optimizer.step()
-        
-        torch.cuda.synchronize() # Wait for all kernels to finish
-
-        # Timed runs
-        start_time = time.time()
-        for _ in range(timed_iters):
-            optimizer.zero_grad()
-            output = model(batch)
-            loss = output.sum()
-            loss.backward()
-            optimizer.step()
-        
-        torch.cuda.synchronize() # Wait for all kernels to finish
+            progress_logger.info(f'\r{base_text} [{bar}] {progress: >4.0%}')
+        torch.cuda.synchronize()
         end_time = time.time()
-
-        avg_time_per_iter = (end_time - start_time) / timed_iters
-        estimated_total_seconds = avg_time_per_iter * num_batches
-        estimated_total_minutes = estimated_total_seconds / 60
-
-        print(f"\t\t> Avg time/batch: {avg_time_per_iter:.4f}s. Estimated cycle time: {estimated_total_minutes:.2f} mins.")
-        return estimated_total_minutes
-
-    except Exception as e:
-        print(f"\n\t\t> Error during time estimation: {e}")
-        return float('inf') # Return infinity on error
+        avg_time_per_iter = (end_time - start_time) / stress_iterations if stress_iterations > 0 else float('inf')
+        logger.info(f'\r{base_text} SUCCESS' + ' ' * (bar_length + 10))
+        return True, avg_time_per_iter
+    except torch.cuda.OutOfMemoryError:
+        logger.warning(f'\r{base_text} FAILED (OOM)' + ' ' * (bar_length + 10))
+        return False, float('inf')
     finally:
-        if model is not None:
-            del model, batch, optimizer
-            gc.collect()
-            torch.cuda.empty_cache()
+        if model is not None: del model, batch, optimizer; gc.collect(); torch.cuda.empty_cache()
 
 def get_search_space(vram_gb, mode_to_optimize):
-    """
-    Generates a VRAM-aware search space. For GPUs with very low VRAM (<= 6GB),
-    it uses an 'ultra-conservative' set of architectures to ensure a baseline is found.
-    """
-    print(f"\nGenerating dedicated search space for '{mode_to_optimize}' mode...")
-
-    # This dictionary defines the different search spaces for each mode.
-    # This is a critical part of the multi-stage optimization philosophy.
-    if vram_gb <= 6:
-        print("--- Using ultra-conservative architecture for very low VRAM GPU (<=6GB) ---")
-        arch_definitions = {
-            'production':  {'layers': [4, 3, 2], 'channels': [48, 32, 24]},
-            'validation':  {'layers': [3, 2], 'channels': [32, 24, 16]},
-            'prototyping': {'layers': [2, 1], 'channels': [16, 8]},
-            'smoke_test':  {'layers': [1], 'channels': [8]}
-        }
-    elif vram_gb <= 8:
-        print("--- Using conservative architecture for low VRAM GPU (6-8GB) ---")
-        arch_definitions = {
-            'production':  {'layers': [6, 5, 4], 'channels': [96, 64, 48]},
-            'validation':  {'layers': [4, 3, 2], 'channels': [64, 48, 32]},
-            'prototyping': {'layers': [3, 2, 1], 'channels': [32, 24, 16]},
-            'smoke_test':  {'layers': [1], 'channels': [16, 8]}
-        }
-    else:
-        print("--- Using standard architecture for high VRAM GPU (>8GB) ---")
-        arch_definitions = {
-            'production':  {'layers': [8, 7, 6, 5], 'channels': [256, 192, 128]},
-            'validation':  {'layers': [6, 5, 4, 3], 'channels': [128, 96, 64]},
-            'prototyping': {'layers': [4, 3, 2], 'channels': [64, 48, 32]},
-            'smoke_test':  {'layers': [2, 1], 'channels': [32, 24, 16]}
-        }
-
-    mode_params = {
-        'production':  {'bs': 16, 'stress': 20},
-        'validation':  {'bs': 32, 'stress': 20},
-        'prototyping': {'bs': 64, 'stress': 20},
-        'smoke_test':  {'bs': 128, 'stress': 1} # Minimal stress for smoke test
-    }
-
-    base_num_layers = arch_definitions[mode_to_optimize]['layers']
-    base_hidden_channels = arch_definitions[mode_to_optimize]['channels']
-    start_batch_size = mode_params[mode_to_optimize]['bs']
-    stress_iterations = mode_params[mode_to_optimize]['stress']
-
-    if vram_gb > 24: vram_factor = 1.5
-    elif vram_gb > 12: vram_factor = 1.2
-    elif vram_gb > 8: vram_factor = 1.1
-    else: vram_factor = 1.0
-    
-    print(f"--- Applying VRAM scaling factor of {vram_factor} (based on {vram_gb:.2f} GB) ---")
-
+    logger.info(f"Generating dedicated search space for '{mode_to_optimize}' mode...")
+    selected_tier = next((ARCH_DEFINITIONS[t] for t in sorted(ARCH_DEFINITIONS, key=lambda k: ARCH_DEFINITIONS[k]['vram_threshold'], reverse=True) if vram_gb >= ARCH_DEFINITIONS[t]['vram_threshold']), None)
+    if not selected_tier: logger.critical("Could not find a suitable architecture definition."); exit()
+    logger.info(f"--- Using '{selected_tier['description']}' ---")
+    arch_def = selected_tier['architectures'][mode_to_optimize]
+    vram_factor = next((VRAM_SCALING_FACTORS[vt] for vt in sorted(VRAM_SCALING_FACTORS.keys(), reverse=True) if vram_gb >= vt), 1.0)
+    logger.info(f"--- Applying VRAM scaling factor of {vram_factor} (based on {vram_gb:.2f} GB) ---")
     num_attention_heads = 8
-    hidden_channels_list = sorted([c for c in list(set((int(c * vram_factor) // num_attention_heads) * num_attention_heads for c in base_hidden_channels)) if c > 0], reverse=True)
-    num_layers_list = sorted([l for l in list(set(int(l * vram_factor) for l in base_num_layers)) if l > 0], reverse=True)
-    start_batch_size = int(start_batch_size * vram_factor)
-
-    if not num_layers_list or not hidden_channels_list:
-        print("CRITICAL: Search space is empty. Check VRAM factor and base definitions.")
-        exit()
-
-    print(f"Search space: Layers={num_layers_list}, Channels={hidden_channels_list}")
-    print(f"Starting BS: {start_batch_size}, Stress Iterations: {stress_iterations}")
-
+    hidden_channels_list = sorted([c for c in {((int(c * vram_factor) // num_attention_heads) * num_attention_heads) for c in arch_def['channels']} if c > 0], reverse=True)
+    num_layers_list = sorted([l for l in {int(l * vram_factor) for l in arch_def['layers']} if l > 0], reverse=True)
+    start_batch_size = int(MODE_PARAMS[mode_to_optimize]['bs'] * vram_factor)
+    stress_iterations = MODE_PARAMS[mode_to_optimize]['stress']
+    if not num_layers_list or not hidden_channels_list: logger.critical("Search space is empty."); exit()
+    logger.info(f"Search space: Layers={num_layers_list}, Channels={hidden_channels_list}")
+    logger.info(f"Starting BS: {start_batch_size}, Stress Iterations: {stress_iterations}")
     return start_batch_size, hidden_channels_list, num_layers_list, stress_iterations
 
 def find_max_batch_size_by_stressing(base_config, start_batch_size, stress_iters):
-    """
-    Finds the maximum stable batch size using a robust search strategy.
-    """
+    logger.debug("--- Strategy: Finding max batch size and associated cycle time ---")
+    logger.debug("[1/2] Finding OOM ceiling...")
     oom_ceiling = -1
-
-    print("--- Strategy: Forcing OOM to find VRAM ceiling ---")
     probe_bs = start_batch_size
     while True:
-        print(f"[1/3] Finding ceiling...", end='')
         config = {**base_config, 'batch_size': probe_bs}
-        if probe_config(config, stress_iterations=5, prefix="\t"):
-            print(f"\t> OK. Trying batch_size={probe_bs * 2}")
-            if probe_bs == 1: probe_bs = 2
-            else: probe_bs *= 2
+        success, _ = probe_config(config, stress_iterations=5, prefix="\t")
+        if success:
+            logger.debug(f"> OK. Trying batch_size={probe_bs * 2}")
+            probe_bs = probe_bs * 2 if probe_bs > 1 else 2
         else:
             oom_ceiling = probe_bs
-            print(f"\t> OOM at batch_size={oom_ceiling}. Ceiling found.")
-            break
-
-    print(f"\n--- Strategy: Binary searching from ceiling ({oom_ceiling}) to find stable edge ---")
-    bs_candidate = 0
+            logger.debug(f"> OOM at batch_size={oom_ceiling}. Ceiling found."); break
+    
+    logger.debug(f"[2/2] Binary searching from ceiling ({oom_ceiling}) to find stable edge...")
+    bs_candidate, time_at_candidate = 0, float('inf')
     low, high = 1, oom_ceiling - 1
-
     while low <= high:
         mid = (low + high) // 2
         if mid == 0: break
-        print(f"[2/3] Probing edge...", end='')
         config = {**base_config, 'batch_size': mid}
-        if probe_config(config, stress_iterations=stress_iters, prefix="\t"):
-            bs_candidate = mid
+        success, avg_time = probe_config(config, stress_iterations=stress_iters, prefix="\t")
+        if success:
+            bs_candidate, time_at_candidate = mid, avg_time
             low = mid + 1
-            print(f"\t> Stable at batch_size={mid}. Trying higher.")
+            logger.debug(f"> Stable at batch_size={mid}. Avg time/iter: {avg_time:.4f}s. Trying higher.")
         else:
             high = mid - 1
-            print(f"\t> OOM at batch_size={mid}. Trying lower.")
+            logger.debug(f"> OOM at batch_size={mid}. Trying lower.")
 
     if bs_candidate == 0:
-        print("Could not find a stable configuration. This model may be too large for VRAM.")
-        return None
+        logger.warning("Could not find any stable batch size for this architecture.")
+        return None, float('inf')
     
-    print(f"\t> Stable edge found at batch_size={bs_candidate}.")
-
-    print(f"\n--- Strategy: Final stability check for batch_size={bs_candidate} ---")
-    print(f"[3/3] Stability confirmation...", end='')
-    config = {**base_config, 'batch_size': bs_candidate}
-    if probe_config(config, stress_iterations=20, prefix="\t"): 
-        print(f"\t> Final configuration is stable.")
-        return bs_candidate
-    else:
-        print(f"\t> Final stability check failed. This configuration is unstable.")
-        # If the candidate fails, we cannot trust it. Return the next lower value, which will be 0 if candidate was 1.
-        return bs_candidate - 1
+    logger.debug(f"> Max stable batch size found: {bs_candidate}.")
+    return bs_candidate, time_at_candidate
 
 def save_results(final_profile):
-    """
-    Saves the final, optimized hardware profile to a JSON file.
-    """
     output_path = 'hardware_profile.json'
-    print(f"\n--- Saving Final Results to '{output_path}' ---")
-    with open(output_path, 'w') as f:
-        json.dump(final_profile, f, indent=4)
-    print("Update complete.")
+    logger.info(f"--- Saving Final Results to '{output_path}' ---")
+    with open(output_path, 'w') as f: json.dump(final_profile, f, indent=4)
+    logger.info("Update complete.")
 
 def get_parameter_cap(dataset_size):
-    """
-    Returns a reasonable parameter cap based on dataset size to prevent overfitting.
-    """
-    if dataset_size < 1000:
-        cap = 50_000  # 50k params
-        level = "small"
-    elif dataset_size < 10000:
-        cap = 100_000 # 100k params
-        level = "medium"
-    else:
-        cap = 250_000 # 250k params
-        level = "large"
-    print(f"--- Dataset size: {dataset_size} ({level}). Capping model parameters at ~{cap/1e3:.0f}k to prevent overfitting. ---")
+    level, cap = "large", PARAMETER_CAPS[float('inf')]
+    for size_thresh in sorted(PARAMETER_CAPS.keys()):
+        if dataset_size < size_thresh:
+            cap, level = PARAMETER_CAPS[size_thresh], f"small (<{size_thresh})"
+            break
+    logger.info(f"--- Dataset size: {dataset_size} ({level}). Capping model parameters at ~{cap/1e3:.0f}k to prevent overfitting. ---")
     return cap
 
+def _optimize_for_production(param_combinations, max_params, start_bs, stress_iters):
+    logger.info("--- Strategy: Two-stage optimization for 'production' mode. ---")
+    logger.info("[1/2] Searching for the highest-quality model architecture...")
+    best_architecture = None
+    for i, (layers, channels) in enumerate(param_combinations):
+        logger.info(f"> Probing Arch {(i+1)}/{len(param_combinations)} (L={layers}, C={channels})...")
+        num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=channels, num_layers=layers).parameters() if p.requires_grad)
+        if num_params > max_params:
+            logger.info(f"SKIPPED (too complex: {num_params/1e3:.0f}k > {max_params/1e3:.0f}k cap)"); continue
+        base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
+        success, _ = probe_config({**base_config, 'batch_size': 1}, stress_iterations=5)
+        if not success:
+            logger.info("SKIPPED (too large for VRAM)"); continue
+        logger.info(f"FOUND! (Model has {num_params/1e3:.0f}k params and fits VRAM)")
+        best_architecture = base_config
+        break
+    if best_architecture:
+        logger.info("[2/2] Architecture selected. Now finding max batch size...")
+        optimal_bs, _ = find_max_batch_size_by_stressing(best_architecture, start_bs, stress_iters)
+        if optimal_bs: return {**best_architecture, 'batch_size': optimal_bs}
+    logger.warning("Could not find any suitable model architecture.")
+    return None
+
+def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, max_params, start_bs, stress_iters):
+    min_time, max_time = TIME_RANGES[mode]
+    logger.info(f"--- Strategy: Bayesian Optimization to find most EFFICIENT config in 'sweet spot' ({min_time}-{max_time} mins) for '{mode}' mode. ---")
+    
+    # The function to be optimized by Bayesian Optimization.
+    def evaluate_config(layer_idx, channel_idx):
+        layers = num_layers_list[int(round(layer_idx))]
+        channels = hidden_channels_list[int(round(channel_idx))]
+
+        logger.info(f"--- Bayesian Probe: Trying Model Architecture (L={layers}, C={channels}) ---")
+        
+        num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=channels, num_layers=layers).parameters() if p.requires_grad)
+        if num_params > max_params:
+            logger.info(f"> SKIPPED: Model has {num_params/1e3:.1f}k params, exceeding cap."); return 0.0
+
+        base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
+        success, _ = probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t")
+        if not success:
+            logger.warning(f"> SKIPPED: Model architecture too large for bs=1."); return 0.0
+        
+        optimal_bs, avg_time_per_iter = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
+        if not optimal_bs:
+            logger.warning("> Could not find a stable batch size for this architecture."); return 0.0
+
+        estimated_time = (avg_time_per_iter * CYCLE_BATCHES) / 60
+        if estimated_time > max_time * 1.2: # Allow some leeway
+            logger.info(f"> PRUNING: Estimated time ({estimated_time:.2f}m) too high."); return 0.0
+
+        efficiency_score = optimal_bs / estimated_time if estimated_time > 0 else 0.0
+        return efficiency_score
+
+    pbounds = {
+        'layer_idx': (0, len(num_layers_list) - 1),
+        'channel_idx': (0, len(hidden_channels_list) - 1),
+    }
+
+    optimizer = BayesianOptimization(f=evaluate_config, pbounds=pbounds, random_state=1)
+    optimizer.maximize(init_points=5, n_iter=15)
+
+    # --- Post-processing: Find the best result within the sweet spot ---
+    best_in_sweet_spot, best_overall = None, None
+    best_efficiency_in_sweet_spot, best_overall_efficiency = -1.0, -1.0
+
+    for res in optimizer.res:
+        params = res['params']
+        layers = num_layers_list[int(round(params['layer_idx']))]
+        channels = hidden_channels_list[int(round(params['channel_idx']))]
+        
+        base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
+        optimal_bs, avg_time_per_iter = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
+        if not optimal_bs: continue
+
+        estimated_time = (avg_time_per_iter * CYCLE_BATCHES) / 60
+        efficiency_score = optimal_bs / estimated_time if estimated_time > 0 else 0.0
+        candidate_config = {**base_config, 'batch_size': optimal_bs}
+
+        if efficiency_score > best_overall_efficiency:
+            best_overall_efficiency, best_overall = efficiency_score, candidate_config
+
+        if min_time <= estimated_time <= max_time:
+            if efficiency_score > best_efficiency_in_sweet_spot:
+                best_efficiency_in_sweet_spot, best_in_sweet_spot = efficiency_score, candidate_config
+                logger.info(f"> NEW BEST in '{mode}' sweet spot: BS={optimal_bs}, L={layers}, C={channels} (Time: {estimated_time:.2f}m, Score: {efficiency_score:.2f})")
+
+    if best_in_sweet_spot: logger.info("--- Final Decision: Selecting best configuration from the 'sweet spot'. ---"); return best_in_sweet_spot
+    if best_overall: logger.info("--- Final Decision: No config hit the 'sweet spot'. Falling back to best overall efficiency. ---"); return best_overall
+    return None
+
+def _optimize_for_smoke_test(param_combinations, max_params):
+    logger.info("--- Strategy: Minimal check for 'smoke_test' mode ---")
+    layers, channels = param_combinations[-1]
+    num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=channels, num_layers=layers).parameters() if p.requires_grad)
+    if num_params > max_params: logger.warning(f"Smallest model ({num_params/1e3:.1f}k params) exceeds data cap ({max_params/1e3:.0f}k).")
+    base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': 1}
+    logger.info(f"--- Trying smallest model (L={layers}, C={channels}, BS=1) for a single iteration ---")
+    success, _ = probe_config(base_config, stress_iterations=1, prefix="\t")
+    if success: return base_config
+    return None
+
 def find_optimal_configs(modes_to_optimize, dataset_size):
-    """
-    Finds the best hardware configuration for each specified mode independently.
-    """
-    if not torch.cuda.is_available():
-        print("CUDA is not available. Aborting.")
-        return
-
-    print("\n" + "="*80)
-    print("!> WARNING: This optimizer uses a single data sample ('1jmf') for all tests.")
-    print("!> The results are only reliable if '1jmf' is representative of your dataset.")
-    print("!> For best results, consider replacing it with a sample of average or 95th-percentile size from your own data.")
-    print("="*80 + "\n")
+    if not torch.cuda.is_available(): logger.critical("CUDA is not available. Aborting."); return
+    logger.warning("This optimizer uses a single data sample ('1jmf') for all tests. Results are only reliable if '1jmf' is representative of your dataset.")
     prepare_real_data()
-
     gpu_properties = torch.cuda.get_device_properties(0)
     vram_gb = gpu_properties.total_memory / (1024**3)
-    print(f"Detected GPU: {gpu_properties.name} with {vram_gb:.2f} GB VRAM.")
-
+    logger.info(f"Detected GPU: {gpu_properties.name} with {vram_gb:.2f} GB VRAM.")
     max_params = get_parameter_cap(dataset_size)
-
     output_path = 'hardware_profile.json'
     final_profile = {}
     if os.path.exists(output_path):
-        try:
-            with open(output_path, 'r') as f: final_profile = json.load(f)
+        try: final_profile = json.load(open(output_path, 'r'))
         except (json.JSONDecodeError, IOError): pass
-
-    optimization_hierarchy = ['production', 'validation', 'prototyping', 'smoke_test']
-    modes_to_run = [m for m in optimization_hierarchy if m in modes_to_optimize]
+    modes_to_run = [m for m in OPTIMIZATION_HIERARCHY if m in modes_to_optimize]
+    
+    optimizer_map = {
+        'production': _optimize_for_production,
+        'validation': _optimize_for_efficiency_modes,
+        'prototyping': _optimize_for_efficiency_modes,
+        'smoke_test': _optimize_for_smoke_test
+    }
 
     try:
         for mode in modes_to_run:
-            print(f"\n================ Optimizing for: {mode.upper()} ================")
-            
+            logger.info(f"================ Optimizing for: {mode.upper()} ================")
             start_bs, hidden_channels, num_layers, stress_iters = get_search_space(vram_gb, mode)
-            
-            best_config_for_this_mode = None
             param_combinations = list(product(num_layers, hidden_channels))
-
+            
+            optimizer_func = optimizer_map[mode]
+            
             if mode == 'production':
-                # [CORE CONCEPT] Two-stage optimization for QUALITY. Goal: Find the highest-quality model that fits data and hardware, then maximize its throughput. This philosophy must not be removed.
-                # 1. Find the highest-quality (largest) model architecture that is both data-appropriate (respects param cap) and fits the hardware (can run with bs=1).
-                # 2. For that single best architecture, find the maximum possible batch size to fully utilize the remaining GPU performance.
-                print(f"--- Strategy: Two-stage optimization for '{mode}' mode. ---")
+                args = (param_combinations, max_params, start_bs, stress_iters)
+            elif mode in ['validation', 'prototyping']:
+                args = (mode, num_layers, hidden_channels, max_params, start_bs, stress_iters)
+            else: # smoke_test
+                args = (param_combinations, max_params)
 
-                # --- Stage 1: Find the best possible architecture ---
-                print("\n[1/2] Searching for the highest-quality model architecture...")
-                best_architecture = None
-                for i, (layers, channels) in enumerate(param_combinations):
-                    print(f"\t> Probing Arch {(i+1)}/{len(param_combinations)} (L={layers}, C={channels})...", end='')
-                    
-                    temp_model = ViSNetPDB(hidden_channels=channels, num_layers=layers)
-                    num_params = sum(p.numel() for p in temp_model.parameters() if p.requires_grad)
-                    del temp_model
-                    
-                    if num_params > max_params:
-                        print(f" SKIPPED (too complex: {num_params/1e3:.0f}k > {max_params/1e3:.0f}k cap)")
-                        continue
-                    
-                    base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
-                    if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix=""):
-                        print(" SKIPPED (too large for VRAM)")
-                        continue
+            best_config_for_this_mode = optimizer_func(*args)
 
-                    print(f" FOUND! (Model has {num_params/1e3:.0f}k params and fits VRAM)")
-                    best_architecture = base_config
-                    break
-
-                # --- Stage 2: Find the max batch size for the chosen architecture ---
-                if best_architecture:
-                    print("\n[2/2] Architecture selected. Now finding max batch size to utilize remaining VRAM...")
-                    optimal_bs = find_max_batch_size_by_stressing(best_architecture, start_bs, stress_iters)
-                    if optimal_bs:
-                        best_config_for_this_mode = {**best_architecture, 'batch_size': optimal_bs}
-                else:
-                    print("\nCould not find any suitable model architecture that fits both data and hardware constraints.")
-
-            elif mode == 'prototyping' or mode == 'validation':
-                # [CORE CONCEPT] Optimization for a FLEXIBLE TIME BUDGET. This philosophy must not be removed.
-                # Prototyping Goal: A fast training cycle (~20 mins) for rapid iteration.
-                # Validation Goal: A medium training cycle (~90 mins) to validate ideas with near-production quality.
-                # This is achieved by finding the model with the highest throughput (max batch size) that completes a fixed-size training cycle (450 batches) 
-                # WITHIN the mode's flexible time budget (soft target + 20 min flexibility).
-                TIME_BUDGETS = {'prototyping': 20, 'validation': 90}
-                TIME_FLEXIBILITY_MINUTES = 20
-                CYCLE_BATCHES = 450
-                time_budget = TIME_BUDGETS[mode]
-                hard_time_limit = time_budget + TIME_FLEXIBILITY_MINUTES
-
-                print(f"--- Strategy: Find MAX THROUGHPUT config with cycle time <= {time_budget} mins (+{TIME_FLEXIBILITY_MINUTES} min flex) for '{mode}' mode. ---")
-                
-                best_config_for_this_mode = None
-                best_throughput_so_far = 0
-
-                for i, (layers, channels) in enumerate(param_combinations):
-                    print(f"\n--- Trying Model Architecture {(i+1)}/{len(param_combinations)} (L={layers}, C={channels}) ---")
-                    
-                    temp_model = ViSNetPDB(hidden_channels=channels, num_layers=layers)
-                    num_params = sum(p.numel() for p in temp_model.parameters() if p.requires_grad)
-                    del temp_model
-                    
-                    if num_params > max_params:
-                        print(f"\t> SKIPPED: Model has {num_params/1e3:.1f}k params, exceeding the {max_params/1e3:.0f}k cap.")
-                        continue
-                    
-                    base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers}
-                    if not probe_config({**base_config, 'batch_size': 1}, stress_iterations=5, prefix="\t"):
-                        print("\t> Model architecture too large even for bs=1, skipping...")
-                        continue
-
-                    print("\t> Finding max stable batch size for this architecture...")
-                    optimal_bs = find_max_batch_size_by_stressing(base_config, start_bs, stress_iters)
-
-                    if not optimal_bs:
-                        print("\t> Could not find a stable batch size. Skipping architecture.")
-                        continue
-
-                    print(f"\t> Max throughput found: BS={optimal_bs}. Checking if it fits the ~{time_budget} min time budget...")
-                    candidate_config = {**base_config, 'batch_size': optimal_bs}
-                    estimated_time = estimate_cycle_time(candidate_config, num_batches=CYCLE_BATCHES)
-
-                    if estimated_time <= hard_time_limit:
-                        print(f"\t> SUCCESS: Cycle time ({estimated_time:.2f}m) is within the flexible budget ({hard_time_limit}m). This is a valid candidate.")
-                        if optimal_bs > best_throughput_so_far:
-                            best_throughput_so_far = optimal_bs
-                            best_config_for_this_mode = candidate_config
-                            print(f"\t> NEW BEST for '{mode}': BS={optimal_bs}, L={layers}, C={channels} (Time: {estimated_time:.2f}m)")
-                    else:
-                        print(f"\t> FAILED: Max throughput cycle time ({estimated_time:.2f}m) exceeds flexible budget ({hard_time_limit}m). Discarding architecture.")
-
-            elif mode == 'smoke_test':
-                # [CORE CONCEPT] Smoke Test: Verify environment. Do NOT search. Use the absolute smallest model for a single run.
-                print(f"--- Strategy: Minimal check for '{mode}' mode ---")
-                layers, channels = param_combinations[-1] # Smallest is last in the list
-                
-                temp_model = ViSNetPDB(hidden_channels=channels, num_layers=layers)
-                num_params = sum(p.numel() for p in temp_model.parameters() if p.requires_grad)
-                del temp_model
-                if num_params > max_params:
-                     print(f"\nWARNING: The smallest model ({num_params/1e3:.1f}k params) already exceeds the data cap ({max_params/1e3:.0f}k).")
-
-                base_config = {'visnet_hidden_channels': channels, 'visnet_num_layers': layers, 'batch_size': 1}
-                print(f"\n--- Trying smallest model (L={layers}, C={channels}, BS=1) for a single iteration ---")
-                if probe_config(base_config, stress_iterations=1, prefix="\t"): # Override to 1 iteration
-                    best_config_for_this_mode = base_config
-
-            # --- REPORTING RESULTS ---
             if best_config_for_this_mode:
                 final_profile[mode] = best_config_for_this_mode
-                print(f"\n>>> Found optimal configuration for '{mode}'!")
-                print(json.dumps(best_config_for_this_mode, indent=4))
+                logger.info(f">>> Found optimal configuration for '{mode}'!")
+                pretty_json = json.dumps(best_config_for_this_mode, indent=4)
+                for line in pretty_json.split('\n'):
+                    logger.info(line)
             else:
-                print(f"\n--- Optimization FAILED for '{mode}'. No stable configuration found. ---")
+                logger.error(f"--- Optimization FAILED for '{mode}'. No stable configuration found. ---")
 
     except KeyboardInterrupt:
-        print("\n\n--- User interrupted optimization. Saving best configuration found so far. ---")
-
-    if final_profile:
-        save_results(final_profile)
-    else:
-        print("\nNo valid configurations were found.")
+        logger.warning("--- User interrupted optimization. Saving best configuration found so far. ---")
+    
+    if final_profile: save_results(final_profile)
+    else: logger.warning("No valid configurations were found.")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="Find the optimal hardware configuration for each specified mode, respecting both hardware and data constraints.",
+        description="Find the optimal hardware configuration for each specified mode.",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
-        '--modes',
-        nargs='+',
-        default=['production', 'validation', 'prototyping', 'smoke_test'],
-        choices=['production', 'validation', 'prototyping', 'smoke_test'],
-        help="A list of development modes to optimize for. Runs in hierarchical order."
+        '--modes', nargs='+', default=OPTIMIZATION_HIERARCHY, choices=OPTIMIZATION_HIERARCHY,
+        help="A list of development modes to optimize for."
     )
     parser.add_argument(
-        '--dataset-size',
-        type=int,
-        default=None,
-        help="The total number of samples in the dataset.\nThis is crucial for preventing overfitting by pruning overly complex models.\nIf not provided, you will be prompted to enter it."
+        '--dataset-size', type=int, default=None,
+        help="The total number of samples in the dataset.\nIf not provided, you will be prompted to enter it."
+    )
+    parser.add_argument(
+        '--log-level', type=str, default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        help="Set the logging level."
     )
     args = parser.parse_args()
+
+    setup_logging(args.log_level)
 
     dataset_size = args.dataset_size
     if dataset_size is None:
@@ -491,10 +368,8 @@ if __name__ == '__main__':
             try:
                 raw_input = input("Please enter the dataset size (number of samples): ")
                 dataset_size = int(raw_input)
-                if dataset_size > 0:
-                    break
-                else:
-                    print("Please enter a positive number.")
+                if dataset_size > 0: break
+                else: print("Please enter a positive number.")
             except (ValueError, TypeError):
                 print("Invalid input. Please enter a valid integer.")
     
