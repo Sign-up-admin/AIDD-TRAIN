@@ -27,7 +27,7 @@ from src.data_processing import process_item
 from config import CONFIG
 from src.optimizer_config import (
     ARCH_DEFINITIONS, VRAM_SCALING_FACTORS, MODE_PARAMS, TIME_RANGES,
-    CYCLE_BATCHES, PARAMETER_CAPS, OPTIMIZATION_HIERARCHY
+    CYCLE_BATCHES, PARAMETER_CAPS, OPTIMIZATION_HIERARCHY, TEST_SAMPLE_CONFIG
 )
 
 # --- GLOBAL LOGGER SETUP ---
@@ -53,30 +53,39 @@ def setup_logging(log_level="INFO"):
         progress_handler.setFormatter(logging.Formatter('%(message)s'))
         progress_logger.addHandler(progress_handler)
 
-PROCESSED_1JMF_DATA = None
+PROCESSED_TEST_DATA = None
 
 def prepare_real_data():
-    global PROCESSED_1JMF_DATA
-    if PROCESSED_1JMF_DATA is not None: return
-    logger.info("--- Preparing 1JMF Real-World Test Case ---")
+    global PROCESSED_TEST_DATA
+    if PROCESSED_TEST_DATA is not None: return
+
+    sample_name = TEST_SAMPLE_CONFIG['pdb_code']
+    logger.info(f"--- Preparing Real-World Test Case: '{sample_name}' ---")
+
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     item = {
-        'pdb_code': '1jmf',
-        'protein_path': os.path.join(base_dir, '1jmf', '1jmf_protein.pdb'),
-        'ligand_path': os.path.join(base_dir, '1jmf', '1jmf_ligand.sdf'),
-        'binding_data': 'Kd=1.0nM'
+        'pdb_code': sample_name,
+        'protein_path': os.path.join(base_dir, TEST_SAMPLE_CONFIG['protein_path']),
+        'ligand_path': os.path.join(base_dir, TEST_SAMPLE_CONFIG['ligand_path']),
+        'binding_data': TEST_SAMPLE_CONFIG['binding_data']
     }
-    logger.info(f"Temporarily setting max_atoms to 10200 to process {item['pdb_code']}...")
+
+    max_atoms_for_sample = TEST_SAMPLE_CONFIG['max_atoms']
+    logger.info(f"Temporarily setting max_atoms to {max_atoms_for_sample} to process {sample_name}...")
     original_max_atoms = CONFIG.get('max_atoms')
     try:
-        CONFIG['max_atoms'] = 10200
-        PROCESSED_1JMF_DATA = process_item(item)
+        CONFIG['max_atoms'] = max_atoms_for_sample
+        PROCESSED_TEST_DATA = process_item(item)
     finally:
-        if original_max_atoms is not None: CONFIG['max_atoms'] = original_max_atoms
-        elif 'max_atoms' in CONFIG: del CONFIG['max_atoms']
-    if PROCESSED_1JMF_DATA is None:
-        logger.critical("Failed to process 1jmf data. Aborting."); exit()
-    logger.info(f"--- Successfully processed 1jmf. Atom count: {PROCESSED_1JMF_DATA.num_nodes} ---")
+        if original_max_atoms is not None:
+            CONFIG['max_atoms'] = original_max_atoms
+        elif 'max_atoms' in CONFIG:
+            del CONFIG['max_atoms']
+
+    if PROCESSED_TEST_DATA is None:
+        logger.critical(f"Failed to process {sample_name} data. Aborting."); exit()
+
+    logger.info(f"--- Successfully processed {sample_name}. Atom count: {PROCESSED_TEST_DATA.num_nodes} ---")
 
 def _setup_probe_environment(config):
     model = ViSNetPDB(
@@ -84,7 +93,7 @@ def _setup_probe_environment(config):
         num_layers=config['visnet_num_layers'],
         lmax=2, vecnorm_type='max_min'
     ).cuda()
-    data_list = [PROCESSED_1JMF_DATA] * config['batch_size']
+    data_list = [PROCESSED_TEST_DATA] * config['batch_size']
     batch = Batch.from_data_list(data_list).cuda()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     return model, batch, optimizer
@@ -212,7 +221,6 @@ def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, 
     min_time, max_time = TIME_RANGES[mode]
     logger.info(f"--- Strategy: Bayesian Optimization to find most EFFICIENT config in 'sweet spot' ({min_time}-{max_time} mins) for '{mode}' mode. ---")
     
-    # The function to be optimized by Bayesian Optimization.
     def evaluate_config(layer_idx, channel_idx):
         layers = num_layers_list[int(round(layer_idx))]
         channels = hidden_channels_list[int(round(channel_idx))]
@@ -247,7 +255,6 @@ def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, 
     optimizer = BayesianOptimization(f=evaluate_config, pbounds=pbounds, random_state=1)
     optimizer.maximize(init_points=5, n_iter=15)
 
-    # --- Post-processing: Find the best result within the sweet spot ---
     best_in_sweet_spot, best_overall = None, None
     best_efficiency_in_sweet_spot, best_overall_efficiency = -1.0, -1.0
 
@@ -289,7 +296,7 @@ def _optimize_for_smoke_test(param_combinations, max_params):
 
 def find_optimal_configs(modes_to_optimize, dataset_size):
     if not torch.cuda.is_available(): logger.critical("CUDA is not available. Aborting."); return
-    logger.warning("This optimizer uses a single data sample ('1jmf') for all tests. Results are only reliable if '1jmf' is representative of your dataset.")
+    logger.warning(f"This optimizer uses a single data sample ('{TEST_SAMPLE_CONFIG['pdb_code']}') for all tests. For best results, ensure this sample is representative of your dataset.")
     prepare_real_data()
     gpu_properties = torch.cuda.get_device_properties(0)
     vram_gb = gpu_properties.total_memory / (1024**3)

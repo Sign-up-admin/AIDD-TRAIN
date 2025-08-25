@@ -9,21 +9,6 @@ of the find_optimal_configs script.
 # ==============================================================================
 # 1. CORE SEARCH SPACE DEFINITIONS
 # ==============================================================================
-# This is the most critical part of the configuration. It defines the search
-# space for different GPU VRAM tiers. The optimizer will select one of these
-# based on the detected GPU memory.
-#
-# Structure:
-#   - Keys: A descriptive name for the VRAM tier (e.g., 'low_vram', 'high_vram').
-#   - Values: A dictionary containing:
-#     - 'vram_threshold': The minimum VRAM in GB for this tier to be selected.
-#     - 'architectures': A dictionary defining the model architectures for each
-#       optimization mode ('production', 'validation', etc.).
-#       - 'layers': A list of `visnet_num_layers` to test.
-#       - 'channels': A list of `visnet_hidden_channels` to test.
-#
-# The tiers are evaluated in descending order of 'vram_threshold'.
-# ==============================================================================
 ARCH_DEFINITIONS = {
     'high_vram': {
         'vram_threshold': 12,
@@ -70,16 +55,6 @@ ARCH_DEFINITIONS = {
 # ==============================================================================
 # 2. VRAM-BASED SCALING FACTORS
 # ==============================================================================
-# These factors are applied to the lists defined in ARCH_DEFINITIONS to subtly
-# scale the search space based on more granular VRAM availability.
-# This allows for a more continuous adaptation than the discrete tiers above.
-#
-# Structure:
-#   - Keys: Minimum VRAM in GB for the factor to be applied.
-#   - Values: A multiplier for `layers`, `channels`, and `start_batch_size`.
-#
-# The factors are evaluated in descending order.
-# ==============================================================================
 VRAM_SCALING_FACTORS = {
     24: 1.5,
     16: 1.2,
@@ -90,61 +65,55 @@ VRAM_SCALING_FACTORS = {
 # ==============================================================================
 # 3. MODE-SPECIFIC PARAMETERS
 # ==============================================================================
-# Defines the starting batch size and stress test intensity for each mode.
-#
-# Structure:
-#   - 'bs': The initial batch size to start the search from.
-#   - 'stress': The number of iterations for the binary search stability check.
-# ==============================================================================
 MODE_PARAMS = {
     'production':  {'bs': 16, 'stress': 20},
     'validation':  {'bs': 32, 'stress': 20},
     'prototyping': {'bs': 64, 'stress': 20},
-    'smoke_test':  {'bs': 128, 'stress': 1} # Minimal stress for a quick check.
+    'smoke_test':  {'bs': 128, 'stress': 1}
 }
 
 # ==============================================================================
-# 4. TIME-GUIDED OPTIMIZATION PARAMETERS (for Prototyping/Validation)
-# ==============================================================================
-# Defines the "sweet spot" for training cycle times. The optimizer's goal for
-# prototyping and validation is to find the most efficient model that fits
-# within this time window.
-#
-# Structure:
-#   - Keys: The optimization mode.
-#   - Values: A tuple of (minimum_time, maximum_time) in minutes.
+# 4. TIME-GUIDED OPTIMIZATION PARAMETERS
 # ==============================================================================
 TIME_RANGES = {
     'prototyping': (10, 40),
     'validation':  (60, 120)
 }
-
-# The number of batches used to estimate the total cycle time.
-# This should represent a typical training epoch or a significant portion thereof.
 CYCLE_BATCHES = 450
 
 # ==============================================================================
 # 5. DATA-AWARE PARAMETER CAPPING
 # ==============================================================================
-# To prevent overfitting, the optimizer caps the maximum number of model
-# parameters based on the dataset size.
-#
-# Structure:
-#   - Keys: The maximum dataset size for this cap to apply.
-#   - Values: The maximum number of trainable parameters allowed.
-#
-# The caps are evaluated in ascending order.
-# ==============================================================================
 PARAMETER_CAPS = {
-    1000:  50_000,   # For small datasets (<1k samples)
-    10000: 100_000,  # For medium datasets (<10k samples)
-    float('inf'): 250_000 # For large datasets
+    1000:  50_000,
+    10000: 100_000,
+    float('inf'): 250_000
 }
 
 # ==============================================================================
 # 6. GENERAL EXECUTION SETTINGS
 # ==============================================================================
-# The hierarchical order in which to run the optimizations if multiple modes
-# are requested. This ensures that higher-priority modes can inform or
-# influence lower-priority ones if needed in future implementations.
 OPTIMIZATION_HIERARCHY = ['production', 'validation', 'prototyping', 'smoke_test']
+
+# ==============================================================================
+# 7. TEST SAMPLE CONFIGURATION
+# ==============================================================================
+# Defines the real-world data sample used for all hardware stress tests.
+# Using a sample that is representative of your dataset (e.g., average or
+# 95th-percentile complexity) is crucial for accurate results.
+#
+# - 'pdb_code': A descriptive name for the sample.
+# - 'protein_path': Relative path from the project root to the protein PDB file.
+# - 'ligand_path': Relative path from the project root to the ligand SDF file.
+# - 'binding_data': A string representing the binding data (optional).
+# - 'max_atoms': The 'max_atoms' setting required to process this specific
+#   sample. This should be set slightly higher than the actual number of
+#   atoms in the sample to ensure it can be processed correctly.
+# ==============================================================================
+TEST_SAMPLE_CONFIG = {
+    'pdb_code': '1jmf',
+    'protein_path': '1jmf/1jmf_protein.pdb',
+    'ligand_path': '1jmf/1jmf_ligand.sdf',
+    'binding_data': 'Kd=1.0nM',
+    'max_atoms': 10200
+}
