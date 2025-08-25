@@ -16,7 +16,7 @@ import os
 #                 为显存大于 8GB 的 GPU 调优。
 #
 # 可选选项: 'smoke_test', 'prototyping', 'validation', 'production'
-DEVELOPMENT_MODE = 'prototyping'
+DEVELOPMENT_MODE = 'production'
 
 
 # --- 各模式的超参数设置 ---
