@@ -37,11 +37,12 @@ This project is built not just on a powerful model, but on a core philosophy of 
     ```
 
 3.  **Install dependencies:**
-    *This project relies on PyTorch and PyTorch Geometric. Please follow their official installation instructions for your specific CUDA version first.*
+    *This project relies on PyTorch and PyTorch Geometric. Please follow their official installation instructions for your specific CUDA version first.https://pytorch.org/get-started/locally/*
     ```sh
-    # Example for CUDA 11.8
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    # Example for CUDA 12.8 win11
+    pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu128
     pip install torch_geometric
+    pip install pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.8.0+cu128.html
     pip install rdkit-pypi biopython tqdm scipy
     ```
 
