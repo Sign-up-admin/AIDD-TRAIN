@@ -38,3 +38,14 @@ Beyond the initial philosophy, the optimizer underwent a significant evolution, 
 *   **Fused Efficiency**: The redundant, two-step process of finding the max batch size and then separately estimating its cycle time was fused into a single, efficient operation. The cycle time is now derived directly from the timing of the final stability probe, halving the required GPU work for each candidate.
 *   **Granular Pruning**: The initial, aggressive pruning strategy was refined. Instead of pruning an entire layer based on a single slow configuration, the new logic only prunes configurations that are more complex in *both* layer count and channel width, allowing for a more thorough and intelligent exploration of the search space.
 *   **Bayesian Optimization**: The most significant leap was replacing the grid-based search for `prototyping` and `validation` modes with a Bayesian Optimization engine. The optimizer now learns from each test, building a probabilistic model of the search space to intelligently select the next most promising candidate. This allows it to find better configurations in fewer steps, making the entire process not just faster, but smarter.
+
+## The Importance of Code Engineering
+
+Striving to build project code with an engineering mindset is key to improving project maintainability, scalability, and team collaboration efficiency. The necessity of reading and understanding good project engineering practices helps us write more robust and clearer code, laying a solid foundation for the long-term success of the project.
+
+## Core Experience Summary
+
+*   **Architecture First, Code Second:** The clear division of directories like `compass`, `scripts`, and `docs` at the beginning of the project was the cornerstone for subsequent efficient development and maintenance. A good top-level design is far more important than hastily written code.
+*   **The Evolution of a Tool:** The evolution of `hardware_optimizer.py` (from a single script to a product with separated configuration, complete logging, and intelligent algorithms) epitomizes project engineering. This shows that the value of a tool lies not only in completing its task but also in its robustness, usability, and scalability.
+*   **Intelligence over Brute-Force:** The upgrade from grid search to Bayesian optimization was a key turning point in the project. It proved that on complex problems, introducing more intelligent algorithms (even if slightly more complex to implement) can lead to orders-of-magnitude improvements in efficiency and is an effective way to resolve performance bottlenecks.
+*   **Documentation as a Living Fossil:** Documents like `GEMINI.md` record the entire process from core philosophy to architectural decisions and experience summaries. It is not only a guide for new members but also a repository of the team's collective wisdom and a valuable asset for avoiding repeating past mistakes.
