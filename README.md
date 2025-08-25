@@ -47,7 +47,7 @@ This project is built not just on a powerful model, but on a core philosophy of 
 
 4.  **Prepare Data:**
     - Download the PDBbind dataset (v.2020 or other).
-    - Open `config.py` and update the `dataset_path` and `index_file` variables to point to your dataset location.
+    - Open `compass/config.py` and update the `dataset_path` and `index_file` variables to point to your dataset location.
 
 ---
 
@@ -55,11 +55,11 @@ This project is built not just on a powerful model, but on a core philosophy of 
 
 This project contains an intelligent hardware optimizer, `hardware_optimizer.py`, designed to find the perfect model configuration for different stages of the development lifecycle.
 
-### The Core Philosophy
+### The Core Philosophy (see `docs/optimizer_philosophy.md` for details)
 
 This optimizer was built upon a clear, hierarchical development philosophy defined by its architect, in collaboration with the Gemini agent. It recognizes that the "best" configuration is not a single setting, but a set of trade-offs tailored to the specific goal of each development phase. The optimizer's intelligence lies in its ability to weigh these trade-offs, using real-time performance estimation.
 
-The workflow is defined by three core stages, each with a unique optimization target:
+The optimizer targets three core stages, each with a unique goal:
 
 1.  **`prototyping` (Soft Target: ~20 min/cycle)**
     *   **Philosophy**: **Time is the ruler.** This stage is for rapid trial and error. The configuration must be fast enough to allow developers to quickly test ideas. The optimizer targets a ~20 minute cycle time (for a fixed 450-batch run) but allows for a **20-minute flexibility window**. 
@@ -79,15 +79,15 @@ This structured approach ensures that from the earliest idea to the final deploy
 
 1.  Open your terminal.
 2.  Navigate to the project's root directory (`AIDD-TRAIN`).
-3.  Run the following single command:
+3.  Run the optimizer module with the following command:
 
     ```sh
-    python src/hardware_optimizer.py
+    python -m compass.optimizer
     ```
 
 This command will optimize for all four modes (`production`, `validation`, `prototyping`, and `smoke_test`) in the correct order. The process may take some time.
 
-The script will create or update a `hardware_profile.json` file. The main training script (`main.py`) will automatically load the appropriate settings from this file based on the `DEVELOPMENT_MODE` you select in `config.py`.
+The script will create or update a `hardware_profile.json` file in the project root. The main training script will automatically load the appropriate settings from this file based on the `DEVELOPMENT_MODE` you select in `compass/config.py`.
 
 ### (Optional) Optimizing for Specific Modes
 
@@ -95,7 +95,7 @@ If you wish to re-run the optimization for only specific modes, you can use the 
 
 ```sh
 # Example: Optimize only for production and validation
-python src/hardware_optimizer.py --modes production validation
+python -m compass.optimizer --modes production validation
 ```
 
 ---
@@ -104,14 +104,14 @@ python src/hardware_optimizer.py --modes production validation
 
 Once the one-time setup and optimization are complete, your daily workflow is very simple.
 
-1.  **Select Your Mode**: Open `config.py` and set the `DEVELOPMENT_MODE` variable to one of the four modes: `'smoke_test'`, `'prototyping'`, `'validation'`, or `'production'`.
+1.  **Select Your Mode**: Open `compass/config.py` and set the `DEVELOPMENT_MODE` variable to one of the four modes: `'smoke_test'`, `'prototyping'`, `'validation'`, or `'production'`.
 
 2.  **Run Training**: Execute the main script from your terminal.
     ```sh
-    python main.py
+    python -m compass
     ```
 
-The script will automatically use the best settings for your chosen mode—either the optimized parameters from your `hardware_profile.json` or the default settings if no optimization was run for that mode.
+The script will automatically use the best settings for your chosen mode—either the optimized parameters from hardware_profile.json or the default settings if no optimization was run for that mode.
 
 All logs and model checkpoints will be saved into a uniquely named directory (e.g., `checkpoints/visnet_prototyping_.../`).
 
@@ -119,7 +119,7 @@ All logs and model checkpoints will be saved into a uniquely named directory (e.
 
 ## Understanding the Four-Stage Workflow
 
-COMPASS implements a phased workflow to balance speed and rigor. You can switch between modes by changing a single variable in `config.py`.
+COMPASS implements a phased workflow to balance speed and rigor. You can switch between modes by changing a single variable in `compass/config.py`.
 
 1.  **`smoke_test`**: *"Does the code run?"* A minimal check that runs in minutes.
 2.  **`prototyping`**: *"Is my idea promising?"* A lightweight configuration for rapid experimentation.

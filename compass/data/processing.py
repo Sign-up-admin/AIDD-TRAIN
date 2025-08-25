@@ -7,10 +7,10 @@ import torch
 import numpy as np
 from torch_geometric.data import Data
 from rdkit import Chem, RDLogger
-from Bio.PDB import PDBParser
+from rdkit.Chem import PDBParser
 from tqdm import tqdm
 
-from config import CONFIG
+from ..config import CONFIG
 
 # Suppress RDKit warnings
 RDLogger.logger().setLevel(RDLogger.CRITICAL)
@@ -166,7 +166,12 @@ def process_item(item):
     pdb_code = item.get('pdb_code', 'N/A')
     max_atoms = CONFIG.get('max_atoms', 10000)
     try:
-        protein_path = item['protein_path']
+        # --- Path Separator Fix for Cross-Platform Compatibility ---
+        # On Windows, paths constructed with mixed separators (e.g., 'dir\\subdir/file')
+        # can fail. This normalizes the separators to the OS-specific one.
+        protein_path = os.path.normpath(item['protein_path'])
+        ligand_path = os.path.normpath(item['ligand_path'])
+
         if os.path.getsize(protein_path) > 100 * 1024 * 1024: # 100MB limit
             logging.warning(f"Skipping {pdb_code}: Protein file is very large (>100MB).")
             return None
@@ -177,7 +182,6 @@ def process_item(item):
             return None
 
         ligand = None
-        ligand_path = item['ligand_path']
         if ligand_path.endswith('.mol2'):
             ligand = Chem.MolFromMol2File(ligand_path, removeHs=False, sanitize=True)
         elif ligand_path.endswith('.sdf'):
@@ -193,7 +197,7 @@ def process_item(item):
             logging.warning(f"Skipping {pdb_code}: Ligand graph could not be generated.")
             return None
 
-        protein_graph = get_protein_graph(item['protein_path'], ligand_positions_set=ligand_graph['seen_pos'])
+        protein_graph = get_protein_graph(protein_path, ligand_positions_set=ligand_graph['seen_pos'])
         if protein_graph is None:
             logging.warning(f"Skipping {pdb_code}: Protein graph could not be generated.")
             return None

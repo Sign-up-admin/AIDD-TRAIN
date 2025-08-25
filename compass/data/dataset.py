@@ -8,8 +8,8 @@ import torch
 from torch_geometric.data import Dataset
 from tqdm import tqdm
 
-from src.data_processing import process_item
-from config import CONFIG # Directly import the configuration
+from .processing import process_item
+from ..config import CONFIG # Directly import the configuration
 
 def _process_and_save_helper(args):
     """Helper function for parallel processing to be used by the Pool."""

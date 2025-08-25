@@ -112,8 +112,8 @@ OPTIMIZATION_HIERARCHY = ['production', 'validation', 'prototyping', 'smoke_test
 # ==============================================================================
 TEST_SAMPLE_CONFIG = {
     'pdb_code': '1jmf',
-    'protein_path': '1jmf/1jmf_protein.pdb',
-    'ligand_path': '1jmf/1jmf_ligand.sdf',
+    'protein_path': 'compass/optimizer/1jmf/1jmf_pocket.pdb',
+    'ligand_path': 'compass/optimizer/1jmf/1jmf_ligand.sdf',
     'binding_data': 'Kd=1.0nM',
     'max_atoms': 10200
 }
