@@ -5,6 +5,25 @@
 
 ---
 
+### Scene: Resolving a Circular Import Error to Enable Training
+
+- **Objective**: To diagnose and fix a critical `ImportError` that was preventing the application from starting. The error message pointed to a "circular import" between the `engine.py` and `loop.py` modules, which were locked in a dependency standoff.
+
+- **AI Contribution (Architectural Refactoring)**:
+    1.  **Diagnosis**: I immediately identified the traceback as a classic circular import problem. `engine.py` was trying to import `train_epoch` from `loop.py`, while `loop.py` was simultaneously trying to import `_save_checkpoint` from `engine.py`, creating an unbreakable loop.
+    2.  **Decoupling Strategy**: I proposed and executed a standard software engineering solution to break this dependency: creating a new, single-purpose module.
+    3.  **Implementation**:
+        *   I created a new file, `compass/training/checkpoint.py`.
+        *   I moved the `_save_checkpoint` and `_load_checkpoint` functions from `engine.py` into this new `checkpoint.py` module.
+        *   I updated both `engine.py` and `loop.py` to import these functions from the new, independent `checkpoint.py` module instead of from each other.
+
+- **Outcome & Benefits**:
+    -   **Immediate Problem Resolution**: The refactoring completely eliminated the circular dependency, allowing the application to launch successfully.
+    -   **Improved Code Architecture**: The codebase is now more robust and maintainable. The logic for handling checkpoints is cleanly separated into its own module ("separation of concerns"), making the code easier to understand and reducing the risk of future circular import issues.
+    -   **Educational Moment**: This provided a clear, practical example of why circular dependencies are problematic and how to resolve them using a common and effective refactoring pattern.
+
+---
+
 ### Scene: Implementing an Advanced Logging System for Traceability and Debugging
 
 - **Objective**: To elevate the project's monitoring capabilities from simple console outputs to a persistent, structured, and dual-purpose logging system. The goal is to automatically create a permanent record of every training run, while also providing a dedicated, high-signal file for rapid debugging.

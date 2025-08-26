@@ -1,4 +1,26 @@
-# AIDD-TRAIN Hardware Optimizer: The Guiding Philosophy
+# GEMINI: Core Architectural Decisions & Lessons Learned
+
+This document records the key architectural decisions, problem-solving patterns, and core philosophies established during the development of the AIDD-TRAIN project. It serves as a living repository of engineering wisdom for the project.
+
+---
+
+### Scene: Resolving a Circular Import Error via Architectural Refactoring
+
+- **Problem**: A critical `ImportError` blocked the application at startup. The traceback indicated a classic **circular import**: `engine.py` depended on `loop.py`, which in turn depended on `engine.py`.
+
+- **Analysis**: This dependency loop creates a situation where neither module can be fully loaded before the other, leading to a resolution failure. The root cause was shared utility functions (`_save_checkpoint`, `_load_checkpoint`) being housed in a module (`engine.py`) that also had higher-level application logic.
+
+- **Solution (The Decoupling Pattern)**:
+    1.  **Identify the Common Utility**: The checkpointing functions were identified as a self-contained, reusable utility.
+    2.  **Create a Dedicated Module**: A new module, `compass/training/checkpoint.py`, was created to adhere to the **Single Responsibility Principle**.
+    3.  **Relocate and Refactor**: The checkpointing functions were moved from `engine.py` to the new `checkpoint.py` module.
+    4.  **Update Dependencies**: Both `engine.py` and `loop.py` were updated to import the checkpointing functions directly from the new, independent `checkpoint.py` module.
+
+- **Lesson Learned**: When two modules appear to depend on each other, it often signals that a common, lower-level functionality can be extracted into a third, independent module. This **decoupling** not only solves the immediate circular import error but also leads to a cleaner, more logical, and more maintainable code architecture.
+
+---
+
+### AIDD-TRAIN Hardware Optimizer: The Guiding Philosophy
 
 This document records the final core philosophy embedded into the `hardware_optimizer.py` script. This philosophy was established and refined by the project's architect, and implemented by the Gemini agent, creating a tool that understands the nuanced, trade-off-driven demands of a real-world machine learning workflow.
 

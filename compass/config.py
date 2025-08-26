@@ -18,7 +18,7 @@ from compass.optimizer.utils import load_optimized_settings
 #                 Tuned for GPUs with more than 8GB of VRAM.
 #
 # Options: 'smoke_test', 'prototyping', 'validation', 'production'
-EXECUTION_MODE = 'production'
+EXECUTION_MODE = 'smoke_test'
  
  
 # --- Hyperparameter Sets for Each Mode ---
