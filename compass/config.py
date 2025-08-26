@@ -1,6 +1,6 @@
-'''
+"""
  Configuration settings for the data processing and model training script.
- '''
+ """
  
 import os
  
@@ -18,7 +18,7 @@ from compass.optimizer.utils import load_optimized_settings
 #                 Tuned for GPUs with more than 8GB of VRAM.
 #
 # Options: 'smoke_test', 'prototyping', 'validation', 'production'
-EXECUTION_MODE = 'smoke_test'
+EXECUTION_MODE = 'validation'
  
  
 # --- Hyperparameter Sets for Each Mode ---

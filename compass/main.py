@@ -7,7 +7,7 @@ from torch.utils.data import random_split
 from torch_geometric.loader import DataLoader
 
 from .config import get_config
-from .data.processing import get_pdb_info, get_data_paths
+from .data.loader.paths import get_pdb_info, get_data_paths
 from .data.dataset import PDBBindDataset
 from .training.model import ViSNetPDB
 from .training.engine import Trainer
@@ -23,7 +23,7 @@ def collate_filter_none(batch):
     return Batch.from_data_list(batch)
 
 
-def worker_init_fn(worker_id):
+def worker_init_fn(_):
     """
     Prevents worker processes from catching KeyboardInterrupt.
     This is a common solution for multiprocessing data loading issues.

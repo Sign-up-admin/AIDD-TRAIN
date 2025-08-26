@@ -1,11 +1,10 @@
 import logging
-from itertools import product
 import sys
 
-# --- IMPORTS ---
-from ..training.model import ViSNetPDB
 from .config import TIME_RANGES, CYCLE_BATCHES
 from .core.prober import probe_config, find_max_batch_size_by_stressing
+# --- IMPORTS ---
+from ..training.model import ViSNetPDB
 
 try:
     from skopt import gp_minimize
