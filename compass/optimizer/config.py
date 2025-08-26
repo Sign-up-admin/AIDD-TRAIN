@@ -14,7 +14,7 @@ ARCH_DEFINITIONS = {
         'vram_threshold': 12,
         'description': "Standard architecture for high VRAM GPUs (>12GB)",
         'architectures': {
-            'production':  {'layers': [8, 7, 6, 5], 'channels': [256, 192, 128]},
+            'production':  {'layers': [8, 6, 4], 'channels': [128, 96, 64]},
             'validation':  {'layers': [6, 5, 4, 3], 'channels': [128, 96, 64]},
             'prototyping': {'layers': [4, 3, 2],   'channels': [64, 48, 32]},
             'smoke_test':  {'layers': [2, 1],     'channels': [32, 24, 16]}
@@ -24,7 +24,7 @@ ARCH_DEFINITIONS = {
         'vram_threshold': 8,
         'description': "Conservative architecture for medium VRAM GPUs (8-12GB)",
         'architectures': {
-            'production':  {'layers': [6, 5, 4], 'channels': [96, 64, 48]},
+            'production':  {'layers': [7, 5, 4], 'channels': [112, 96, 64]},
             'validation':  {'layers': [4, 3, 2], 'channels': [64, 48, 32]},
             'prototyping': {'layers': [3, 2, 1], 'channels': [32, 24, 16]},
             'smoke_test':  {'layers': [1],     'channels': [16, 8]}
@@ -34,7 +34,7 @@ ARCH_DEFINITIONS = {
         'vram_threshold': 6,
         'description': "More conservative architecture for low VRAM GPUs (6-8GB)",
         'architectures': {
-            'production':  {'layers': [4, 3, 2], 'channels': [48, 32, 24]},
+            'production':  {'layers': [5, 3, 2], 'channels': [64, 48, 32]},
             'validation':  {'layers': [3, 2],   'channels': [32, 24, 16]},
             'prototyping': {'layers': [2, 1],   'channels': [16, 8]},
             'smoke_test':  {'layers': [1],     'channels': [8]}
@@ -44,7 +44,7 @@ ARCH_DEFINITIONS = {
         'vram_threshold': 0,
         'description': "Ultra-conservative architecture for very low VRAM GPUs (<=6GB)",
         'architectures': {
-            'production':  {'layers': [3, 2], 'channels': [32, 24]},
+            'production':  {'layers': [4, 3, 2], 'channels': [48, 32, 24]},
             'validation':  {'layers': [2, 1], 'channels': [24, 16]},
             'prototyping': {'layers': [1],   'channels': [16, 8]},
             'smoke_test':  {'layers': [1],   'channels': [8]}
@@ -66,8 +66,8 @@ VRAM_SCALING_FACTORS = {
 # 3. MODE-SPECIFIC PARAMETERS
 # ==============================================================================
 MODE_PARAMS = {
-    'production':  {'bs': 16, 'stress': 20},
-    'validation':  {'bs': 32, 'stress': 20},
+    'production':  {'bs': 2, 'stress': 1},
+    'validation':  {'bs': 64, 'stress': 20},
     'prototyping': {'bs': 64, 'stress': 20},
     'smoke_test':  {'bs': 128, 'stress': 1}
 }
@@ -77,7 +77,7 @@ MODE_PARAMS = {
 # ==============================================================================
 TIME_RANGES = {
     'prototyping': (10, 40),
-    'validation':  (60, 120)
+    'validation':  (60, 240)
 }
 CYCLE_BATCHES = 450
 
@@ -87,7 +87,8 @@ CYCLE_BATCHES = 450
 PARAMETER_CAPS = {
     1000:  50_000,
     10000: 100_000,
-    float('inf'): 250_000
+    20000: 1_000_000,
+    float('inf'): 1_000_000
 }
 
 # ==============================================================================
