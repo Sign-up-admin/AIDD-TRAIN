@@ -4,7 +4,7 @@ from torch.profiler import record_function
 import torch
 import os
 
-from .engine import _save_checkpoint
+from .checkpoint import _save_checkpoint
 
 def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logger=None):
     model.train()
