@@ -9,12 +9,38 @@ of the find_optimal_configs script.
 # ==============================================================================
 # 1. CORE SEARCH SPACE DEFINITIONS
 # ==============================================================================
+# Philosophy:
+# The optimizer tailors its search based on the GPU's VRAM and the desired
+# development mode. We define a hierarchy of architectures from the most complex
+# ('production') to the simplest ('smoke_test'). This ensures that the optimizer
+# searches within a reasonable space for each use case.
+#
+# - 'production':  Aims for the highest quality model. Architectures are complex,
+#                    intended for final model training and deployment.
+# - 'validation':  Seeks a balance between performance and speed. Used for
+#                    hyperparameter tuning and validation loops where training time
+#                    is a consideration.
+# - 'prototyping': For rapid development and debugging. Architectures are simple
+#                    and train very quickly.
+# - 'smoke_test':  A minimal configuration to ensure the entire pipeline runs
+#                    without errors. It's the fastest and simplest check.
+# ==============================================================================
 ARCH_DEFINITIONS = {
+    'very_high_vram': {
+        'vram_threshold': 16,
+        'description': "Enhanced architecture for high VRAM GPUs (>=16GB)",
+        'architectures': {
+            'production':  {'layers': [10, 9, 8, 7, 6, 5], 'channels': [320, 256, 192, 128, 96]},
+            'validation':  {'layers': [7, 6, 5, 4], 'channels': [192, 128, 96]},
+            'prototyping': {'layers': [5, 4, 3],   'channels': [96, 64, 48]},
+            'smoke_test':  {'layers': [2, 1],     'channels': [32, 24, 16]}
+        }
+    },
     'high_vram': {
         'vram_threshold': 12,
         'description': "Standard architecture for high VRAM GPUs (>12GB)",
         'architectures': {
-            'production':  {'layers': [8, 7, 6, 5], 'channels': [256, 192, 128]},
+            'production':  {'layers': [8, 7, 6, 5, 4, 3], 'channels': [256, 192, 128, 96, 64]},
             'validation':  {'layers': [6, 5, 4, 3], 'channels': [128, 96, 64]},
             'prototyping': {'layers': [4, 3, 2],   'channels': [64, 48, 32]},
             'smoke_test':  {'layers': [2, 1],     'channels': [32, 24, 16]}
@@ -55,9 +81,14 @@ ARCH_DEFINITIONS = {
 # ==============================================================================
 # 2. VRAM-BASED SCALING FACTORS
 # ==============================================================================
+# Philosophy:
+# To make the most of available VRAM, we apply a scaling factor to the number of
+# layers and channels. GPUs with more VRAM can handle larger models, so this
+# allows the optimizer to be more ambitious on higher-end hardware.
+# ==============================================================================
 VRAM_SCALING_FACTORS = {
     24: 1.5,
-    16: 1.2,
+    16: 1.0,    # Use exact values for the dedicated 16GB tier
     12: 1.1,
     0:  1.0
 }
@@ -65,9 +96,17 @@ VRAM_SCALING_FACTORS = {
 # ==============================================================================
 # 3. MODE-SPECIFIC PARAMETERS
 # ==============================================================================
+# Philosophy:
+# Each mode has different requirements for batch size (bs) and stress testing.
+# - 'bs': A starting batch size for the search. Larger models ('production') need
+#         smaller batch sizes to fit in memory.
+# - 'stress': The number of iterations to run when measuring cycle time. More
+#             iterations lead to more accurate time estimates, which is crucial
+#             for the time-sensitive 'validation' mode.
+# ==============================================================================
 MODE_PARAMS = {
     'production':  {'bs': 16, 'stress': 20},
-    'validation':  {'bs': 32, 'stress': 20},
+    'validation':  {'bs': 32, 'stress': 29},
     'prototyping': {'bs': 64, 'stress': 20},
     'smoke_test':  {'bs': 128, 'stress': 1}
 }
@@ -75,19 +114,34 @@ MODE_PARAMS = {
 # ==============================================================================
 # 4. TIME-GUIDED OPTIMIZATION PARAMETERS
 # ==============================================================================
+# Philosophy:
+# For 'validation' and 'prototyping', the goal is not just performance, but
+# developer productivity. We define a "sweet spot" time range (in minutes) for
+# a standard training cycle. The optimizer uses Bayesian methods to find the most
+# efficient model within this time frame. 'production' mode does not have a time
+# limit, as the priority is finding the absolute best model.
+# ==============================================================================
 TIME_RANGES = {
     'prototyping': (10, 40),
-    'validation':  (60, 120)
+    'validation':  (60, 240) # Increased upper bound to find better models
 }
 CYCLE_BATCHES = 450
 
 # ==============================================================================
 # 5. DATA-AWARE PARAMETER CAPPING
 # ==============================================================================
+# Philosophy:
+# To prevent overfitting, we cap the maximum number of model parameters based on
+# the dataset size. A larger dataset can support a more complex model without
+# memorizing the training data. This acts as a crucial guardrail, ensuring the
+# optimizer doesn't select a model that is too powerful for the data it's being
+# trained on. A 4MB model file roughly corresponds to 1 million parameters.
+# ==============================================================================
 PARAMETER_CAPS = {
-    1000:  50_000,
-    10000: 100_000,
-    float('inf'): 250_000
+    1000: 250_000,          # For tiny datasets, keep models simple (~1MB file).
+    10000: 750_000,        # For small datasets (~3MB file).
+    25000: 1_000_000,       # For medium datasets like ~19.5k, cap at 1M params (~4MB file).
+    float('inf'): 2_000_000 # For large datasets, allow complex models (~8MB file).
 }
 
 # ==============================================================================
