@@ -146,3 +146,29 @@ By incorporating these checks, COMPASS will be even better equipped to navigate 
     -   **True Agility**: The project now possesses a genuine `prototyping` mode that provides feedback in minutes, not hours, dramatically accelerating the idea-to-validation cycle.
     -   **Logical Progression**: The workflow now has a more logical and practical four-stage progression, removing the jarring leap from a simple smoke test to a heavy, near-production run.
     -   **Enhanced Clarity**: The roles of all development modes are now clearly defined and implemented, reducing ambiguity and preventing future configuration errors. This represents a maturation of our development process, moving from a good theoretical framework to a battle-tested, practical one.
+
+---
+
+### Scene: Conquering a Persistent CUDA Out-of-Memory Error
+
+- **Objective**: To diagnose and resolve a stubborn, multi-day `CUDA out of memory` error that persisted despite numerous attempts to reduce model and data complexity. The core challenge was that memory usage was not static but grew cumulatively, indicating a leak.
+
+- **User-AI Collaboration & Iterative Debugging**:
+    This was a classic case of peeling back the layers of a problem. Our collaboration was essential, as the user's consistent testing and feedback after each of my proposed changes allowed us to systematically eliminate possibilities.
+
+    1.  **Initial (Incorrect) Assumption - Model/Data Size**: We first assumed the model or data was simply too large for the 6GB GPU. This led to a series of logical but ultimately insufficient fixes:
+        -   Reducing model hyperparameters (`hidden_channels`, `num_layers`, etc.).
+        -   Reducing data complexity (`max_atoms`, `visnet_cutoff`).
+        -   Ensuring data was reprocessed after each change (`force_data_reprocessing`).
+
+    2.  **The Turning Point - Identifying a Leak**: When even an `ultra_light` configuration failed, it became clear that the problem wasn't the static memory footprint, but a **memory leak**—memory was not being freed after each batch. The key clue was the error message showing PyTorch allocating memory far beyond the GPU's physical capacity.
+
+    3.  **AI Contribution (Leak Hunting & The Final Fix)**:
+        *   **Hypothesis 1 (Profiler Hooks)**: I theorized that PyTorch's `record_function` for profiling might be holding onto tensors. I removed them. The error persisted.
+        *   **Hypothesis 2 (The True Culprit - Gradient Accumulation)**: After re-examining the entire process, I identified the `gradient_accumulation_steps` setting as the most likely cause. With a value of 32, it was forcing the GPU to hold the gradients for 32 batches in memory at once. This was the source of the cumulative memory growth. The "leak" wasn't a bug in the code, but a misconfiguration for the available hardware.
+        *   **Hypothesis 3 (Ensuring Cleanliness)**: Even with the primary cause found, I implemented a robust, secondary fix to prevent any future leaks. I modified the training and validation loops in `loop.py` to explicitly delete the `loss`, `output`, and `data` tensors and then call `torch.cuda.empty_cache()` at the end of every batch. This forces the GPU to release memory immediately.
+
+- **Outcome & Benefits**:
+    -   **Problem Resolved**: The combination of reducing gradient accumulation and enforcing manual garbage collection completely solved the memory error, finally allowing training to proceed smoothly.
+    -   **Deeper System Understanding**: We gained a critical insight into the memory lifecycle of a PyTorch training loop. The memory cost of gradient accumulation is now a primary consideration for future configurations.
+    -   **A Robust Debugging Playbook**: This experience established a clear methodology for tackling memory errors: first, simplify the model/data; second, if the error persists, suspect a leak and investigate memory-accumulating processes like profiling and gradient accumulation; third, implement explicit memory management (`del`, `empty_cache`) as a final, robust safeguard.
