@@ -20,7 +20,6 @@ from compass.optimizer.utils import load_optimized_settings
 # Options: 'smoke_test', 'prototyping', 'validation', 'production'
 EXECUTION_MODE = 'validation'
  
- 
 # --- Hyperparameter Sets for Each Mode ---
 # Defines the core settings for each execution mode. Parameters can be adjusted
 # based on hardware and experimental needs.
@@ -43,9 +42,12 @@ MODES = {
     },
     # 'validation': Recommended for GPUs with ~6-8GB of VRAM (e.g., RTX 3060).
     'validation': {
-        'epochs': 20,
-        'batch_size': 4,
- 
+        'epochs': 200,
+        'batch_size': 2,
+        'gradient_accumulation_steps': 32,
+        'visnet_hidden_channels': 64,
+        'visnet_num_layers': 4,
+        'visnet_num_rbf': 80,
         'profile': False,
         'max_atoms': 10000,
     },

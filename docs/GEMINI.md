@@ -71,3 +71,21 @@ Striving to build project code with an engineering mindset is key to improving p
 *   **The Evolution of a Tool:** The evolution of `hardware_optimizer.py` (from a single script to a product with separated configuration, complete logging, and intelligent algorithms) epitomizes project engineering. This shows that the value of a tool lies not only in completing its task but also in its robustness, usability, and scalability.
 *   **Intelligence over Brute-Force:** The upgrade from grid search to Bayesian optimization was a key turning point in the project. It proved that on complex problems, introducing more intelligent algorithms (even if slightly more complex to implement) can lead to orders-of-magnitude improvements in efficiency and is an effective way to resolve performance bottlenecks.
 *   **Documentation as a Living Fossil:** Documents like `GEMINI.md` record the entire process from core philosophy to architectural decisions and experience summaries. It is not only a guide for new members but also a repository of the team's collective wisdom and a valuable asset for avoiding repeating past mistakes.
+
+---
+
+### Scene: Conquering a Persistent CUDA Out-of-Memory Error
+
+- **Problem**: A persistent `CUDA out of memory` error that was not resolved by simple hyperparameter tuning. The key symptom was that memory usage grew cumulatively with each batch, indicating a memory leak rather than a simple model-size issue.
+
+- **Analysis (A Multi-Layered Investigation)**:
+    My diagnostic process followed a systematic, top-down approach to isolate the root cause.
+    1.  **Eliminate Surface-Level Causes**: I first guided the user through the most common solutions: reducing model parameters (`hidden_channels`, `num_layers`), data complexity (`max_atoms`), and data-loading parameters (`visnet_cutoff`). When these failed, it invalidated the initial hypothesis that the model was simply too large.
+    2.  **Identify the Leak Pattern**: The user's feedback that the crash happened after a few batches was the critical clue. This confirmed the problem was a **memory leak**, where resources were not being freed after each step.
+    3.  **Isolate the Leak Source**: My investigation then focused on features that accumulate data over time. I initially suspected profiler hooks (`record_function`) but eventually pinpointed the `gradient_accumulation_steps` parameter as the primary culprit. Storing gradients for 32 batches on a 6GB GPU was unsustainable. This was a **configuration-induced leak**.
+
+- **Solution (A Robust, Two-Part Fix)**:
+    1.  **Address the Root Cause**: I corrected the `gradient_accumulation_steps` to a value appropriate for the hardware, eliminating the primary source of the cumulative memory growth.
+    2.  **Implement a Failsafe**: To prevent future, more subtle leaks and to enforce clean memory management, I implemented a definitive safeguard. I modified the training and validation loops in `loop.py` to explicitly `del` the `loss`, `output`, and `data` tensors and then call `torch.cuda.empty_cache()` at the end of every single batch. This forces the GPU to reclaim all unused memory immediately.
+
+- **Lesson Learned**: When debugging memory issues, it's crucial to differentiate between **static memory cost** (the size of the model and a single batch) and **cumulative memory cost** (memory that grows over time). If simplifying the model doesn't work, the next step is to investigate any process that accumulates resources. Furthermore, implementing explicit memory cleanup (`del` and `empty_cache`) provides a powerful safety net, making the entire training process more robust against both obvious and subtle memory leaks.
