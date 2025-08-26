@@ -61,18 +61,18 @@ MODES = {
         'profile': False,
         'max_atoms': 10000,
     },
-    # 'production': 为显存大于 8GB 的 GPU 调优。在 6GB 显存上可能运行缓慢或不稳定。
+    # 'production': 最终的、兼顾稳定与性能的16GB显存生产配置。
     'production': {
-        'epochs': 100,
-        'batch_size': 8,
-        'gradient_accumulation_steps': 8,
-        'loader_num_workers': 0,
-        'visnet_hidden_channels': 64, # ViSNet 模型的隐藏层通道数。必须是注意力头数（默认为8）的倍数。
-        'visnet_num_layers': 4,
-        'visnet_num_rbf': 64,
+        'epochs': 200,
+        'batch_size': 2,                    # 维持绝对安全的物理批次大小
+        'gradient_accumulation_steps': 32,  # 配合batch_size=2以模拟64的有效批次
+        'loader_num_workers': 8,
+        'visnet_hidden_channels': 80,       # 在安全批次基础上，提升模型宽度
+        'visnet_num_layers': 4,             # 维持安全的模型深度
+        'visnet_num_rbf': 80,               # 在安全批次基础上，提升径向基函数数量
         'force_data_reprocessing': False,
         'profile': False,
-        'max_atoms': 10000,
+        'max_atoms': 10000,                 # 维持稳定的最大原子数
     }
 }
 
@@ -142,7 +142,7 @@ CONFIG = {
     # 手动触发模型保存的标志文件名。如果此文件存在，将在下一个检查点强制保存模型。
     'manual_save_trigger_file': 'SAVE_NOW.flag',
     # 每处理 N 个批次后保存一次模型。用于在长时间训练中定期备份。
-    'save_every_n_batches': 100,
+    'save_every_n_batches': 250,
 
     # --- 可复现性 ---
     # 随机种子。设置一个固定的种子可以确保数据划分、模型初始化等随机过程的结果一致，便于复现实验。
@@ -174,7 +174,7 @@ try:
     if os.path.exists(OPTIMIZED_CONFIG_PATH):
         print(f"--- Found hardware profile: '{OPTIMIZED_CONFIG_PATH}' ---")
         with open(OPTIMIZED_CONFIG_PATH, 'r') as f:
-            optimized_params = json.load()
+            optimized_params = json.load(f)
 
         # 如果当前模式在优化配置中存在
         if DEVELOPMENT_MODE in optimized_params:
@@ -187,7 +187,6 @@ try:
 
 except Exception as e:
     print(f"[Warning] Could not load or apply hardware profile: {e}")
-
 
 # --- 后处理与验证 ---
 # 根据配置生成一个唯一的运行名称，用于日志和模型保存。

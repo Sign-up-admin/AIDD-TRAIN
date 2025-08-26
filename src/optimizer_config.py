@@ -26,6 +26,16 @@ of the find_optimal_configs script.
 #                    without errors. It's the fastest and simplest check.
 # ==============================================================================
 ARCH_DEFINITIONS = {
+    'very_high_vram': {
+        'vram_threshold': 16,
+        'description': "Enhanced architecture for high VRAM GPUs (>=16GB)",
+        'architectures': {
+            'production':  {'layers': [10, 9, 8, 7, 6, 5], 'channels': [320, 256, 192, 128, 96]},
+            'validation':  {'layers': [7, 6, 5, 4], 'channels': [192, 128, 96]},
+            'prototyping': {'layers': [5, 4, 3],   'channels': [96, 64, 48]},
+            'smoke_test':  {'layers': [2, 1],     'channels': [32, 24, 16]}
+        }
+    },
     'high_vram': {
         'vram_threshold': 12,
         'description': "Standard architecture for high VRAM GPUs (>12GB)",
@@ -78,7 +88,7 @@ ARCH_DEFINITIONS = {
 # ==============================================================================
 VRAM_SCALING_FACTORS = {
     24: 1.5,
-    16: 1.2,
+    16: 1.0,    # Use exact values for the dedicated 16GB tier
     12: 1.1,
     0:  1.0
 }
