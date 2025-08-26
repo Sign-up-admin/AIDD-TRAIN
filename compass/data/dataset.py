@@ -1,6 +1,5 @@
-import os
 import logging
-import hashlib
+import os
 import shutil
 from multiprocessing import Pool
 
@@ -9,7 +8,8 @@ from torch_geometric.data import Dataset
 from tqdm import tqdm
 
 from .processing import process_item
-from ..config import CONFIG # Directly import the configuration
+from ..config import CONFIG  # Directly import the configuration
+
 
 def _process_and_save_helper(args):
     """Helper function for parallel processing to be used by the Pool."""
@@ -20,14 +20,14 @@ def _process_and_save_helper(args):
             if pre_transform: 
                 data = pre_transform(data)
             torch.save(data, dest_path)
-            return (1, None) # Return success and no error message
+            return 1, None  # Return success and no error message
         # If process_item returns None, it means the item was intentionally skipped.
-        return (0, f"PDB {item_info.get('pdb_code', 'N/A')} was skipped during processing.")
+        return 0, f"PDB {item_info.get('pdb_code', 'N/A')} was skipped during processing."
     except Exception as e:
         # Catch any unexpected errors during processing of a single item
         pdb_code = item_info.get('pdb_code', 'N/A')
         logging.error(f"Critical error processing {pdb_code}: {e}", exc_info=True)
-        return (0, f"Critical error processing {pdb_code}.")
+        return 0, f"Critical error processing {pdb_code}."
 
 class PDBBindDataset(Dataset):
     def __init__(self, root, data_paths, num_workers, transform=None, pre_transform=None):

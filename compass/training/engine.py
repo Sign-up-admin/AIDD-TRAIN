@@ -1,13 +1,15 @@
-import os
 import sys
 import signal
+import sys
+
 import torch
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.amp import GradScaler
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.profiler import profile, ProfilerActivity
 
-from .loop import train_epoch, validate_epoch
 from .checkpoint import _save_checkpoint, _load_checkpoint
+from .loop import train_epoch, validate_epoch
+
 
 class Trainer:
     def __init__(self, config, model, train_loader, val_loader, device, logger):
