@@ -4,7 +4,7 @@
  
 import os
  
-from .optimizer.utils import load_optimized_settings
+from compass.optimizer.utils import load_optimized_settings
  
 # --- Execution Mode ---
 # Selects the operational mode, controlling all major hyperparameters.

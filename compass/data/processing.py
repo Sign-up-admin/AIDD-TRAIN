@@ -7,10 +7,9 @@ import torch
 import numpy as np
 from torch_geometric.data import Data
 from rdkit import Chem, RDLogger
-from rdkit.Chem import PDBParser
 from tqdm import tqdm
 
-from ..config import CONFIG
+from compass.config import CONFIG
 
 # Suppress RDKit warnings
 RDLogger.logger().setLevel(RDLogger.CRITICAL)
@@ -118,19 +117,22 @@ def get_ligand_graph(mol, pdb_code="N/A"):
     }
 
 def get_protein_graph(protein_path, ligand_positions_set):
-    parser = PDBParser(QUIET=True)
-    structure = parser.get_structure("protein", protein_path)
-    atoms_to_include = [atom for residue in structure.get_residues() if residue.id[0] == ' ' for atom in residue.get_atoms()]
-    
-    if not atoms_to_include:
+    mol = Chem.MolFromPDBFile(protein_path, removeHs=False, sanitize=True)
+    if mol is None or mol.GetNumConformers() == 0:
         return None
 
     atom_features_list, positions_list = [], []
     pdb_code = os.path.basename(protein_path).split('_')[0]
     protein_positions_seen = set()
+    conformer = mol.GetConformer()
 
-    for atom in atoms_to_include:
-        pos_tuple = tuple(round(c, 4) for c in atom.get_coord())
+    for atom in mol.GetAtoms():
+        pdb_info = atom.GetPDBResidueInfo()
+        if pdb_info and pdb_info.GetIsHeteroAtom():
+            continue
+
+        pos = conformer.GetAtomPosition(atom.GetIdx())
+        pos_tuple = (round(pos.x, 4), round(pos.y, 4), round(pos.z, 4))
 
         if pos_tuple in ligand_positions_set:
             logging.warning(f"Protein-Ligand Overlap: Protein atom at {pos_tuple} in {pdb_code} overlaps with ligand and will be removed.")
@@ -141,7 +143,7 @@ def get_protein_graph(protein_path, ligand_positions_set):
             continue
         
         protein_positions_seen.add(pos_tuple)
-        element = atom.element.strip().upper() if atom.element else ''
+        element = atom.GetSymbol().strip().upper()
         feat = [0] * len(ELEMENTS)
         feat[ELEMENT_MAP.get(element, len(ELEMENTS) - 1)] = 1
         atom_features_list.append(feat)
@@ -186,7 +188,7 @@ def process_item(item):
             ligand = Chem.MolFromMol2File(ligand_path, removeHs=False, sanitize=True)
         elif ligand_path.endswith('.sdf'):
             suppl = Chem.SDMolSupplier(ligand_path, removeHs=False, sanitize=True)
-            if suppl: ligand = next(suppl, None)
+            ligand = next(suppl, None)
         
         if ligand is None or ligand.GetNumAtoms() == 0:
             logging.warning(f"Skipping {pdb_code}: Could not load ligand or ligand has no atoms.")
