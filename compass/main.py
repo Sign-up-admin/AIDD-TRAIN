@@ -1,19 +1,6 @@
 import os
 import signal
-
-import torch
 from torch_geometric.data import Batch
-from torch.utils.data import random_split
-from torch_geometric.loader import DataLoader
-
-from .config import get_config
-from .data.loader.paths import get_pdb_info, get_data_paths
-from .data.dataset import PDBBindDataset
-from .training.model import ViSNetPDB
-from .training.engine import Trainer
-from .utils import set_seed, get_file_hash
-from .logger import TrainingLogger
-
 
 def collate_filter_none(batch):
     """Filters out None values from a batch and returns a new batch."""
@@ -32,6 +19,18 @@ def worker_init_fn(_):
 
 
 def main():
+    import torch
+    from torch.utils.data import random_split
+    from torch_geometric.loader import DataLoader
+
+    from .config import get_config
+    from .data.loader.paths import get_pdb_info, get_data_paths
+    from .data.dataset import PDBBindDataset
+    from .training.model import ViSNetPDB
+    from .training.engine import Trainer
+    from .utils import set_seed, get_file_hash
+    from .logger import TrainingLogger
+    
     config = get_config()
 
     # --- Dynamic Directory Setup ---

@@ -3,6 +3,7 @@ import random
 import torch
 import numpy as np
 import hashlib
+import gc
 
 def get_file_hash(filepath):
     """Computes the SHA256 hash of a file to be used as a version identifier."""
@@ -26,3 +27,27 @@ def set_seed(seed, logger=None):
         torch.backends.cudnn.benchmark = False
     if logger:
         logger.log(f"Global random seed set to {seed} for reproducibility.")
+
+def report_gpu_memory(msg="", logger=None):
+    """
+    Prints a detailed report of the current GPU memory usage.
+    Useful for diagnosing memory leaks by checking memory allocation at different points in the code.
+    """
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    allocated = torch.cuda.memory_allocated() / 1024**2
+    reserved = torch.cuda.memory_reserved() / 1024**2
+    
+    report = (
+        f"="*50 + "\n" +
+        (f"GPU Memory Report at: {msg}\n" if msg else "") +
+        f"Allocated: {allocated:.2f} MB\n" +
+        f"Reserved:  {reserved:.2f} MB\n" +
+        f"="*50
+    )
+    
+    if logger:
+        logger.log(report)
+    else:
+        print(report)
