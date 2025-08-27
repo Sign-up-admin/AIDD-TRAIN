@@ -3,10 +3,27 @@ from torch.amp import autocast
 import torch
 import os
 
-from .checkpoint import _save_checkpoint, create_checkpoint_data
+from .checkpoint import save_checkpoint, create_checkpoint_data
 from compass.utils import report_gpu_memory
 
+
 def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logger=None):
+    """
+    Runs a single training epoch.
+
+    Args:
+        model (torch.nn.Module): The model to be trained.
+        loader (torch.utils.data.DataLoader): The data loader for training data.
+        optimizer (torch.optim.Optimizer): The optimizer.
+        device (torch.device): The device to run the training on.
+        scaler (torch.cuda.amp.GradScaler): The gradient scaler for mixed-precision training.
+        config (dict): The configuration dictionary.
+        trainer (Trainer): The main trainer object, used to access training state.
+        logger (logging.Logger, optional): The logger for logging information. Defaults to None.
+
+    Returns:
+        float: The average training loss for the epoch.
+    """
     model.train()
     total_loss, processed_graphs = 0, 0
     optimizer.zero_grad()
@@ -66,7 +83,7 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
                             trainer.scheduler, trainer.best_val_loss, interrupted=True
                         )
                         checkpoint_filename = f"checkpoint_epoch_{epoch}_step_{optimizer_step_idx}.pth.tar"
-                        _save_checkpoint(checkpoint_data, checkpoint_dir, checkpoint_filename, logger)
+                        save_checkpoint(checkpoint_data, checkpoint_dir, checkpoint_filename, logger)
             
             total_loss += loss.item() * grad_accum_steps * data.num_graphs
             processed_graphs += data.num_graphs
@@ -78,7 +95,7 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
                     trainer.scheduler, trainer.best_val_loss, interrupted=True
                 )
                 oom_save_filename = f"oom_checkpoint_epoch_{epoch}_batch_{i}.pth.tar"
-                _save_checkpoint(checkpoint_data, checkpoint_dir, oom_save_filename, logger)
+                save_checkpoint(checkpoint_data, checkpoint_dir, oom_save_filename, logger)
             raise e
 
         if trigger_file and checkpoint_dir and os.path.exists(trigger_file):
@@ -87,7 +104,7 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
                 trainer.scheduler, trainer.best_val_loss, interrupted=True
             )
             manual_save_filename = f"manual_checkpoint_epoch_{epoch}_batch_{i}.pth.tar"
-            _save_checkpoint(checkpoint_data, checkpoint_dir, manual_save_filename, logger)
+            save_checkpoint(checkpoint_data, checkpoint_dir, manual_save_filename, logger)
             
             try:
                 os.remove(trigger_file)
@@ -106,6 +123,18 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
     return total_loss / processed_graphs if processed_graphs > 0 else 0
 
 def validate_epoch(model, loader, device, logger=None):
+    """
+    Runs a single validation epoch.
+
+    Args:
+        model (torch.nn.Module): The model to be validated.
+        loader (torch.utils.data.DataLoader): The data loader for validation data.
+        device (torch.device): The device to run the validation on.
+        logger (logging.Logger, optional): The logger for logging information. Defaults to None.
+
+    Returns:
+        float: The average validation loss for the epoch.
+    """
     model.eval()
     total_loss, processed_graphs = 0, 0
     with torch.no_grad():
