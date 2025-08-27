@@ -4,6 +4,22 @@ This document records the key architectural decisions, problem-solving patterns,
 
 ---
 
+### The Philosophy of Insightful Documentation
+
+- **Problem**: Initial project documentation was factually correct but superficial. It described *what* the code did, but not *why* it was designed that way. This creates a knowledge gap for new developers and makes long-term maintenance difficult.
+
+- **Analysis**: Good documentation is not a summary of the code; it is a guide to the *thinking behind* the code. It must explain the core problems being solved and the architectural choices made to solve them. The transition from a "流水账" (a plain, chronological account) to a deep, insightful guide is a critical step in maturing a codebase.
+
+- **Solution (The Three-Pillar Documentation Framework)**:
+    We established a new standard for all core module documentation, built on three pillars designed to deliver insight, not just information:
+    1.  **The Core Conflict**: Start by identifying the central tension or problem the code is designed to resolve (e.g., "the gap between raw data and model-ready input"). This immediately establishes the *purpose* of the module.
+    2.  **The Workflow & Philosophy**: Explain the high-level architectural pattern or design philosophy used to solve the conflict (e.g., "a Conductor-Executor pattern for training"). This reveals the *strategy*.
+    3.  **The FAQ / Common Problems**: Provide concrete, practical solutions to common issues. This connects the high-level philosophy to real-world application and dramatically speeds up debugging and development.
+
+- **Lesson Learned**: Documentation should be treated as a first-class product, not an afterthought. By adopting a structured, narrative-driven framework, we transform documentation from a simple reference into a powerful tool for onboarding, strategic alignment, and long-term maintainability. It codifies the project's architectural soul.
+
+---
+
 ### Scene: Resolving a Circular Import Error via Architectural Refactoring
 
 - **Problem**: A critical `ImportError` blocked the application at startup. The traceback indicated a classic **circular import**: `engine.py` depended on `loop.py`, which in turn depended on `engine.py`.
