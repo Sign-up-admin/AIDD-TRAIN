@@ -7,6 +7,17 @@ from ..config import (
 logger = logging.getLogger("HardwareOptimizer")
 
 def get_search_space(vram_gb, mode_to_optimize):
+    """
+    Generates the search space for a given mode and VRAM size.
+
+    Args:
+        vram_gb (float): The amount of VRAM in GB.
+        mode_to_optimize (str): The optimization mode.
+
+    Returns:
+        tuple: A tuple containing the starting batch size, a list of hidden channels,
+               a list of number of layers, and the number of stress iterations.
+    """
     logger.info(f"Generating dedicated search space for '{mode_to_optimize}' mode...")
     selected_tier = next((ARCH_DEFINITIONS[t] for t in sorted(ARCH_DEFINITIONS, key=lambda k: ARCH_DEFINITIONS[k]['vram_threshold'], reverse=True) if vram_gb >= ARCH_DEFINITIONS[t]['vram_threshold']), None)
     if not selected_tier: logger.critical("Could not find a suitable architecture definition."); exit()
@@ -25,6 +36,15 @@ def get_search_space(vram_gb, mode_to_optimize):
     return start_batch_size, hidden_channels_list, num_layers_list, stress_iterations
 
 def get_parameter_cap(current_dataset_size):
+    """
+    Gets the parameter cap for a given dataset size.
+
+    Args:
+        current_dataset_size (int): The size of the current dataset.
+
+    Returns:
+        int: The parameter cap.
+    """
     level, cap = "large", PARAMETER_CAPS[float('inf')]
     for size_thresh in sorted(PARAMETER_CAPS.keys()):
         if current_dataset_size < size_thresh:

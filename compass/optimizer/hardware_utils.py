@@ -6,6 +6,10 @@ def get_hardware_recommendations(config, logger):
     """
     Analyzes system hardware and the current configuration, providing actionable
     recommendations and warnings directly to the user and log files.
+
+    Args:
+        config (dict): The configuration dictionary.
+        logger (Logger): The logger for logging messages.
     """
     logger.log("--- Analyzing Hardware and Configuration ---")
     recommendations = []

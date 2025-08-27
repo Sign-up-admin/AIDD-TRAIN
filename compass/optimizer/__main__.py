@@ -26,6 +26,14 @@ from compass.optimizer.config import OPTIMIZATION_HIERARCHY, TEST_SAMPLE_CONFIG
 logger = logging.getLogger("HardwareOptimizer")
 
 def find_optimal_configs(modes_to_optimize, current_dataset_size, project_root_path):
+    """
+    Finds the optimal hardware configuration for different modes.
+
+    Args:
+        modes_to_optimize (list): A list of modes to optimize for.
+        current_dataset_size (int): The total number of samples in the dataset.
+        project_root_path (str): The root path of the project.
+    """
     if not torch.cuda.is_available():
         logger.critical("CUDA is not available. Aborting.")
         return

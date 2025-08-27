@@ -12,6 +12,16 @@ progress_logger = logging.getLogger("ProgressBar")
 
 
 def _setup_probe_environment(config, processed_test_data):
+    """
+    Sets up the environment for a single probe, including model, data, and optimizer.
+
+    Args:
+        config (dict): The configuration for the probe, including model and batch size.
+        processed_test_data (Data): The pre-processed data sample to use for the probe.
+
+    Returns:
+        tuple: A tuple containing the initialized model, a batch of data, and the optimizer.
+    """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = ViSNetPDB(
         hidden_channels=config['visnet_hidden_channels'],
@@ -25,6 +35,18 @@ def _setup_probe_environment(config, processed_test_data):
 
 
 def probe_config(config, processed_test_data, stress_iterations=20, prefix=""):
+    """
+    Probes a given configuration for stability and performance.
+
+    Args:
+        config (dict): The configuration to probe.
+        processed_test_data (Data): The data sample to use for the probe.
+        stress_iterations (int): The number of iterations to run the probe for.
+        prefix (str): A prefix for the log message.
+
+    Returns:
+        tuple: A tuple containing a boolean indicating success and the average time per iteration.
+    """
     base_text = f"{prefix}--- Probing: batch_size={config['batch_size']:<3}, layers={config['visnet_num_layers']}, channels={config['visnet_hidden_channels']:<3} for {stress_iterations} iterations..."
     bar_length = 20
     model, batch, optimizer = None, None, None
@@ -51,6 +73,18 @@ def probe_config(config, processed_test_data, stress_iterations=20, prefix=""):
 
 
 def find_max_batch_size_by_stressing(base_config, processed_test_data, start_batch_size, stress_iters):
+    """
+    Finds the maximum stable batch size for a given base configuration.
+
+    Args:
+        base_config (dict): The base configuration (model architecture).
+        processed_test_data (Data): The data sample to use for stress testing.
+        start_batch_size (int): The initial batch size to start the search from.
+        stress_iters (int): The number of iterations for the stress test.
+
+    Returns:
+        tuple: A tuple containing the maximum stable batch size and the time per iteration at that size.
+    """
     logger.debug("--- Strategy: Finding max batch size and associated cycle time ---")
     logger.debug("[1/2] Finding OOM ceiling...")
     probe_bs = start_batch_size

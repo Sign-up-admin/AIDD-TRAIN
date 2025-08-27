@@ -3,7 +3,7 @@ from torch.amp import autocast
 import torch
 import os
 
-from .checkpoint import _save_checkpoint
+from .checkpoint import _save_checkpoint, create_checkpoint_data
 from compass.utils import report_gpu_memory
 
 def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logger=None):
@@ -61,12 +61,10 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
                     is_last_batch_of_epoch = (i + 1) >= len(loader)
 
                     if optimizer_step_idx > 0 and optimizer_step_idx % save_every_n_batches == 0 and not is_last_batch_of_epoch:
-                        checkpoint_data = {
-                            'epoch': epoch, 'batch_idx': i + 1,
-                            'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict(),
-                            'scaler_state_dict': scaler.state_dict(), 'scheduler_state_dict': trainer.scheduler.state_dict(),
-                            'val_loss': trainer.best_val_loss, 'interrupted': True,
-                        }
+                        checkpoint_data = create_checkpoint_data(
+                            epoch, i + 1, model, optimizer, scaler, 
+                            trainer.scheduler, trainer.best_val_loss, interrupted=True
+                        )
                         checkpoint_filename = f"checkpoint_epoch_{epoch}_step_{optimizer_step_idx}.pth.tar"
                         _save_checkpoint(checkpoint_data, checkpoint_dir, checkpoint_filename, logger)
             
@@ -75,23 +73,19 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
 
         except torch.cuda.OutOfMemoryError as e:
             if checkpoint_dir:
-                checkpoint_data = {
-                    'epoch': epoch, 'batch_idx': i,
-                    'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict(),
-                    'scaler_state_dict': scaler.state_dict(), 'scheduler_state_dict': trainer.scheduler.state_dict(),
-                    'val_loss': trainer.best_val_loss, 'interrupted': True,
-                }
+                checkpoint_data = create_checkpoint_data(
+                    epoch, i, model, optimizer, scaler, 
+                    trainer.scheduler, trainer.best_val_loss, interrupted=True
+                )
                 oom_save_filename = f"oom_checkpoint_epoch_{epoch}_batch_{i}.pth.tar"
                 _save_checkpoint(checkpoint_data, checkpoint_dir, oom_save_filename, logger)
             raise e
 
         if trigger_file and checkpoint_dir and os.path.exists(trigger_file):
-            checkpoint_data = {
-                'epoch': epoch, 'batch_idx': i + 1,
-                'model_state_dict': model.state_dict(), 'optimizer_state_dict': optimizer.state_dict(),
-                'scaler_state_dict': scaler.state_dict(), 'scheduler_state_dict': trainer.scheduler.state_dict(),
-                'val_loss': trainer.best_val_loss, 'interrupted': True,
-            }
+            checkpoint_data = create_checkpoint_data(
+                epoch, i + 1, model, optimizer, scaler, 
+                trainer.scheduler, trainer.best_val_loss, interrupted=True
+            )
             manual_save_filename = f"manual_checkpoint_epoch_{epoch}_batch_{i}.pth.tar"
             _save_checkpoint(checkpoint_data, checkpoint_dir, manual_save_filename, logger)
             

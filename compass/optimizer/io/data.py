@@ -8,6 +8,15 @@ from compass.optimizer.config import TEST_SAMPLE_CONFIG
 logger = logging.getLogger("HardwareOptimizer")
 
 def prepare_real_data(project_root_path):
+    """
+    Prepares the real-world data sample for hardware stress testing.
+
+    Args:
+        project_root_path (str): The root path of the project.
+
+    Returns:
+        Data: The processed data sample.
+    """
     sample_name = TEST_SAMPLE_CONFIG['pdb_code']
     logger.info(f"--- Preparing Real-World Test Case: '{sample_name}' ---")
 

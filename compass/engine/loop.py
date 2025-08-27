@@ -7,6 +7,22 @@ import os
 from .trainer import _save_checkpoint
 
 def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logger=None):
+    """
+    Runs a single training epoch.
+
+    Args:
+        model (torch.nn.Module): The model to be trained.
+        loader (torch.utils.data.DataLoader): The data loader for training data.
+        optimizer (torch.optim.Optimizer): The optimizer.
+        device (torch.device): The device to run the training on.
+        scaler (torch.cuda.amp.GradScaler): The gradient scaler for mixed-precision training.
+        config (dict): The configuration dictionary.
+        trainer (Trainer): The main trainer object, used to access training state.
+        logger (logging.Logger, optional): The logger for logging information. Defaults to None.
+
+    Returns:
+        float: The average training loss for the epoch.
+    """
     model.train()
     total_loss, processed_graphs = 0, 0
     optimizer.zero_grad()
@@ -107,6 +123,18 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
     return total_loss / processed_graphs if processed_graphs > 0 else 0
 
 def validate_epoch(model, loader, device, logger=None):
+    """
+    Runs a single validation epoch.
+
+    Args:
+        model (torch.nn.Module): The model to be validated.
+        loader (torch.utils.data.DataLoader): The data loader for validation data.
+        device (torch.device): The device to run the validation on.
+        logger (logging.Logger, optional): The logger for logging information. Defaults to None.
+
+    Returns:
+        float: The average validation loss for the epoch.
+    """
     model.eval()
     total_loss, processed_graphs = 0, 0
     with torch.no_grad():

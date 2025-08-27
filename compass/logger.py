@@ -2,7 +2,21 @@ import os
 import datetime
 
 class TrainingLogger:
+    """
+    A simple logger for training processes.
+
+    Handles logging of general messages, warnings, and errors to both the console
+    and dedicated log files.
+    """
     def __init__(self, log_dir='logs'):
+        """
+        Initializes the logger.
+
+        Creates the log directory and sets up the log files.
+
+        Args:
+            log_dir (str): The directory where log files will be stored.
+        """
         os.makedirs(log_dir, exist_ok=True)
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         
@@ -16,7 +30,12 @@ class TrainingLogger:
         self.log(f"Error log will be saved to {self.error_log_file}")
 
     def log(self, message):
-        """Appends a general, timestamped message to the main log file."""
+        """
+        Appends a general, timestamped message to the main log file.
+
+        Args:
+            message (str): The message to log.
+        """
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_message = f"[{timestamp}] [INFO] {message}\n"
         
@@ -26,7 +45,12 @@ class TrainingLogger:
             f.write(log_message)
 
     def log_warning(self, message):
-        """Appends a timestamped warning message to both the main and error log files."""
+        """
+        Appends a timestamped warning message to both the main and error log files.
+
+        Args:
+            message (str): The warning message to log.
+        """
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         warning_message = f"[{timestamp}] [WARNING] {message}\n"
         
@@ -38,7 +62,12 @@ class TrainingLogger:
             f.write(warning_message)
 
     def log_error(self, message):
-        """Appends a timestamped error message to both the main and error log files."""
+        """
+        Appends a timestamped error message to both the main and error log files.
+
+        Args:
+            message (str): The error message to log.
+        """
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         error_message = f"[{timestamp}] [ERROR] {message}\n"
         

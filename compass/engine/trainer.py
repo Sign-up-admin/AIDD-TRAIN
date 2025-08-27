@@ -10,7 +10,15 @@ from .loop import train_epoch, validate_epoch
 
 
 def _save_checkpoint(state, directory, filename, logger=None):
-    """Saves checkpoint to file."""
+    """
+    Saves a training checkpoint to a file.
+
+    Args:
+        state (dict): The state to save (e.g., model, optimizer).
+        directory (str): The directory to save the checkpoint in.
+        filename (str): The name of the checkpoint file.
+        logger (Logger, optional): The logger for logging messages. Defaults to None.
+    """
     if not os.path.exists(directory):
         os.makedirs(directory)
     filepath = os.path.join(directory, filename)
@@ -20,7 +28,17 @@ def _save_checkpoint(state, directory, filename, logger=None):
 
 
 def _load_checkpoint(directory, device, logger=None):
-    """Loads the most recent checkpoint from a directory."""
+    """
+    Loads the most recent checkpoint from a given directory.
+
+    Args:
+        directory (str): The directory to load the checkpoint from.
+        device (torch.device): The device to map the loaded checkpoint to.
+        logger (Logger, optional): The logger for logging messages. Defaults to None.
+
+    Returns:
+        dict or None: The loaded checkpoint dictionary, or None if no checkpoint is found.
+    """
     if not os.path.isdir(directory):
         if logger: logger.log(f"=> No checkpoint directory found at '{directory}'")
         return None
@@ -47,7 +65,24 @@ def _load_checkpoint(directory, device, logger=None):
 
 
 class Trainer:
+    """
+    Main class for handling the model training and validation process.
+
+    This class encapsulates the entire training loop, including checkpointing,
+    logging, and graceful shutdown handling.
+    """
     def __init__(self, config, model, train_loader, val_loader, device, logger):
+        """
+        Initializes the Trainer object.
+
+        Args:
+            config (dict): Configuration dictionary with training parameters.
+            model (torch.nn.Module): The model to be trained.
+            train_loader (torch.utils.data.DataLoader): DataLoader for the training set.
+            val_loader (torch.utils.data.DataLoader): DataLoader for the validation set.
+            device (torch.device): The device to run training on (e.g., 'cuda' or 'cpu').
+            logger (Logger): The logger for recording training progress.
+        """
         self.config = config
         self.model = model
         self.train_loader = train_loader
@@ -98,6 +133,12 @@ class Trainer:
         signal.signal(signal.SIGINT, graceful_exit_handler)
 
     def _resume_from_checkpoint(self):
+        """
+        Resumes training from the latest checkpoint in the checkpoint directory.
+
+        Loads the model, optimizer, scaler, and scheduler states, and updates
+        the starting epoch and batch number.
+        """
         checkpoint = _load_checkpoint(self.config['checkpoint_dir'], self.device, self.logger)
         if not checkpoint:
             self.logger.log("--> No checkpoint found, starting from scratch.")
@@ -132,6 +173,12 @@ class Trainer:
             self.best_val_loss = float('inf')
 
     def run(self):
+        """
+        Starts the main training loop.
+
+        The loop runs for the number of epochs specified in the config,
+        and includes training, validation, checkpointing, and logging.
+        """
         self._setup_signal_handlers()
         self._resume_from_checkpoint()
 

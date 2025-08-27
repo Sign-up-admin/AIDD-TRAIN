@@ -69,6 +69,16 @@ def get_config(mode_name=EXECUTION_MODE):
     """
     Generates the final configuration dictionary by merging base settings
     with mode-specific overrides and optimized hardware profiles.
+
+    Args:
+        mode_name (str): The execution mode, which determines the set of
+                         hyperparameters to use. Defaults to `EXECUTION_MODE`.
+
+    Returns:
+        dict: A dictionary containing the complete configuration settings.
+
+    Raises:
+        ValueError: If an invalid `mode_name` is provided.
     """
     # --- Base Configuration ---
     config = {
@@ -82,6 +92,8 @@ def get_config(mode_name=EXECUTION_MODE):
         'processed_data_dir': r'processed_data',
         'learning_rate': 0.0001,
         'train_split': 0.8,
+        'warmup_epochs': 3, # 增加学习率预热参数，3-5个epoch是很好的起点
+        'weight_decay': 1e-5, # 将权重衰减也放入配置中，方便调整
         'dropout_rate': 0.5,
         'gradient_clip_val': 1.0,
         'max_num_neighbors': 32, # Restored to a more standard value
