@@ -3,7 +3,16 @@ import signal
 from torch_geometric.data import Batch
 
 def collate_filter_none(batch):
-    """Filters out None values from a batch and returns a new batch."""
+    """
+    Filters out None values from a batch and returns a new batch.
+
+    Args:
+        batch (list): A list of data samples.
+
+    Returns:
+        torch_geometric.data.Batch or None: A batch object containing the valid samples,
+                                            or None if the batch is empty after filtering.
+    """
     batch = list(filter(lambda x: x is not None, batch))
     if not batch:
         return None
@@ -19,6 +28,12 @@ def worker_init_fn(_):
 
 
 def main():
+    """
+    Main function to run the training pipeline.
+
+    This function sets up the configuration, data loaders, model, and trainer,
+    and then starts the training process.
+    """
     import torch
     from torch.utils.data import random_split
     from torch_geometric.loader import DataLoader

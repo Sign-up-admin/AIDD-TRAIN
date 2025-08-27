@@ -8,6 +8,12 @@ progress_logger = logging.getLogger("ProgressBar")
 
 
 def setup_logging(log_level="INFO"):
+    """
+    Sets up the logging for the hardware optimizer.
+
+    Args:
+        log_level (str): The logging level to set.
+    """
     logger.setLevel(log_level)
     progress_logger.setLevel(log_level)
     logger.propagate = False

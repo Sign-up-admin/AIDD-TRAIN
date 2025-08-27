@@ -16,6 +16,20 @@ except ImportError:
 logger = logging.getLogger("HardwareOptimizer")
 
 def _optimize_for_production(param_combinations, max_params, start_bs, stress_iters, processed_test_data):
+    """
+    Optimizes for the 'production' mode by finding the highest-quality model that fits
+    within the given constraints and then maximizing its batch size.
+
+    Args:
+        param_combinations (list): A list of (num_layers, hidden_channels) tuples to search through.
+        max_params (int): The maximum number of model parameters allowed.
+        start_bs (int): The starting batch size for the search.
+        stress_iters (int): The number of iterations for the stress test.
+        processed_test_data (Data): The data sample to use for testing.
+
+    Returns:
+        dict or None: The best configuration found, or None if no suitable configuration is found.
+    """
     logger.info("--- Strategy: Two-stage optimization for 'production' mode. ---")
     logger.info("[1/2] Searching for the highest-quality model architecture...")
     best_architecture = None
@@ -39,6 +53,22 @@ def _optimize_for_production(param_combinations, max_params, start_bs, stress_it
     return None
 
 def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, max_params, start_bs, stress_iters, processed_test_data):
+    """
+    Optimizes for 'validation' or 'prototyping' modes using Bayesian Optimization to find the
+    most efficient configuration within a target time range.
+
+    Args:
+        mode (str): The optimization mode ('validation' or 'prototyping').
+        num_layers_list (list): The list of number of layers to search through.
+        hidden_channels_list (list): The list of hidden channels to search through.
+        max_params (int): The maximum number of model parameters allowed.
+        start_bs (int): The starting batch size for the search.
+        stress_iters (int): The number of iterations for the stress test.
+        processed_test_data (Data): The data sample to use for testing.
+
+    Returns:
+        dict or None: The best configuration found, or None if no suitable configuration is found.
+    """
     min_time, max_time = TIME_RANGES[mode]
     logger.info(f"--- Strategy: Bayesian Optimization to find most EFFICIENT config in 'sweet spot' ({min_time}-{max_time} mins) for '{mode}' mode. ---")
     
@@ -126,6 +156,17 @@ def _optimize_for_efficiency_modes(mode, num_layers_list, hidden_channels_list, 
     return None
 
 def _optimize_for_smoke_test(param_combinations, max_params, processed_test_data):
+    """
+    Optimizes for the 'smoke_test' mode by performing a minimal check with the smallest model.
+
+    Args:
+        param_combinations (list): A list of (num_layers, hidden_channels) tuples to search through.
+        max_params (int): The maximum number of model parameters allowed.
+        processed_test_data (Data): The data sample to use for testing.
+
+    Returns:
+        dict or None: The best configuration found, or None if no suitable configuration is found.
+    """
     logger.info("--- Strategy: Minimal check for 'smoke_test' mode ---")
     num_layers, hidden_channels = param_combinations[-1]
     num_params = sum(p.numel() for p in ViSNetPDB(hidden_channels=hidden_channels, num_layers=num_layers).parameters() if p.requires_grad)

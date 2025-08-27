@@ -30,16 +30,31 @@ def _process_and_save_helper(args):
         return 0, f"Critical error processing {pdb_code}."
 
 class PDBBindDataset(Dataset):
+    """
+    PyTorch Geometric Dataset for the PDBbind dataset.
+
+    Handles processing of raw PDB files into graph-based data objects, 
+    saving them to disk and loading them for training.
+    """
     def __init__(self, root, data_paths, num_workers, transform=None, pre_transform=None):
+        """
+        Initializes the dataset.
+
+        Args:
+            root (str): The root directory where the dataset should be stored.
+            data_paths (list): A list of dictionaries, each containing metadata for a single data item.
+            num_workers (int): The number of worker processes to use for data processing.
+            transform (callable, optional): A function/transform that takes in an 
+                `torch_geometric.data.Data` object and returns a transformed version. 
+                The data object will be transformed before every access. Defaults to None.
+            pre_transform (callable, optional): A function/transform that takes in an 
+                `torch_geometric.data.Data` object and returns a transformed version. 
+                The data object will be transformed before being saved to disk. Defaults to None.
+        """
         self.data_paths = data_paths
         self.num_workers = num_workers
         force_reprocess_flag = CONFIG.get('force_data_reprocessing', False)
 
-        # --- FINAL, CORRECT FIX ---
-        # The check must happen on the `root` directory itself, *before* the parent
-        # class __init__ is called. The parent class __init__ decides whether to call
-        # self.process(). If we don't delete the entire root directory here, the parent
-        # class will see the old files and incorrectly skip the processing step.
         if force_reprocess_flag and os.path.exists(root):
             print(f"\n--- FORCE REPROCESSING ENABLED ---")
             print(f"Deleting existing root data directory: {root}")
@@ -50,23 +65,24 @@ class PDBBindDataset(Dataset):
 
     @property
     def raw_file_names(self):
+        """The name of the files in the `raw_dir` to determine whether processing is needed."""
         return [item['pdb_code'] for item in self.data_paths]
 
     @property
     def processed_file_names(self):
+        """The name of the files in the `processed_dir` which must be present to skip processing."""
         return [os.path.join(item['year_dir'], f"{item['pdb_code']}.pt") for item in self.data_paths]
 
     def process(self):
+        """Processes the raw data and saves it to the `processed_dir`."""
         print("Starting data processing...")
 
         tasks = []
         for item, rel_path in zip(self.data_paths, self.processed_file_names):
             dest_path = os.path.join(self.processed_dir, rel_path)
-            # The check is simple now, as we know the folder is clean if it was forced.
             if not os.path.exists(dest_path):
                 tasks.append((item, dest_path, self.pre_transform))
 
-        # Create parent directories for the files that will be created.
         for _, dest_path, _ in tasks:
             os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
@@ -95,9 +111,19 @@ class PDBBindDataset(Dataset):
         print(f"Successfully processed {success_count}/{len(tasks)} items ({skipped_count} skipped).")
 
     def len(self):
+        """Returns the number of examples in the dataset."""
         return len(self.processed_file_names)
 
     def get(self, idx):
+        """
+        Gets the data object at the specified index.
+
+        Args:
+            idx (int): The index of the data object to retrieve.
+
+        Returns:
+            torch_geometric.data.Data: The data object at the specified index, or None if it fails to load.
+        """
         try:
             path = os.path.join(self.processed_dir, self.processed_file_names[idx])
             if not os.path.exists(path): return None

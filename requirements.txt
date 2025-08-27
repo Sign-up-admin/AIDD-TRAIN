@@ -1,3 +1,5 @@
+# This file lists the Python packages required by this project.
+
 torch
 numpy
 torch-geometric
