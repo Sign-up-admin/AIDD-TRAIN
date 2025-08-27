@@ -2,6 +2,7 @@ import os
 import signal
 from torch_geometric.data import Batch
 
+
 def collate_filter_none(batch):
     """
     Filters out None values from a batch and returns a new batch.
@@ -27,39 +28,33 @@ def worker_init_fn(_):
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-def main():
+def main(config, logger):
     """
     Main function to run the training pipeline.
 
-    This function sets up the configuration, data loaders, model, and trainer,
+    This function sets up the data loaders, model, and trainer,
     and then starts the training process.
+    
+    Args:
+        config (dict): Configuration dictionary.
+        logger (TrainingLogger): Initialized logger.
     """
     import torch
     from torch.utils.data import random_split
     from torch_geometric.loader import DataLoader
 
-    from .config import get_config
     from .data.loader.paths import get_pdb_info, get_data_paths
     from .data.dataset import PDBBindDataset
     from .training.model import ViSNetPDB
     from .training.engine import Trainer
     from .utils import set_seed, get_file_hash
-    from .logger import TrainingLogger
-    
-    config = get_config()
 
     # --- Dynamic Directory Setup ---
-    log_dir = config['log_dir']
-    checkpoint_dir = config['checkpoint_dir']
-    os.makedirs(log_dir, exist_ok=True)
-    os.makedirs(checkpoint_dir, exist_ok=True)
+    # log_dir and checkpoint_dir are created in __main__.py
+    os.makedirs(config['checkpoint_dir'], exist_ok=True)
     os.makedirs(config['processed_data_dir'], exist_ok=True)
 
-    # --- Logger Setup ---
-    logger = TrainingLogger(log_dir=log_dir)
-    logger.log("--- Compass Training Process Started ---")
-
-    # --- Hardware & Config Logging ---
+    # --- Hardware & Config Logging --
     set_seed(config.get('seed', 42), logger)
 
     logger.log("--- Configuration Loaded ---")
