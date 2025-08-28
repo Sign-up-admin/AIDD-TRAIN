@@ -1,7 +1,7 @@
-torch==2.0.1
-torch-geometric==2.3.1
+# This file lists the Python packages required by this project.
+
+torch
 numpy
+torch-geometric
 rdkit-pypi
-biopython
-scipy
 tqdm

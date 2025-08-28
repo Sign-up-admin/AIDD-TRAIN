@@ -1,18 +1,29 @@
-processed_data/
-PDBbind-2025.8.4/
-
-# Python cache
-**/__pycache__/
-*.pyc
-
-checkpoints/
-
-failed_cases/
-
-logs/
-
-.idea/
-
+# Byte-compiled / optimized / DLL files
 __pycache__/
+*.py[cod]
+*$py.class
 
-hardware_profile.json
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+
+# Project-specific generated files
+logs/
+checkpoints/
+processed_data/
+failed_cases/
+*.flag
+PDBbind-2025.8.4/
+.idea/
+.cadence/
+DiffGui-main/
