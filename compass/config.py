@@ -105,6 +105,17 @@ def get_config(mode_name=EXECUTION_MODE):
         'save_every_n_batches': 100,
         'seed': 42,
         'debug_mode': False,
+        'diffusion': {
+            'use_two_stage_diffusion': True,
+            'stage1': {
+                'enabled': True,
+                'noise_level': 0.02,
+            },
+            'stage2': {
+                'enabled': True,
+                'noise_level': 0.1,
+            }
+        }
     }
  
     # --- Merge Mode-Specific Settings ---

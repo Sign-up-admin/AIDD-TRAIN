@@ -130,6 +130,25 @@ class PDBBindDataset(Dataset):
             data = torch.load(path, weights_only=False)
             if data is not None:
                 data.pdb_code = self.data_paths[idx].get('pdb_code', f'index_{idx}')
+                
+                if CONFIG['diffusion']['use_two_stage_diffusion']:
+                    # Stage 1: Perturb atom positions slightly to diffuse bond lengths
+                    if CONFIG['diffusion']['stage1']['enabled']:
+                        noise_level = CONFIG['diffusion']['stage1']['noise_level']
+                        noise = torch.randn_like(data.pos) * noise_level
+                        data.pos += noise
+                    
+                    # Stage 2: Perturb atom types and coordinates
+                    if CONFIG['diffusion']['stage2']['enabled']:
+                        # Perturb coordinates more significantly
+                        noise_level = CONFIG['diffusion']['stage2']['noise_level']
+                        pos_noise = torch.randn_like(data.pos) * noise_level
+                        data.pos += pos_noise
+                        
+                        # Perturb atom features (types).
+                        x_noise = torch.randn_like(data.x) * noise_level
+                        data.x += x_noise
+
             return data
         except (RuntimeError, EOFError, AttributeError, FileNotFoundError) as e:
             pdb_code = self.data_paths[idx].get('pdb_code', f'index {idx}')

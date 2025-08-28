@@ -95,7 +95,7 @@ class Trainer:
                 param_group['lr'] = self.base_lr
             self.logger.log(f"Warmup finished. LR set to base value: {self.base_lr}")
 
-    def _profile_epoch(self):
+    def _profile_epoch(self, current_stage):
         """
         Runs one training epoch with the profiler enabled.
 
@@ -104,7 +104,7 @@ class Trainer:
         """
         self.logger.log("--- Profiling enabled for the first epoch ---")
         with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
-            train_loss = train_epoch(self.model, self.train_loader, self.optimizer, self.device, self.scaler, self.config, self, self.logger)
+            train_loss = train_epoch(self.model, self.train_loader, self.optimizer, self.device, self.scaler, self.config, self, self.logger, current_stage)
         self.logger.log("--- Profiler Results ---")
         self.logger.log(prof.key_averages().table(sort_by="cuda_time_total", row_limit=15))
         return train_loss
@@ -131,7 +131,7 @@ class Trainer:
             save_checkpoint(checkpoint_data, self.config['checkpoint_dir'], 'model_best.pth.tar', self.logger)
             self.logger.log(f"-> New best model saved with validation loss: {val_loss:.4f}")
 
-    def _run_epoch(self, epoch):
+    def _run_epoch(self, epoch, current_stage=0):
         """
         Runs a single training and validation epoch.
 
@@ -145,13 +145,13 @@ class Trainer:
 
         is_profiling_epoch = (epoch == 1 and self.start_batch == 0 and self.config.get('profile', False))
         if is_profiling_epoch:
-            train_loss = self._profile_epoch()
+            train_loss = self._profile_epoch(current_stage)
         else:
-            train_loss = train_epoch(self.model, self.train_loader, self.optimizer, self.device, self.scaler, self.config, self, self.logger)
+            train_loss = train_epoch(self.model, self.train_loader, self.optimizer, self.device, self.scaler, self.config, self, self.logger, current_stage)
 
         self.start_batch = 0  # Reset after any potential resume
 
-        val_loss = validate_epoch(self.model, self.val_loader, self.device, self.logger)
+        val_loss = validate_epoch(self.model, self.val_loader, self.device, self.logger, current_stage)
 
         if epoch > self.warmup_epochs:
             self.scheduler.step()
@@ -174,7 +174,28 @@ class Trainer:
         self.logger.log("Step 5: Starting training...")
         self.logger.log(f"-> Model initialized with {sum(p.numel() for p in self.model.parameters()):,} parameters.")
 
-        for epoch in range(self.start_epoch, self.config['epochs'] + 1):
-            self._run_epoch(epoch)
+        use_two_stage = self.config.get('diffusion', {}).get('use_two_stage_diffusion', False)
+
+        if use_two_stage:
+            total_epochs = self.config['epochs']
+            stage1_epochs = total_epochs // 2
+            stage2_epochs = total_epochs - stage1_epochs
+
+            # --- Stage 1 --- #
+            if self.config['diffusion']['stage1']['enabled']:
+                self.logger.log("--- Starting Diffusion Stage 1 --- ")
+                for epoch in range(self.start_epoch, stage1_epochs + 1):
+                    self._run_epoch(epoch, current_stage=1)
+                self.start_epoch = stage1_epochs + 1 # Set for stage 2
+
+            # --- Stage 2 --- #
+            if self.config['diffusion']['stage2']['enabled']:
+                self.logger.log("--- Starting Diffusion Stage 2 --- ")
+                for epoch in range(self.start_epoch, total_epochs + 1):
+                    self._run_epoch(epoch, current_stage=2)
+        else:
+            # --- Standard Training --- #
+            for epoch in range(self.start_epoch, self.config['epochs'] + 1):
+                self._run_epoch(epoch, current_stage=0) # 0 for standard
 
         self.logger.log("--- Training Finished ---")

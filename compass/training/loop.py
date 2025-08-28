@@ -7,22 +7,31 @@ from .checkpoint import save_checkpoint, create_checkpoint_data
 from compass.utils import report_gpu_memory
 
 
-def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logger=None):
+def _apply_diffusion_noise(data, config, current_stage):
+    """Applies diffusion noise to the data based on the current training stage."""
+    if not config.get('diffusion', {}).get('use_two_stage_diffusion', False) or current_stage == 0:
+        return
+
+    # Stage 1: Perturb atom positions slightly to diffuse bond lengths
+    if current_stage == 1 and config['diffusion']['stage1']['enabled']:
+        noise_level = config['diffusion']['stage1']['noise_level']
+        noise = torch.randn_like(data.pos) * noise_level
+        data.pos += noise
+    
+    # Stage 2: Perturb atom types and coordinates
+    elif current_stage == 2 and config['diffusion']['stage2']['enabled']:
+        # Perturb coordinates more significantly
+        noise_level = config['diffusion']['stage2']['noise_level']
+        pos_noise = torch.randn_like(data.pos) * noise_level
+        data.pos += pos_noise
+        
+        # Perturb atom features (types).
+        x_noise = torch.randn_like(data.x) * noise_level
+        data.x += x_noise
+
+def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logger=None, current_stage=0):
     """
     Runs a single training epoch.
-
-    Args:
-        model (torch.nn.Module): The model to be trained.
-        loader (torch.utils.data.DataLoader): The data loader for training data.
-        optimizer (torch.optim.Optimizer): The optimizer.
-        device (torch.device): The device to run the training on.
-        scaler (torch.cuda.amp.GradScaler): The gradient scaler for mixed-precision training.
-        config (dict): The configuration dictionary.
-        trainer (Trainer): The main trainer object, used to access training state.
-        logger (logging.Logger, optional): The logger for logging information. Defaults to None.
-
-    Returns:
-        float: The average training loss for the epoch.
     """
     model.train()
     total_loss, processed_graphs = 0, 0
@@ -56,6 +65,8 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
         data = batch.to(device)
         if data.num_graphs == 0:
             continue
+
+        _apply_diffusion_noise(data, config, current_stage)
 
         try:
             with autocast(device_type=device.type, dtype=torch.float16):
@@ -122,21 +133,14 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
 
     return total_loss / processed_graphs if processed_graphs > 0 else 0
 
-def validate_epoch(model, loader, device, logger=None):
+def validate_epoch(model, loader, device, logger=None, current_stage=0):
     """
     Runs a single validation epoch.
-
-    Args:
-        model (torch.nn.Module): The model to be validated.
-        loader (torch.utils.data.DataLoader): The data loader for validation data.
-        device (torch.device): The device to run the validation on.
-        logger (logging.Logger, optional): The logger for logging information. Defaults to None.
-
-    Returns:
-        float: The average validation loss for the epoch.
     """
     model.eval()
     total_loss, processed_graphs = 0, 0
+    # For validation, we typically want to evaluate on the original, unmodified data.
+    # Therefore, we do not apply diffusion noise here.
     with torch.no_grad():
         for batch in tqdm(loader, desc="Validation", leave=False):
             if batch is None: continue
