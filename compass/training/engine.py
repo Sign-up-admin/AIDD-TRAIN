@@ -14,8 +14,8 @@ class Trainer:
     """
     Main class for handling the model training and validation process.
 
-    This class encapsulates the entire training loop, including learning rate scheduling,
-    checkpointing, profiling, and graceful shutdown handling.
+    This class acts as a toolbox, providing the necessary components and methods
+    for a recipe script to execute a training loop.
     """
     def __init__(self, config, model, train_loader, val_loader, device, logger):
         """
@@ -50,10 +50,6 @@ class Trainer:
     def _save_interrupt_checkpoint(self, epoch, batch_idx):
         """
         Saves the model state when training is interrupted.
-
-        Args:
-            epoch (int): The current epoch number.
-            batch_idx (int): The current batch index.
         """
         if epoch > 0:
             interrupt_data = create_checkpoint_data(
@@ -65,7 +61,7 @@ class Trainer:
         else:
             self.logger.log_warning("--- Interruption occurred before training. No state to save. Exiting. ---")
 
-    def _setup_signal_handlers(self):
+    def setup_signal_handlers(self):
         """Handles graceful shutdown on SIGTERM or KeyboardInterrupt."""
         def graceful_exit_handler(sig, _frame):
             log_msg = "\n\n--- "
@@ -78,12 +74,13 @@ class Trainer:
         signal.signal(signal.SIGTERM, graceful_exit_handler)
         signal.signal(signal.SIGINT, graceful_exit_handler)
 
+    def resume(self):
+        """Resumes training from a checkpoint if one exists."""
+        resume_from_checkpoint(self)
+
     def _handle_lr_warmup(self, epoch):
         """
         Adjusts learning rate based on warmup schedule.
-
-        Args:
-            epoch (int): The current epoch number.
         """
         if self.warmup_epochs > 0 and epoch <= self.warmup_epochs:
             lr = self.base_lr * (epoch / self.warmup_epochs)
@@ -98,9 +95,6 @@ class Trainer:
     def _profile_epoch(self, current_stage):
         """
         Runs one training epoch with the profiler enabled.
-
-        Returns:
-            float: The training loss for the profiled epoch.
         """
         self.logger.log("--- Profiling enabled for the first epoch ---")
         with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], record_shapes=True) as prof:
@@ -112,10 +106,6 @@ class Trainer:
     def _save_regular_checkpoint(self, epoch, val_loss):
         """
         Saves a regular end-of-epoch checkpoint and the best model if applicable.
-
-        Args:
-            epoch (int): The current epoch number.
-            val_loss (float): The validation loss for the current epoch.
         """
         is_best = val_loss < self.best_val_loss
         if is_best:
@@ -131,12 +121,9 @@ class Trainer:
             save_checkpoint(checkpoint_data, self.config['checkpoint_dir'], 'model_best.pth.tar', self.logger)
             self.logger.log(f"-> New best model saved with validation loss: {val_loss:.4f}")
 
-    def _run_epoch(self, epoch, current_stage=0):
+    def run_epoch(self, epoch, current_stage=0):
         """
         Runs a single training and validation epoch.
-
-        Args:
-            epoch (int): The current epoch number.
         """
         self.training_state['epoch'] = epoch
         self.training_state['batch_idx'] = 0
@@ -160,42 +147,3 @@ class Trainer:
         self.logger.log(f"Epoch {epoch:02d}/{self.config['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | LR: {current_lr:.6f}")
 
         self._save_regular_checkpoint(epoch, val_loss)
-
-    def run(self):
-        """
-        Starts the main training loop.
-
-        The loop runs for the number of epochs specified in the config,
-        handling signal interrupts, checkpoint resumption, and epoch execution.
-        """
-        self._setup_signal_handlers()
-        resume_from_checkpoint(self)
-
-        self.logger.log("Step 5: Starting training...")
-        self.logger.log(f"-> Model initialized with {sum(p.numel() for p in self.model.parameters()):,} parameters.")
-
-        use_two_stage = self.config.get('diffusion', {}).get('use_two_stage_diffusion', False)
-
-        if use_two_stage:
-            total_epochs = self.config['epochs']
-            stage1_epochs = total_epochs // 2
-            stage2_epochs = total_epochs - stage1_epochs
-
-            # --- Stage 1 --- #
-            if self.config['diffusion']['stage1']['enabled']:
-                self.logger.log("--- Starting Diffusion Stage 1 --- ")
-                for epoch in range(self.start_epoch, stage1_epochs + 1):
-                    self._run_epoch(epoch, current_stage=1)
-                self.start_epoch = stage1_epochs + 1 # Set for stage 2
-
-            # --- Stage 2 --- #
-            if self.config['diffusion']['stage2']['enabled']:
-                self.logger.log("--- Starting Diffusion Stage 2 --- ")
-                for epoch in range(self.start_epoch, total_epochs + 1):
-                    self._run_epoch(epoch, current_stage=2)
-        else:
-            # --- Standard Training --- #
-            for epoch in range(self.start_epoch, self.config['epochs'] + 1):
-                self._run_epoch(epoch, current_stage=0) # 0 for standard
-
-        self.logger.log("--- Training Finished ---")

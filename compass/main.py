@@ -1,18 +1,17 @@
 import os
 import signal
+import sys
+import time
+import threading
+import importlib.util
+from types import ModuleType
 from torch_geometric.data import Batch
+from typing import List, Optional, Dict
 
 
 def collate_filter_none(batch):
     """
     Filters out None values from a batch and returns a new batch.
-
-    Args:
-        batch (list): A list of data samples.
-
-    Returns:
-        torch_geometric.data.Batch or None: A batch object containing the valid samples,
-                                            or None if the batch is empty after filtering.
     """
     batch = list(filter(lambda x: x is not None, batch))
     if not batch:
@@ -23,21 +22,88 @@ def collate_filter_none(batch):
 def worker_init_fn(_):
     """
     Prevents worker processes from catching KeyboardInterrupt.
-    This is a common solution for multiprocessing data loading issues.
     """
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+
+def discover_and_select_recipe(logger) -> Optional[ModuleType]:
+    """
+    Discovers, displays, and allows user to select a training recipe script.
+    """
+    recipes_dir = os.path.join(os.path.dirname(__file__), 'training', 'recipes')
+    available_recipes: Dict[str, ModuleType] = {}
+
+    # --- Discover available recipe scripts ---
+    try:
+        for filename in sorted(os.listdir(recipes_dir)):
+            if filename.endswith('.py') and not filename.startswith('__'):
+                module_name = f"compass.training.recipes.{filename[:-3]}"
+                module_path = os.path.join(recipes_dir, filename)
+                spec = importlib.util.spec_from_file_location(module_name, module_path)
+                if spec and spec.loader:
+                    module = importlib.util.module_from_spec(spec)
+                    sys.modules[module_name] = module
+                    spec.loader.exec_module(module)
+                    # A valid recipe script must have a name and a run function
+                    if hasattr(module, 'recipe_name') and hasattr(module, 'run'):
+                        available_recipes[module.recipe_name] = module
+    except FileNotFoundError:
+        logger.log_error(f"Recipes directory not found at: {recipes_dir}")
+        return None
+
+    if not available_recipes:
+        logger.log_error("No valid recipes found. Cannot proceed.")
+        return None
+
+    recipe_list = list(available_recipes.values())
+    recipe_names = list(available_recipes.keys())
+
+    # --- Default Recipe Selection ---
+    default_recipe = available_recipes.get("Standard Training", recipe_list[0])
+
+    # --- User Selection Logic ---
+    logger.log("--- Please Select a Training Recipe ---")
+    for i, name in enumerate(recipe_names):
+        logger.log(f"  [{i + 1}] {name}")
+
+    choice = None
+    timeout = 60
+    prompt = f"Enter a number (1-{len(recipe_names)}) or wait {timeout}s to use the default ({default_recipe.recipe_name}): "
+    
+    def get_user_input():
+        nonlocal choice
+        try:
+            choice = input(prompt)
+        except EOFError:
+            choice = 'timeout'
+
+    input_thread = threading.Thread(target=get_user_input)
+    input_thread.daemon = True
+    input_thread.start()
+    input_thread.join(timeout)
+
+    if input_thread.is_alive() or choice == 'timeout':
+        logger.log_warning(f"\nTimeout reached. Using default recipe: {default_recipe.recipe_name}")
+        selected_recipe = default_recipe
+    else:
+        try:
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(recipe_list):
+                selected_recipe = recipe_list[choice_idx]
+                logger.log(f"-> You selected: {selected_recipe.recipe_name}")
+            else:
+                logger.log_warning("Invalid selection. Using default recipe.")
+                selected_recipe = default_recipe
+        except (ValueError, TypeError):
+            logger.log_warning("Invalid input. Using default recipe.")
+            selected_recipe = default_recipe
+            
+    return selected_recipe
 
 
 def main(config, logger):
     """
     Main function to run the training pipeline.
-
-    This function sets up the data loaders, model, and trainer,
-    and then starts the training process.
-    
-    Args:
-        config (dict): Configuration dictionary.
-        logger (TrainingLogger): Initialized logger.
     """
     import torch
     from torch.utils.data import random_split
@@ -50,7 +116,6 @@ def main(config, logger):
     from .utils import set_seed, get_file_hash
 
     # --- Dynamic Directory Setup ---
-    # log_dir and checkpoint_dir are created in __main__.py
     os.makedirs(config['checkpoint_dir'], exist_ok=True)
     os.makedirs(config['processed_data_dir'], exist_ok=True)
 
@@ -139,7 +204,7 @@ def main(config, logger):
     val_loader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False, num_workers=loader_num_workers, pin_memory=pin_memory, collate_fn=collate_filter_none, worker_init_fn=init_fn)
     logger.log(f"-> Train: {len(train_dataset)} | Validation: {len(val_dataset)}")
 
-    logger.log("Step 4: Setting up model...")
+    logger.log("Step 4: Setting up model and trainer toolbox...")
     if len(train_dataset) == 0:
         logger.log_error("Training dataset is empty. Cannot proceed.")
         return
@@ -162,5 +227,18 @@ def main(config, logger):
         device=device,
         logger=logger
     )
+
+    logger.log("Step 5: Selecting training recipe...")
+    recipe_module = discover_and_select_recipe(logger)
+    if recipe_module is None:
+        return # Stop if no recipe could be selected
+
+    logger.log("Step 6: Starting training...")
+    logger.log(f"-> Model initialized with {sum(p.numel() for p in model.parameters()):,} parameters.")
     
-    trainer.run()
+    # Prepare the trainer and run the selected recipe script
+    trainer.setup_signal_handlers()
+    trainer.resume()
+    recipe_module.run(trainer)
+
+    logger.log("--- Training Finished ---")
