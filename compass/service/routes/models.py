@@ -1,6 +1,7 @@
 """
 Model management routes.
 """
+
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import FileResponse
 from typing import Optional
@@ -26,8 +27,7 @@ async def get_model(model_id: str):
     model = model_service.get_model(model_id)
     if not model:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Model {model_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Model {model_id} not found"
         )
     return model
 
@@ -38,21 +38,20 @@ async def download_model(model_id: str):
     model = model_service.get_model(model_id)
     if not model:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Model {model_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Model {model_id} not found"
         )
-    
+
     checkpoint_path = model.checkpoint_path
     if not os.path.exists(checkpoint_path):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Checkpoint file not found: {checkpoint_path}"
+            detail=f"Checkpoint file not found: {checkpoint_path}",
         )
-    
+
     return FileResponse(
         checkpoint_path,
         filename=os.path.basename(checkpoint_path),
-        media_type='application/octet-stream'
+        media_type="application/octet-stream",
     )
 
 
@@ -62,9 +61,6 @@ async def delete_model(model_id: str):
     success = model_service.delete_model(model_id)
     if not success:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Model {model_id} not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"Model {model_id} not found"
         )
     return {"message": f"Model {model_id} deleted", "model_id": model_id}
-
-

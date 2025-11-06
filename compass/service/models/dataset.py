@@ -1,6 +1,7 @@
 """
 Dataset models for data service.
 """
+
 from pydantic import BaseModel, Field
 from typing import Dict, Optional, List
 from datetime import datetime
@@ -8,6 +9,7 @@ from datetime import datetime
 
 class DatasetCreate(BaseModel):
     """Request model for creating a dataset."""
+
     name: str
     description: Optional[str] = None
     metadata: Dict = Field(default_factory=dict)
@@ -15,6 +17,7 @@ class DatasetCreate(BaseModel):
 
 class DatasetResponse(BaseModel):
     """Response model for dataset."""
+
     dataset_id: str
     name: str
     description: Optional[str] = None
@@ -29,7 +32,6 @@ class DatasetResponse(BaseModel):
 
 class DatasetListResponse(BaseModel):
     """Response model for dataset list."""
+
     datasets: List[DatasetResponse]
     count: int
-
-

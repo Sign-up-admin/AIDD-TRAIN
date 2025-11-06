@@ -2,7 +2,9 @@ import os
 import torch
 
 
-def create_checkpoint_data(epoch, batch_idx, model, optimizer, scaler, scheduler, val_loss, interrupted=False):
+def create_checkpoint_data(
+    epoch, batch_idx, model, optimizer, scaler, scheduler, val_loss, interrupted=False
+):
     """
     Creates a dictionary containing the checkpoint state.
 
@@ -20,14 +22,14 @@ def create_checkpoint_data(epoch, batch_idx, model, optimizer, scaler, scheduler
         dict: A dictionary containing the checkpoint state.
     """
     return {
-        'epoch': epoch,
-        'batch_idx': batch_idx,
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'scaler_state_dict': scaler.state_dict(),
-        'scheduler_state_dict': scheduler.state_dict(),
-        'val_loss': val_loss,
-        'interrupted': interrupted,
+        "epoch": epoch,
+        "batch_idx": batch_idx,
+        "model_state_dict": model.state_dict(),
+        "optimizer_state_dict": optimizer.state_dict(),
+        "scaler_state_dict": scaler.state_dict(),
+        "scheduler_state_dict": scheduler.state_dict(),
+        "val_loss": val_loss,
+        "interrupted": interrupted,
     }
 
 
@@ -66,7 +68,9 @@ def load_latest_checkpoint_file(directory, device, logger=None):
             logger.log(f"=> No checkpoint directory found at '{directory}'")
         return None
 
-    checkpoint_files = [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.pth.tar')]
+    checkpoint_files = [
+        os.path.join(directory, f) for f in os.listdir(directory) if f.endswith(".pth.tar")
+    ]
     if not checkpoint_files:
         if logger:
             logger.log(f"=> No checkpoint files (.pth.tar) found in '{directory}'")
@@ -85,15 +89,21 @@ def load_latest_checkpoint_file(directory, device, logger=None):
         return None
 
     if logger:
-        logger.log(f"=> Attempting to load latest checkpoint: '{os.path.basename(latest_checkpoint_path)}'")
+        logger.log(
+            f"=> Attempting to load latest checkpoint: '{os.path.basename(latest_checkpoint_path)}'"
+        )
     try:
         checkpoint = torch.load(latest_checkpoint_path, map_location=device)
         if logger:
-            logger.log(f"=> Successfully loaded checkpoint from epoch {checkpoint.get('epoch', 'N/A')}.")
+            logger.log(
+                f"=> Successfully loaded checkpoint from epoch {checkpoint.get('epoch', 'N/A')}."
+            )
         return checkpoint
     except Exception as e:
         if logger:
-            logger.log_error(f"Error loading checkpoint '{os.path.basename(latest_checkpoint_path)}': {e}")
+            logger.log_error(
+                f"Error loading checkpoint '{os.path.basename(latest_checkpoint_path)}': {e}"
+            )
         return None
 
 
@@ -105,36 +115,41 @@ def resume_from_checkpoint(trainer):
         trainer (Trainer): The trainer instance.
     """
     logger = trainer.logger
-    checkpoint = load_latest_checkpoint_file(trainer.config['checkpoint_dir'], trainer.device, logger)
+    checkpoint = load_latest_checkpoint_file(
+        trainer.config["checkpoint_dir"], trainer.device, logger
+    )
     if not checkpoint:
         logger.log("--> No checkpoint found, starting from scratch.")
         return
 
     try:
-        trainer.model.load_state_dict(checkpoint['model_state_dict'])
-        trainer.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        trainer.model.load_state_dict(checkpoint["model_state_dict"])
+        trainer.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
 
-        if checkpoint.get('interrupted', False):
-            trainer.start_epoch = checkpoint['epoch']
-            trainer.start_batch = checkpoint.get('batch_idx', 0)
+        if checkpoint.get("interrupted", False):
+            trainer.start_epoch = checkpoint["epoch"]
+            trainer.start_batch = checkpoint.get("batch_idx", 0)
             logger.log_warning(
-                f"--> Resuming from an interrupted run. Restarting epoch {trainer.start_epoch} from batch {trainer.start_batch}.")
+                f"--> Resuming from an interrupted run. Restarting epoch {trainer.start_epoch} from batch {trainer.start_batch}."
+            )
         else:
-            trainer.start_epoch = checkpoint['epoch'] + 1
+            trainer.start_epoch = checkpoint["epoch"] + 1
             trainer.start_batch = 0
 
-        trainer.best_val_loss = checkpoint.get('val_loss', float('inf'))
-        if 'scaler_state_dict' in checkpoint:
-            trainer.scaler.load_state_dict(checkpoint['scaler_state_dict'])
+        trainer.best_val_loss = checkpoint.get("val_loss", float("inf"))
+        if "scaler_state_dict" in checkpoint:
+            trainer.scaler.load_state_dict(checkpoint["scaler_state_dict"])
             logger.log("--> Resumed GradScaler state.")
-        if 'scheduler_state_dict' in checkpoint:
-            trainer.scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        if "scheduler_state_dict" in checkpoint:
+            trainer.scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
             logger.log("--> Resumed LR Scheduler state.")
 
-        logger.log(f"--> Checkpoint loaded. Starting at epoch {trainer.start_epoch}. Best val loss: {trainer.best_val_loss:.4f}")
+        logger.log(
+            f"--> Checkpoint loaded. Starting at epoch {trainer.start_epoch}. Best val loss: {trainer.best_val_loss:.4f}"
+        )
 
     except (KeyError, RuntimeError) as e:
         logger.log_error(f"Could not load checkpoint due to an error: {e}. Starting from scratch.")
         trainer.start_epoch = 1
         trainer.start_batch = 0
-        trainer.best_val_loss = float('inf')
+        trainer.best_val_loss = float("inf")

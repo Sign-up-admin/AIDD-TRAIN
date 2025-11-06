@@ -1,6 +1,7 @@
 """
 COMPASS Service main server.
 """
+
 import os
 import logging
 import argparse
@@ -20,9 +21,9 @@ from services.common.utils import get_local_ip
 
 # Configure unified logging
 setup_logging(
-    log_dir=SERVICE_CONFIG['log_dir'],
-    log_level=os.getenv('LOG_LEVEL', 'INFO'),
-    service_name='compass-service'
+    log_dir=SERVICE_CONFIG["log_dir"],
+    log_level=os.getenv("LOG_LEVEL", "INFO"),
+    service_name="compass-service",
 )
 logger = logging.getLogger(__name__)
 
@@ -117,35 +118,37 @@ from compass.service.middleware.rate_limit import RateLimitMiddleware
 import os
 
 # Configure rate limits
-default_limit = int(os.getenv('RATE_LIMIT_DEFAULT', '100'))
-default_window = int(os.getenv('RATE_LIMIT_WINDOW', '60'))
+default_limit = int(os.getenv("RATE_LIMIT_DEFAULT", "100"))
+default_window = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
 
 # Per-endpoint rate limits
 per_endpoint_limits = {
     "/api/v1/training/tasks": {
-        "limit": int(os.getenv('RATE_LIMIT_TRAINING', '30')),  # 从5增加到30，允许更频繁的请求
-        "window": int(os.getenv('RATE_LIMIT_TRAINING_WINDOW', '60'))
+        "limit": int(os.getenv("RATE_LIMIT_TRAINING", "30")),  # 从5增加到30，允许更频繁的请求
+        "window": int(os.getenv("RATE_LIMIT_TRAINING_WINDOW", "60")),
     },
     "/api/v1/data/upload": {
-        "limit": int(os.getenv('RATE_LIMIT_UPLOAD', '10')),
-        "window": int(os.getenv('RATE_LIMIT_UPLOAD_WINDOW', '60'))
+        "limit": int(os.getenv("RATE_LIMIT_UPLOAD", "10")),
+        "window": int(os.getenv("RATE_LIMIT_UPLOAD_WINDOW", "60")),
     },
     "/api/v1/inference": {
-        "limit": int(os.getenv('RATE_LIMIT_INFERENCE', '50')),
-        "window": int(os.getenv('RATE_LIMIT_INFERENCE_WINDOW', '60'))
-    }
+        "limit": int(os.getenv("RATE_LIMIT_INFERENCE", "50")),
+        "window": int(os.getenv("RATE_LIMIT_INFERENCE_WINDOW", "60")),
+    },
 }
 
 app.add_middleware(
     RateLimitMiddleware,
     default_limit=default_limit,
     default_window=default_window,
-    per_endpoint_limits=per_endpoint_limits
+    per_endpoint_limits=per_endpoint_limits,
 )
 
 # Add metrics middleware
 from compass.service.middleware.metrics import MetricsMiddleware, get_metrics_collector
+
 app.add_middleware(MetricsMiddleware)
+
 
 # Exception handlers
 @app.exception_handler(ServiceException)
@@ -156,43 +159,34 @@ async def service_exception_handler(request: Request, exc: ServiceException):
         extra={
             "status_code": exc.status_code,
             "error_code": exc.error_code.value if exc.error_code else None,
-            "path": request.url.path
-        }
+            "path": request.url.path,
+        },
     )
-    
-    response_content = {
-        "error": exc.message,
-        "status_code": exc.status_code
-    }
-    
+
+    response_content = {"error": exc.message, "status_code": exc.status_code}
+
     # Add error code if available
     if exc.error_code:
         response_content["error_code"] = exc.error_code.value
-    
+
     # Add detail if available
     if exc.detail:
         response_content["detail"] = exc.detail
-    
-    return JSONResponse(
-        status_code=exc.status_code,
-        content=response_content
-    )
+
+    return JSONResponse(status_code=exc.status_code, content=response_content)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors."""
-    logger.warning(
-        f"Validation error: {exc.errors()}",
-        extra={"path": str(request.url)}
-    )
+    logger.warning(f"Validation error: {exc.errors()}", extra={"path": str(request.url)})
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "error": "Validation error",
             "detail": exc.errors(),
-            "path": str(request.url.path)
-        }
+            "path": str(request.url.path),
+        },
     )
 
 
@@ -201,18 +195,14 @@ async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions."""
     error_message = sanitize_error_message(exc, include_details=True)
     logger.error(
-        f"Unexpected error: {error_message}",
-        extra={"path": str(request.url)},
-        exc_info=True
+        f"Unexpected error: {error_message}", extra={"path": str(request.url)}, exc_info=True
     )
     # Don't expose internal error details to users
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        content={
-            "error": "Internal server error",
-            "path": str(request.url.path)
-        }
+        content={"error": "Internal server error", "path": str(request.url.path)},
     )
+
 
 # Include routers
 app.include_router(health.router)
@@ -229,52 +219,53 @@ registry_client: CompassRegistryClient = None
 async def startup_event():
     """Initialize service on startup."""
     global registry_client
-    
+
     # Create backup on startup if configured
-    backup_on_startup = os.getenv('BACKUP_ON_STARTUP', 'false').lower() == 'true'
+    backup_on_startup = os.getenv("BACKUP_ON_STARTUP", "false").lower() == "true"
     if backup_on_startup:
         try:
             from compass.service.utils.backup import get_backup_manager
+
             backup_manager = get_backup_manager()
             if backup_manager:
                 backup_path = backup_manager.create_backup(
-                    datasets_dir=SERVICE_CONFIG.get('data_dir'),
-                    models_dir=SERVICE_CONFIG.get('checkpoint_dir'),
-                    database_file=os.getenv('REGISTRY_DB_PATH', 'registry.db')
+                    datasets_dir=SERVICE_CONFIG.get("data_dir"),
+                    models_dir=SERVICE_CONFIG.get("checkpoint_dir"),
+                    database_file=os.getenv("REGISTRY_DB_PATH", "registry.db"),
                 )
                 if backup_path:
                     logger.info(f"Startup backup created: {backup_path}")
         except Exception as e:
             logger.warning(f"Failed to create startup backup: {e}")
-    
+
     # Register with service registry (with retry)
     try:
-        host = SERVICE_CONFIG['host']
-        if host == '0.0.0.0':
+        host = SERVICE_CONFIG["host"]
+        if host == "0.0.0.0":
             host = get_local_ip()
-        port = SERVICE_CONFIG['port']
-        
+        port = SERVICE_CONFIG["port"]
+
         registry_client = CompassRegistryClient()
-        
+
         # Register with retry mechanism
-        max_retries = int(os.getenv('REGISTRY_RETRY_MAX', '5'))
+        max_retries = int(os.getenv("REGISTRY_RETRY_MAX", "5"))
         service_id = registry_client.register(
             host=host,
             port=port,
             metadata={
-                'max_workers': SERVICE_CONFIG['max_workers'],
-                'device': 'cuda' if os.getenv('CUDA_VISIBLE_DEVICES') else 'cpu'
+                "max_workers": SERVICE_CONFIG["max_workers"],
+                "device": "cuda" if os.getenv("CUDA_VISIBLE_DEVICES") else "cpu",
             },
             max_retries=max_retries,
             initial_delay=1.0,
             max_delay=60.0,
-            backoff_factor=2.0
+            backoff_factor=2.0,
         )
-        SERVICE_CONFIG['service_id'] = service_id
-        
+        SERVICE_CONFIG["service_id"] = service_id
+
         # Register cleanup on exit
         atexit.register(cleanup)
-        
+
         logger.info(f"COMPASS Service started on {host}:{port}")
         logger.info(f"Registered with service registry: {service_id}")
     except Exception as e:
@@ -313,30 +304,31 @@ async def root():
     return {
         "service": "COMPASS Service",
         "version": "1.0.0",
-        "service_id": SERVICE_CONFIG.get('service_id'),
-        "status": "running"
+        "service_id": SERVICE_CONFIG.get("service_id"),
+        "status": "running",
     }
 
 
 def main():
     """Main entry point for COMPASS service."""
     parser = argparse.ArgumentParser(description="COMPASS Service")
-    parser.add_argument("--host", default=SERVICE_CONFIG['host'], help="Host to bind to")
-    parser.add_argument("--port", type=int, default=SERVICE_CONFIG['port'], help="Port to bind to")
-    parser.add_argument("--registry-url", default=SERVICE_CONFIG['registry_url'], help="Service registry URL")
+    parser.add_argument("--host", default=SERVICE_CONFIG["host"], help="Host to bind to")
+    parser.add_argument("--port", type=int, default=SERVICE_CONFIG["port"], help="Port to bind to")
+    parser.add_argument(
+        "--registry-url", default=SERVICE_CONFIG["registry_url"], help="Service registry URL"
+    )
     args = parser.parse_args()
-    
+
     # Update config
-    SERVICE_CONFIG['host'] = args.host
-    SERVICE_CONFIG['port'] = args.port
-    SERVICE_CONFIG['registry_url'] = args.registry_url
-    
+    SERVICE_CONFIG["host"] = args.host
+    SERVICE_CONFIG["port"] = args.port
+    SERVICE_CONFIG["registry_url"] = args.registry_url
+
     logger.info(f"Starting COMPASS Service on {args.host}:{args.port}")
     logger.info(f"Registry URL: {args.registry_url}")
-    
+
     uvicorn.run(app, host=args.host, port=args.port)
 
 
 if __name__ == "__main__":
     main()
-

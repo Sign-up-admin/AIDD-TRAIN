@@ -1,0 +1,21 @@
+[flake8]
+max-line-length = 100
+exclude = 
+    .git,
+    __pycache__,
+    *.pyc,
+    venv,
+    env,
+    build,
+    dist,
+    .venv,
+    FLASH_DOCK-main/others,
+    checkpoints,
+    logs,
+    data,
+    processed_data
+ignore = E203,E501,W503,E402,F401
+per-file-ignores =
+    __init__.py:F401
+max-complexity = 10
+

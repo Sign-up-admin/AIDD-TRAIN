@@ -1,10 +1,16 @@
 """
 Inference routes.
 """
+
 from fastapi import APIRouter, HTTPException, status
 import logging
 
-from compass.service.models.model import InferenceRequest, InferenceResponse, BatchInferenceRequest, BatchInferenceResponse
+from compass.service.models.model import (
+    InferenceRequest,
+    InferenceResponse,
+    BatchInferenceRequest,
+    BatchInferenceResponse,
+)
 from compass.service.services.inference_service import InferenceService
 from compass.service.services.model_service import ModelService
 from compass.service.exceptions import ServiceException, ValidationError, sanitize_error_message
@@ -28,8 +34,7 @@ async def predict(request: InferenceRequest):
     except Exception as e:
         logger.error(f"Prediction failed: {e}", exc_info=True)
         raise ServiceException(
-            "Prediction failed",
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            "Prediction failed", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -39,17 +44,15 @@ async def batch_predict(request: BatchInferenceRequest):
     try:
         if not request.protein_ligand_pairs:
             raise ValidationError("Empty request list")
-        
+
         # Convert pairs to requests
         requests = [
             InferenceRequest(
-                protein_path=pair['protein'],
-                ligand_path=pair['ligand'],
-                model_id=request.model_id
+                protein_path=pair["protein"], ligand_path=pair["ligand"], model_id=request.model_id
             )
             for pair in request.protein_ligand_pairs
         ]
-        
+
         result = inference_service.batch_predict(requests)
         return result
     except ValueError as e:
@@ -57,8 +60,7 @@ async def batch_predict(request: BatchInferenceRequest):
     except Exception as e:
         logger.error(f"Batch prediction failed: {e}", exc_info=True)
         raise ServiceException(
-            "Batch prediction failed",
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            "Batch prediction failed", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
 
@@ -73,6 +75,5 @@ async def inference_status():
         "max_cache_size": cache_info["max_size"],
         "cached_model_ids": cache_info["cached_models"],
         "latest_model": latest_model.model_id if latest_model else None,
-        "device": str(inference_service.device)
+        "device": str(inference_service.device),
     }
-

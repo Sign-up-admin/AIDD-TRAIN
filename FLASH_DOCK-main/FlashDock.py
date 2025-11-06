@@ -4,14 +4,14 @@ import os
 import shutil
 import subprocess
 
-if sys.platform == 'win32':
+if sys.platform == "win32":
     # Windows上sh模块不可用，创建兼容的sh模块
     class ShWrapper:
         @staticmethod
         def rm(*args, **kwargs):
             """删除文件或目录"""
-            if '-r' in args:
-                path = args[args.index('-r') + 1] if args.index('-r') + 1 < len(args) else None
+            if "-r" in args:
+                path = args[args.index("-r") + 1] if args.index("-r") + 1 < len(args) else None
                 if path and os.path.exists(path):
                     if os.path.isdir(path):
                         shutil.rmtree(path)
@@ -24,7 +24,7 @@ if sys.platform == 'win32':
                             shutil.rmtree(arg)
                         else:
                             os.remove(arg)
-        
+
         @staticmethod
         def cp(src, dst):
             """复制文件或目录"""
@@ -34,32 +34,35 @@ if sys.platform == 'win32':
                 shutil.copytree(src, dst)
             else:
                 shutil.copy2(src, dst)
-        
+
         class Command:
             """命令包装器"""
+
             def __init__(self, cmd):
                 self.cmd = cmd
-            
+
             def __call__(self, *args, **kwargs):
                 cmd_list = [self.cmd] + list(args)
-                cwd = kwargs.get('_cwd', None)
-                fg = kwargs.get('_fg', False)
+                cwd = kwargs.get("_cwd", None)
+                fg = kwargs.get("_fg", False)
                 if fg:
                     return subprocess.run(cmd_list, cwd=cwd, check=False)
                 else:
                     return subprocess.Popen(cmd_list, cwd=cwd)
-    
+
     # 在导入streamlit_molstar之前，先注册sh模块
-    sys.modules['sh'] = ShWrapper()
+    sys.modules["sh"] = ShWrapper()
 
 import streamlit as st
 import pandas as pd
 from streamlit_molstar import st_molstar, st_molstar_rcsb, st_molstar_remote
+
 # 如需使用口袋预测相关函数
 from streamlit_molstar.pocket import (
     select_pocket_from_local_protein,
     # 如果你的项目需要也可以 import select_pocket_from_upload_protein
 )
+
 # docking 模块
 from streamlit_molstar.docking import st_molstar_docking
 
@@ -71,40 +74,40 @@ import re
 import tqdm
 
 # 如果没有在 session_state 中记录 page，就初始化一个默认值
-if 'page' not in st.session_state:
-    st.session_state['page'] = '主页'
+if "page" not in st.session_state:
+    st.session_state["page"] = "主页"
 
 # 在侧边栏使用按钮来切换页面
 st.sidebar.title("Navigation")
 if st.sidebar.button("主页"):
-    st.session_state['page'] = "主页"
+    st.session_state["page"] = "主页"
 
 # 新增“准备配体”按钮（插在“主页”和“口袋预测”之间）
 if st.sidebar.button("准备配体"):
-    st.session_state['page'] = "准备配体"
+    st.session_state["page"] = "准备配体"
 
 if st.sidebar.button("口袋预测"):
-    st.session_state['page'] = "口袋预测"
+    st.session_state["page"] = "口袋预测"
 if st.sidebar.button("分子对接"):
-    st.session_state['page'] = "分子对接"
+    st.session_state["page"] = "分子对接"
 if st.sidebar.button("批量口袋预测与对接"):
-    st.session_state['page'] = "批量口袋预测与对接"
+    st.session_state["page"] = "批量口袋预测与对接"
     # 新增“预测亲和力”按钮
 if st.sidebar.button("预测亲和力"):
-    st.session_state['page'] = "预测亲和力"
+    st.session_state["page"] = "预测亲和力"
 
 # 添加数据管理、服务监控、训练管理按钮
 st.sidebar.markdown("---")
 st.sidebar.subheader("服务管理")
 if st.sidebar.button("数据管理"):
-    st.session_state['page'] = "数据管理"
+    st.session_state["page"] = "数据管理"
 if st.sidebar.button("服务监控"):
-    st.session_state['page'] = "服务监控"
+    st.session_state["page"] = "服务监控"
 if st.sidebar.button("训练管理"):
-    st.session_state['page'] = "训练管理"
+    st.session_state["page"] = "训练管理"
 
 # 获取当前页面
-page = st.session_state['page']
+page = st.session_state["page"]
 
 # ------------------------------------------------------------------------------
 # 主页
@@ -139,7 +142,7 @@ if page == "主页":
 
     # 显示 logo.png
     if os.path.exists("./others/logo.png"):
-        st.image("./others/logo.png", width='stretch')
+        st.image("./others/logo.png", width="stretch")
     else:
         st.error("logo.png 文件未找到，请确保它与脚本位于同一目录下。")
 
@@ -165,9 +168,7 @@ elif page == "准备配体":
     smiles_input = st_ketcher()
 
     def process_and_show_mol(
-        mol: Chem.Mol, 
-        uploaded_sdf_name: str = None, 
-        user_defined_filename: str = None
+        mol: Chem.Mol, uploaded_sdf_name: str = None, user_defined_filename: str = None
     ):
         """
         对分子进行加氢、3D 嵌入、MMFF 优化并展示 2D/3D 结构；
@@ -180,7 +181,7 @@ elif page == "准备配体":
 
         # 2D 可视化
         st.subheader("2D 分子结构")
-        st.image(Draw.MolToImage(mol, size=(300, 300)), width='content')
+        st.image(Draw.MolToImage(mol, size=(300, 300)), width="content")
 
         # 生成 3D 构象并能量优化
         mol_3d = Chem.AddHs(mol)
@@ -192,7 +193,7 @@ elif page == "准备配体":
         mol_block = Chem.MolToMolBlock(mol_3d)
         xyzview = py3Dmol.view(width=500, height=400)
         xyzview.addModel(mol_block, "mol")
-        xyzview.setStyle({'stick': {}})
+        xyzview.setStyle({"stick": {}})
         xyzview.zoomTo()
         showmol(xyzview, height=400, width=500)
 
@@ -242,11 +243,13 @@ elif page == "准备配体":
         if smiles_input:
             mol_from_smiles = Chem.MolFromSmiles(smiles_input)
             if mol_from_smiles:
-                user_defined_filename = st.text_input("请输入保存时的 SDF 文件名（不含 .sdf）", value="my_mol")
+                user_defined_filename = st.text_input(
+                    "请输入保存时的 SDF 文件名（不含 .sdf）", value="my_mol"
+                )
                 process_and_show_mol(
-                    mol_from_smiles, 
-                    uploaded_sdf_name=None, 
-                    user_defined_filename=user_defined_filename
+                    mol_from_smiles,
+                    uploaded_sdf_name=None,
+                    user_defined_filename=user_defined_filename,
                 )
             else:
                 st.error("SMILES 无效，请重新输入或确认格式。")
@@ -267,7 +270,7 @@ elif page == "口袋预测":
         try:
             # 用户上传蛋白质（只出现一次，不会再弹二次上传）
             pdb_file = st.file_uploader("请上传蛋白质文件 (.pdb)", type=["pdb"])
-            
+
             if pdb_file is not None:
                 # 记下上传的名称
                 uploaded_pdb_filename = pdb_file.name
@@ -280,8 +283,7 @@ elif page == "口袋预测":
 
                 # 调用 p2rank (或其他函数) ，读取该临时文件进行预测
                 selected = select_pocket_from_local_protein(
-                    file_path,
-                    p2rank_home='./others/p2rank_2.5/'
+                    file_path, p2rank_home="./others/p2rank_2.5/"
                 )
                 # 预测完成后删除该临时文件
                 os.remove(file_path)
@@ -291,12 +293,14 @@ elif page == "口袋预测":
                     st.write("预测到的口袋信息: ", pocket)
 
                     # 如果 rank=1 的口袋
-                    if pocket['rank'] == '1':
+                    if pocket["rank"] == "1":
                         # 如果上传了文件名，则用之，否则用 pocket['name']
-                        final_name = uploaded_pdb_filename if uploaded_pdb_filename else pocket['name']
+                        final_name = (
+                            uploaded_pdb_filename if uploaded_pdb_filename else pocket["name"]
+                        )
                         data = {
-                            'Pocket Name': [final_name],
-                            'Center': [pocket['center']],
+                            "Pocket Name": [final_name],
+                            "Center": [pocket["center"]],
                         }
                         df = pd.DataFrame(data)
 
@@ -319,17 +323,16 @@ elif page == "口袋预测":
             uploaded_pdb_filename = "protein_example.pdb"
             # 调用 p2rank 做预测
             selected = select_pocket_from_local_protein(
-                "examples/pocket/protein.pdb", 
-                p2rank_home='./others/p2rank_2.5/'
+                "examples/pocket/protein.pdb", p2rank_home="./others/p2rank_2.5/"
             )
             if selected:
                 pocket = selected
                 st.write("预测到的口袋信息: ", pocket)
 
-                if pocket['rank'] == '1':
+                if pocket["rank"] == "1":
                     data = {
-                        'Pocket Name': [uploaded_pdb_filename],
-                        'Center': [pocket['center']],
+                        "Pocket Name": [uploaded_pdb_filename],
+                        "Center": [pocket["center"]],
                     }
                     df = pd.DataFrame(data)
 
@@ -341,7 +344,7 @@ elif page == "口袋预测":
                         csv_path = "./Result/Predict_Pocket/best_pocket.csv"
                         df.to_csv(csv_path, index=False)
                         st.success(f"best_pocket.csv 已保存到 {csv_path}")
-                        
+
         except Exception as e:
             st.warning(f"加载示例文件时发生错误: {e}")
 
@@ -413,7 +416,7 @@ elif page == "分子对接":
                         "center_z": center_z,
                         "size_x": size_x,
                         "size_y": size_y,
-                        "size_z": size_z
+                        "size_z": size_z,
                     }
                     docking_grid_path = os.path.join(temp_dir, "docking_grid.json")
 
@@ -476,12 +479,7 @@ elif page == "分子对接":
                             st.success(f"对接结果保存为 {renamed_path}")
 
                             # 可视化对接结果
-                            st_molstar_docking(
-                                protein_path, 
-                                renamed_path, 
-                                key="5", 
-                                height=600
-                            )
+                            st_molstar_docking(protein_path, renamed_path, key="5", height=600)
                         except Exception as e:
                             st.error("处理结果文件时出错，请检查路径或权限。")
 
@@ -531,11 +529,13 @@ elif page == "批量口袋预测与对接":
             tasks = []
             for pdb_file in pdb_files:
                 for sdf_file in sdf_files:
-                    tasks.append({
-                        "Protein": pdb_file.name,
-                        "Ligand": sdf_file.name,
-                        "Run": "Yes"  # 默认所有任务为 "Yes"
-                    })
+                    tasks.append(
+                        {
+                            "Protein": pdb_file.name,
+                            "Ligand": sdf_file.name,
+                            "Run": "Yes",  # 默认所有任务为 "Yes"
+                        }
+                    )
 
             task_df = pd.DataFrame(tasks)
             return task_df
@@ -545,23 +545,24 @@ elif page == "批量口袋预测与对接":
 
         if task_df is not None:
             # 提供下载任务 CSV 的按钮
-            csv = task_df.to_csv(index=False).encode('utf-8')
+            csv = task_df.to_csv(index=False).encode("utf-8")
             st.download_button(
-                label="下载任务 CSV 文件",
-                data=csv,
-                file_name="docking_tasks.csv",
-                mime="text/csv"
+                label="下载任务 CSV 文件", data=csv, file_name="docking_tasks.csv", mime="text/csv"
             )
 
             st.markdown("---")
-            st.info("""
+            st.info(
+                """
                 1. 下载上方的任务 CSV 文件。
                 2. 在本地编辑 CSV 文件，修改 `Run` 列为 `Yes` 的任务将被执行，`No` 列的任务将被跳过。
                 3. 修改完成后，上传修改后的 CSV 文件并点击“开始批量预测和对接”按钮。
-            """)
+            """
+            )
 
             # 上传修改后的任务 CSV 文件
-            uploaded_csv = st.file_uploader("上传修改后的任务 CSV 文件", type=["csv"], key="upload_task_csv")
+            uploaded_csv = st.file_uploader(
+                "上传修改后的任务 CSV 文件", type=["csv"], key="upload_task_csv"
+            )
 
             if uploaded_csv is not None:
                 try:
@@ -570,19 +571,25 @@ elif page == "批量口袋预测与对接":
                     # 检查必要的列是否存在
                     required_columns = {"Protein", "Ligand", "Run"}
                     if not required_columns.issubset(uploaded_tasks_df.columns):
-                        st.error(f"上传的任务文件缺少必要的列：{required_columns - set(uploaded_tasks_df.columns)}")
+                        st.error(
+                            f"上传的任务文件缺少必要的列：{required_columns - set(uploaded_tasks_df.columns)}"
+                        )
                     else:
                         # 过滤需要运行的任务
-                        tasks_to_run = uploaded_tasks_df[uploaded_tasks_df["Run"].str.lower() == "yes"]
+                        tasks_to_run = uploaded_tasks_df[
+                            uploaded_tasks_df["Run"].str.lower() == "yes"
+                        ]
 
                         if tasks_to_run.empty:
-                            st.warning("没有任务需要运行，请确保至少有一项任务的 `Run` 列为 `Yes`。")
+                            st.warning(
+                                "没有任务需要运行，请确保至少有一项任务的 `Run` 列为 `Yes`。"
+                            )
                         else:
                             st.write(f"发现 {len(tasks_to_run)} 个任务需要运行。")
 
                             # 显示需要运行的任务表格
                             st.subheader("待运行的任务列表")
-                            st.dataframe(tasks_to_run[['Protein', 'Ligand']].reset_index(drop=True))
+                            st.dataframe(tasks_to_run[["Protein", "Ligand"]].reset_index(drop=True))
 
                             # 开始批量预测和对接按钮
                             if st.button("开始批量预测和对接", key="start_batch_processing"):
@@ -595,23 +602,29 @@ elif page == "批量口袋预测与对接":
                                     ligand_path = batch_docking_dir / task["Ligand"]
 
                                     # 口袋预测前更新状态
-                                    status_text.text(f"任务 {i + 1}/{len(tasks_to_run)}: 正在为 {task['Protein']} 预测口袋...")
+                                    status_text.text(
+                                        f"任务 {i + 1}/{len(tasks_to_run)}: 正在为 {task['Protein']} 预测口袋..."
+                                    )
 
                                     # 口袋预测
                                     try:
                                         # 为每个任务传递唯一的 key
                                         pocket_result = select_pocket_from_local_protein(
-                                            str(protein_path), 
-                                            p2rank_home='./others/p2rank_2.5/',
-                                            key=f"select_pocket_{i}"  # 添加唯一 key
+                                            str(protein_path),
+                                            p2rank_home="./others/p2rank_2.5/",
+                                            key=f"select_pocket_{i}",  # 添加唯一 key
                                         )
                                     except Exception as e:
-                                        log_messages.append(f"任务 {task['Protein']} 和 {task['Ligand']} 口袋预测失败：{e}")
+                                        log_messages.append(
+                                            f"任务 {task['Protein']} 和 {task['Ligand']} 口袋预测失败：{e}"
+                                        )
                                         progress_bar.progress((i + 1) / len(tasks_to_run))
                                         continue
 
                                     if pocket_result:
-                                        center_coords = [float(coord) for coord in pocket_result["center"]]
+                                        center_coords = [
+                                            float(coord) for coord in pocket_result["center"]
+                                        ]
                                         docking_grid = {
                                             "center_x": center_coords[0],
                                             "center_y": center_coords[1],
@@ -628,7 +641,9 @@ elif page == "批量口袋预测与对接":
                                                 json.dump(docking_grid, f, indent=4)
 
                                             # 更新状态：开始对接
-                                            status_text.text(f"任务 {i + 1}/{len(tasks_to_run)}: 正在对接 {task['Protein']} 和 {task['Ligand']}...")
+                                            status_text.text(
+                                                f"任务 {i + 1}/{len(tasks_to_run)}: 正在对接 {task['Protein']} 和 {task['Ligand']}..."
+                                            )
 
                                             # 构造对接命令
                                             command = (
@@ -646,23 +661,35 @@ elif page == "批量口袋预测与对接":
                                             )
 
                                             # 执行对接命令
-                                            result = subprocess.run(command, shell=True, capture_output=True, text=True)
+                                            result = subprocess.run(
+                                                command, shell=True, capture_output=True, text=True
+                                            )
 
                                             if result.returncode == 0:
-                                                ligand_output_path = result_dir / "ligand_predict.sdf"
+                                                ligand_output_path = (
+                                                    result_dir / "ligand_predict.sdf"
+                                                )
                                                 output_name = f"{protein_path.stem}_{ligand_path.stem}_docked.sdf"
                                                 renamed_path = result_dir / output_name
 
                                                 try:
                                                     os.rename(ligand_output_path, renamed_path)
-                                                    log_messages.append(f"任务 {task['Protein']} 和 {task['Ligand']} 对接完成。结果保存为 {renamed_path}")
+                                                    log_messages.append(
+                                                        f"任务 {task['Protein']} 和 {task['Ligand']} 对接完成。结果保存为 {renamed_path}"
+                                                    )
                                                 except Exception as e:
-                                                    log_messages.append(f"任务 {task['Protein']} 和 {task['Ligand']} 结果保存失败：{e}")
+                                                    log_messages.append(
+                                                        f"任务 {task['Protein']} 和 {task['Ligand']} 结果保存失败：{e}"
+                                                    )
                                             else:
-                                                log_messages.append(f"任务 {task['Protein']} 和 {task['Ligand']} 对接失败。错误信息：{result.stderr}")
+                                                log_messages.append(
+                                                    f"任务 {task['Protein']} 和 {task['Ligand']} 对接失败。错误信息：{result.stderr}"
+                                                )
 
                                     else:
-                                        log_messages.append(f"任务 {task['Protein']} 的口袋信息未找到。")
+                                        log_messages.append(
+                                            f"任务 {task['Protein']} 的口袋信息未找到。"
+                                        )
 
                                     # 更新进度条
                                     progress_bar.progress((i + 1) / len(tasks_to_run))
@@ -742,10 +769,14 @@ elif page == "预测亲和力":
                                 cmd = [
                                     "python",
                                     pred_script_path,
-                                    "-p", protein_path,
-                                    "-l", ligand_path,
-                                    "-m", ligand_path,
-                                    "-o", output_csv_path
+                                    "-p",
+                                    protein_path,
+                                    "-l",
+                                    ligand_path,
+                                    "-m",
+                                    ligand_path,
+                                    "-o",
+                                    output_csv_path,
                                 ]
 
                                 result = subprocess.run(cmd, capture_output=True, text=True)
@@ -794,30 +825,44 @@ elif page == "预测亲和力":
                                 sdf_file_path = os.path.join(batch_dir, sdf_file)
 
                                 if os.path.exists(pdb_file):
-                                    st.text(f"正在计算第 {i + 1}/{total_files} 对：蛋白 {pdb_file} 和 配体 {sdf_file} 的亲和力...")
+                                    st.text(
+                                        f"正在计算第 {i + 1}/{total_files} 对：蛋白 {pdb_file} 和 配体 {sdf_file} 的亲和力..."
+                                    )
                                     with tempfile.TemporaryDirectory() as tmpdir:
-                                        output_csv_path_tmp = os.path.join(tmpdir, "temp_result.csv")
+                                        output_csv_path_tmp = os.path.join(
+                                            tmpdir, "temp_result.csv"
+                                        )
 
                                         cmd = [
                                             "python",
                                             "./others/PLANET/pred.py",
-                                            "-p", pdb_file,
-                                            "-l", sdf_file_path,
-                                            "-m", sdf_file_path,
-                                            "-o", output_csv_path_tmp
+                                            "-p",
+                                            pdb_file,
+                                            "-l",
+                                            sdf_file_path,
+                                            "-m",
+                                            sdf_file_path,
+                                            "-o",
+                                            output_csv_path_tmp,
                                         ]
 
                                         result = subprocess.run(cmd, capture_output=True, text=True)
 
-                                        if result.returncode == 0 and os.path.exists(output_csv_path_tmp):
+                                        if result.returncode == 0 and os.path.exists(
+                                            output_csv_path_tmp
+                                        ):
                                             temp_df = pd.read_csv(output_csv_path_tmp)
                                             if "Binding_Affinity" in temp_df.columns:
-                                                binding_affinity = temp_df["Binding_Affinity"].iloc[0]
-                                                final_results.append({
-                                                    "Protein_File": receptor_name,
-                                                    "Ligand_File": ligand_name,
-                                                    "Binding_Affinity": binding_affinity
-                                                })
+                                                binding_affinity = temp_df["Binding_Affinity"].iloc[
+                                                    0
+                                                ]
+                                                final_results.append(
+                                                    {
+                                                        "Protein_File": receptor_name,
+                                                        "Ligand_File": ligand_name,
+                                                        "Binding_Affinity": binding_affinity,
+                                                    }
+                                                )
                                         else:
                                             st.error(f"文件 {sdf_file} 处理失败。")
 
@@ -832,7 +877,9 @@ elif page == "预测亲和力":
                                 binding_affinity_dir = "./Result/Binding_Affinity"
                                 os.makedirs(binding_affinity_dir, exist_ok=True)
 
-                                output_csv_path = os.path.join(binding_affinity_dir, "batch_prediction_results.csv")
+                                output_csv_path = os.path.join(
+                                    binding_affinity_dir, "batch_prediction_results.csv"
+                                )
                                 results_df.to_csv(output_csv_path, index=False)
 
                                 st.success("批量预测完成！结果已保存到以下目录：")
@@ -840,7 +887,11 @@ elif page == "预测亲和力":
 
                                 # 绘制热图
                                 st.subheader("亲和力热图")
-                                heatmap_data = results_df.pivot(index="Protein_File", columns="Ligand_File", values="Binding_Affinity")
+                                heatmap_data = results_df.pivot(
+                                    index="Protein_File",
+                                    columns="Ligand_File",
+                                    values="Binding_Affinity",
+                                )
                                 plt.figure(figsize=(10, 8), dpi=600)
                                 sns.heatmap(heatmap_data, annot=True, cmap="coolwarm", fmt=".2f")
                                 plt.xlabel("Ligands")
@@ -848,7 +899,9 @@ elif page == "预测亲和力":
                                 plt.title("Binding Affinity Heatmap")
                                 st.pyplot(plt)
 
-                                heatmap_path = os.path.join(binding_affinity_dir, "binding_affinity_heatmap.png")
+                                heatmap_path = os.path.join(
+                                    binding_affinity_dir, "binding_affinity_heatmap.png"
+                                )
                                 plt.savefig(heatmap_path, dpi=600)
 
                                 st.write("热图已保存到以下目录：")
@@ -865,19 +918,19 @@ elif page == "预测亲和力":
 elif page == "数据管理":
     import sys
     from pathlib import Path
-    
+
     # Add parent directory to path
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
     # Add FLASH_DOCK-main/services to path
     flashdock_services = Path(__file__).parent / "services"
     sys.path.insert(0, str(flashdock_services))
-    
+
     from compass_client import CompassClient
-    
+
     st.title("数据管理")
     st.write("管理COMPASS训练数据集")
-    
+
     # Initialize client
     try:
         client = CompassClient()
@@ -885,59 +938,67 @@ elif page == "数据管理":
     except Exception as e:
         st.error(f"无法连接到COMPASS服务: {e}")
         st.stop()
-    
+
     # Tabs
     tab1, tab2 = st.tabs(["上传数据集", "数据集列表"])
-    
+
     with tab1:
         st.subheader("上传数据集")
-        
+
         uploaded_file = st.file_uploader("选择数据集文件", type=["zip", "tar", "tar.gz"])
-        
+
         if uploaded_file:
             dataset_name = st.text_input("数据集名称", value=uploaded_file.name)
             dataset_description = st.text_area("数据集描述（可选）")
-            
+
             if st.button("上传"):
                 with st.spinner("正在上传数据集..."):
                     try:
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
+                        with tempfile.NamedTemporaryFile(
+                            delete=False, suffix=os.path.splitext(uploaded_file.name)[1]
+                        ) as tmp_file:
                             tmp_file.write(uploaded_file.getbuffer())
                             tmp_path = tmp_file.name
-                        
-                        dataset_id = client.upload_dataset(tmp_path, name=dataset_name, description=dataset_description)
+
+                        dataset_id = client.upload_dataset(
+                            tmp_path, name=dataset_name, description=dataset_description
+                        )
                         os.remove(tmp_path)
-                        
+
                         st.success(f"数据集上传成功！数据集ID: {dataset_id}")
                     except Exception as e:
                         st.error(f"上传失败: {e}")
-    
+
     with tab2:
         st.subheader("数据集列表")
-        
+
         if st.button("刷新列表"):
             st.rerun()
-        
+
         try:
             datasets = client.list_datasets()
-            
+
             if datasets:
-                df = pd.DataFrame([
-                    {
-                        "数据集ID": ds['dataset_id'],
-                        "名称": ds['name'],
-                        "大小 (MB)": f"{ds['size'] / (1024*1024):.2f}",
-                        "文件数": ds['file_count'],
-                        "状态": ds['status'],
-                        "创建时间": ds['created_at']
-                    }
-                    for ds in datasets
-                ])
-                st.dataframe(df, width='stretch')
-                
+                df = pd.DataFrame(
+                    [
+                        {
+                            "数据集ID": ds["dataset_id"],
+                            "名称": ds["name"],
+                            "大小 (MB)": f"{ds['size'] / (1024*1024):.2f}",
+                            "文件数": ds["file_count"],
+                            "状态": ds["status"],
+                            "创建时间": ds["created_at"],
+                        }
+                        for ds in datasets
+                    ]
+                )
+                st.dataframe(df, width="stretch")
+
                 # Delete dataset
-                selected_dataset_id = st.selectbox("选择要删除的数据集", [ds['dataset_id'] for ds in datasets])
-                
+                selected_dataset_id = st.selectbox(
+                    "选择要删除的数据集", [ds["dataset_id"] for ds in datasets]
+                )
+
                 if st.button("删除数据集"):
                     try:
                         client.delete_dataset(selected_dataset_id)
@@ -956,20 +1017,20 @@ elif page == "数据管理":
 elif page == "服务监控":
     import sys
     from pathlib import Path
-    
+
     # Add parent directory to path
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
     # Add FLASH_DOCK-main/services to path
     flashdock_services = Path(__file__).parent / "services"
     sys.path.insert(0, str(flashdock_services))
-    
+
     from service_manager import ServiceManager
     from compass_client import CompassClient
-    
+
     st.title("服务监控")
     st.write("监控COMPASS服务状态")
-    
+
     # Initialize service manager
     try:
         service_manager = ServiceManager()
@@ -978,35 +1039,37 @@ elif page == "服务监控":
     except Exception as e:
         st.error(f"无法连接到服务注册中心: {e}")
         st.stop()
-    
+
     # Refresh services
     if st.button("刷新服务列表"):
         service_manager.refresh_services()
         st.rerun()
-    
+
     # Service status
     st.subheader("COMPASS服务状态")
-    
+
     try:
         services = service_manager.registry_client.discover_compass_services(healthy_only=False)
-        
+
         if services:
-            df = pd.DataFrame([
-                {
-                    "服务ID": s.service_id,
-                    "地址": f"{s.host}:{s.port}",
-                    "状态": s.status.value,
-                    "版本": s.version,
-                    "最后心跳": s.last_heartbeat.isoformat() if s.last_heartbeat else "N/A"
-                }
-                for s in services
-            ])
-            st.dataframe(df, width='stretch')
-            
+            df = pd.DataFrame(
+                [
+                    {
+                        "服务ID": s.service_id,
+                        "地址": f"{s.host}:{s.port}",
+                        "状态": s.status.value,
+                        "版本": s.version,
+                        "最后心跳": s.last_heartbeat.isoformat() if s.last_heartbeat else "N/A",
+                    }
+                    for s in services
+                ]
+            )
+            st.dataframe(df, width="stretch")
+
             # Health status summary
             healthy_count = sum(1 for s in services if s.status.value == "healthy")
             total_count = len(services)
-            
+
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("健康服务数", healthy_count)
@@ -1016,34 +1079,36 @@ elif page == "服务监控":
             st.warning("未发现COMPASS服务")
     except Exception as e:
         st.error(f"获取服务状态失败: {e}")
-    
+
     # Inference status
     st.subheader("推理服务状态")
-    
+
     try:
         inference_status = client.get_inference_status()
         st.json(inference_status)
     except Exception as e:
         st.error(f"获取推理服务状态失败: {e}")
-    
+
     # Model list
     st.subheader("可用模型")
-    
+
     try:
         models = client.list_models()
-        
+
         if models:
-            df = pd.DataFrame([
-                {
-                    "模型ID": m['model_id'],
-                    "名称": m['name'],
-                    "版本": m['version'],
-                    "大小 (MB)": f"{m['file_size'] / (1024*1024):.2f}",
-                    "创建时间": m['created_at']
-                }
-                for m in models
-            ])
-            st.dataframe(df, width='stretch')
+            df = pd.DataFrame(
+                [
+                    {
+                        "模型ID": m["model_id"],
+                        "名称": m["name"],
+                        "版本": m["version"],
+                        "大小 (MB)": f"{m['file_size'] / (1024*1024):.2f}",
+                        "创建时间": m["created_at"],
+                    }
+                    for m in models
+                ]
+            )
+            st.dataframe(df, width="stretch")
         else:
             st.info("暂无可用模型")
     except Exception as e:
@@ -1055,18 +1120,18 @@ elif page == "服务监控":
 elif page == "训练管理":
     import sys
     from pathlib import Path
-    
+
     # Add parent directory to path
     project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
     # Add FLASH_DOCK-main/services to path
     flashdock_services = Path(__file__).parent / "services"
     sys.path.insert(0, str(flashdock_services))
-    
+
     # Import and execute training management page
     import importlib.util
+
     training_management_path = Path(__file__).parent / "pages" / "training_management.py"
     spec = importlib.util.spec_from_file_location("training_management", training_management_path)
     training_management = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(training_management)
-
