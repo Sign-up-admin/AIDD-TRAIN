@@ -6,6 +6,7 @@ from typing import Optional, List
 
 import sys
 import os
+import time
 from pathlib import Path
 
 # Add parent directory to path to import services
@@ -27,7 +28,8 @@ class ServiceManager:
     def __init__(
         self,
         registry_url: str = "http://localhost:8500",
-        strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN
+        strategy: LoadBalanceStrategy = LoadBalanceStrategy.ROUND_ROBIN,
+        timeout: float = 5.0
     ):
         """
         Initialize service manager.
@@ -35,32 +37,52 @@ class ServiceManager:
         Args:
             registry_url: Registry URL
             strategy: Load balancing strategy
+            timeout: Request timeout in seconds (default: 5.0)
         """
-        self.registry_client = FlashDockRegistryClient(registry_url)
+        self.registry_url = registry_url
+        self.registry_client = FlashDockRegistryClient(registry_url, timeout=timeout)
         self.load_balancer = LoadBalancer(strategy)
         self.cached_services: List[ServiceInfo] = []
         self.cache_ttl = 30  # Cache for 30 seconds
         self.last_cache_update = 0
+        self.timeout = timeout
     
     def get_compass_service(self, force_refresh: bool = False) -> Optional[ServiceInfo]:
         """
-        Get a COMPASS service instance.
+        Get a COMPASS service instance with timeout and error handling.
         
         Args:
             force_refresh: Force refresh of service list
             
         Returns:
             Optional[ServiceInfo]: Selected service or None if unavailable
+            
+        Note:
+            Returns None if:
+            - Registry is unavailable or times out
+            - No healthy COMPASS services are found
+            - Service discovery fails
         """
-        import time
-        
         # Refresh cache if needed
         if force_refresh or (time.time() - self.last_cache_update) > self.cache_ttl:
-            self.cached_services = self.registry_client.discover_compass_services(healthy_only=True)
-            self.last_cache_update = time.time()
+            try:
+                # Check if registry is available before attempting discovery
+                if not self.is_registry_available():
+                    logger.error(f"Registry at {self.registry_url} is not available. Please check if the service registry is running.")
+                    return None
+                
+                self.cached_services = self.registry_client.discover_compass_services(healthy_only=True)
+                self.last_cache_update = time.time()
+            except Exception as e:
+                logger.error(f"Error during service discovery: {e}", exc_info=True)
+                # Keep using cached services if available
+                if not self.cached_services:
+                    return None
         
         if not self.cached_services:
-            logger.warning("No COMPASS services available")
+            logger.warning("No COMPASS services available. Please ensure:")
+            logger.warning("  1. Service registry is running at " + self.registry_url)
+            logger.warning("  2. COMPASS service is registered and healthy")
             return None
         
         # Select service using load balancer
@@ -72,10 +94,36 @@ class ServiceManager:
         
         return service
     
-    def refresh_services(self):
-        """Force refresh service list."""
-        import time
-        self.cached_services = self.registry_client.discover_compass_services(healthy_only=True)
-        self.last_cache_update = time.time()
-        logger.info(f"Refreshed service list: {len(self.cached_services)} service(s) available")
+    def is_registry_available(self) -> bool:
+        """
+        Check if the service registry is available.
+        
+        Returns:
+            bool: True if registry is available, False otherwise
+        """
+        try:
+            return self.registry_client.check_registry_available()
+        except Exception as e:
+            logger.warning(f"Error checking registry availability: {e}")
+            return False
+    
+    def refresh_services(self) -> bool:
+        """
+        Force refresh service list.
+        
+        Returns:
+            bool: True if refresh was successful, False otherwise
+        """
+        try:
+            if not self.is_registry_available():
+                logger.error(f"Registry at {self.registry_url} is not available")
+                return False
+            
+            self.cached_services = self.registry_client.discover_compass_services(healthy_only=True)
+            self.last_cache_update = time.time()
+            logger.info(f"Refreshed service list: {len(self.cached_services)} service(s) available")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to refresh service list: {e}", exc_info=True)
+            return False
 

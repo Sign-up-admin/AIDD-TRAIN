@@ -16,3 +16,358 @@
 2025-11-06 08:44:34,506 - matplotlib - DEBUG - platform is win32
 2025-11-06 08:44:34,599 - matplotlib - DEBUG - CACHEDIR=C:\Users\Huangtianxu\.matplotlib
 2025-11-06 08:44:34,602 - matplotlib.font_manager - DEBUG - Using fontManager instance from C:\Users\Huangtianxu\.matplotlib\fontlist-v390.json
+2025-11-06 09:01:00,862 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 09:01:00,863 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 09:01:00,864 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 09:01:00,864 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 09:01:00,865 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 09:01:00,865 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 09:01:00,865 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 09:01:00,866 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 09:01:00,866 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 09:01:00,867 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 09:01:03,925 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 09:01:05,965 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 09:01:05,966 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 09:01:05,966 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 09:01:05,966 - service_manager - DEBUG - Selected COMPASS service: compass-service-d3850c12 at http://192.168.1.150:8080
+2025-11-06 09:01:05,967 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 09:01:05,970 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 09:01:05,986 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 09:01:05,987 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:01:06,002 - service_manager - DEBUG - Selected COMPASS service: compass-service-d3850c12 at http://192.168.1.150:8080
+2025-11-06 09:01:06,002 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 09:01:06,006 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 09:01:06,007 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:02:07,696 - git.cmd - DEBUG - Popen(['git', 'version'], cwd=E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:07,783 - git.cmd - DEBUG - Popen(['git', 'version'], cwd=E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:07,864 - git.util - DEBUG - sys.platform='win32', git_executable='git'
+2025-11-06 09:02:07,866 - git.cmd - DEBUG - Popen(['git', 'version'], cwd=E:\Qinchaojun\AIDD-TRAIN, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:07,939 - git.cmd - DEBUG - Popen(['git', 'rev-parse', '--show-toplevel'], cwd=E:\Qinchaojun\AIDD-TRAIN, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:08,017 - git.cmd - DEBUG - Popen(['git', 'remote', 'get-url', '--all', 'origin'], cwd=E:\Qinchaojun\AIDD-TRAIN, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:08,092 - git.cmd - DEBUG - Popen(['git', 'status', '--porcelain', '--untracked-files'], cwd=E:\Qinchaojun\AIDD-TRAIN, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:08,180 - git.cmd - DEBUG - Popen(['git', 'diff', '--abbrev=40', '--full-index', '-M', '--raw', '-z', '--no-color'], cwd=E:\Qinchaojun\AIDD-TRAIN, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:08,273 - git.cmd - DEBUG - Popen(['git', 'cat-file', '--batch-check'], cwd=E:\Qinchaojun\AIDD-TRAIN, stdin=<valid stream>, shell=False, universal_newlines=False)
+2025-11-06 09:02:08,358 - git.cmd - DEBUG - Popen(['git', 'rev-list', 'origin/main..main', '--'], cwd=E:\Qinchaojun\AIDD-TRAIN, stdin=None, shell=False, universal_newlines=False)
+2025-11-06 09:02:11,232 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 09:02:13,264 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service HTTP/1.1" 200 345
+2025-11-06 09:02:13,265 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 09:02:13,266 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 09:02:13,281 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 09:02:15,325 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 09:02:15,326 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 09:02:15,327 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 09:02:15,327 - service_manager - DEBUG - Selected COMPASS service: compass-service-d3850c12 at http://192.168.1.150:8080
+2025-11-06 09:02:15,328 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/inference/status
+2025-11-06 09:02:15,330 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 09:02:15,355 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/inference/status HTTP/1.1" 200 147
+2025-11-06 09:02:15,356 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:02:15,357 - service_manager - DEBUG - Selected COMPASS service: compass-service-d3850c12 at http://192.168.1.150:8080
+2025-11-06 09:02:15,358 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/models
+2025-11-06 09:02:15,363 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/models HTTP/1.1" 200 445
+2025-11-06 09:02:15,364 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:02:28,588 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 09:02:30,616 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 09:02:30,617 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 09:02:30,618 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 09:02:30,618 - service_manager - DEBUG - Selected COMPASS service: compass-service-d3850c12 at http://192.168.1.150:8080
+2025-11-06 09:02:30,619 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 09:02:30,621 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 09:02:30,647 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 09:02:30,647 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:29:01,940 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 09:29:05,987 - services.registry.client - ERROR - Failed to discover services: HTTPConnectionPool(host='localhost', port=8500): Max retries exceeded with url: /api/v1/services?service_name=compass-service&status_filter=healthy (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002079C30E870>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2025-11-06 09:29:05,988 - registry_client - INFO - Discovered 0 COMPASS service(s)
+2025-11-06 09:29:05,988 - service_manager - WARNING - No COMPASS services available
+2025-11-06 09:29:05,989 - compass_client - ERROR - No COMPASS service available from registry
+2025-11-06 09:29:05,989 - compass_client - INFO - Attempting to refresh service list...
+2025-11-06 09:29:05,991 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (2): localhost:8500
+2025-11-06 09:29:10,055 - services.registry.client - ERROR - Failed to discover services: HTTPConnectionPool(host='localhost', port=8500): Max retries exceeded with url: /api/v1/services?service_name=compass-service&status_filter=healthy (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002079C30D6D0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2025-11-06 09:29:10,055 - registry_client - INFO - Discovered 0 COMPASS service(s)
+2025-11-06 09:29:10,056 - service_manager - INFO - Refreshed service list: 0 service(s) available
+2025-11-06 09:29:10,056 - service_manager - WARNING - No COMPASS services available
+2025-11-06 09:29:10,065 - service_manager - WARNING - No COMPASS services available
+2025-11-06 09:29:10,065 - compass_client - ERROR - No COMPASS service available from registry
+2025-11-06 09:29:10,065 - compass_client - INFO - Attempting to refresh service list...
+2025-11-06 09:29:10,068 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (3): localhost:8500
+2025-11-06 09:29:14,116 - services.registry.client - ERROR - Failed to discover services: HTTPConnectionPool(host='localhost', port=8500): Max retries exceeded with url: /api/v1/services?service_name=compass-service&status_filter=healthy (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002079C30E9C0>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2025-11-06 09:29:14,117 - registry_client - INFO - Discovered 0 COMPASS service(s)
+2025-11-06 09:29:14,117 - service_manager - INFO - Refreshed service list: 0 service(s) available
+2025-11-06 09:29:14,118 - service_manager - WARNING - No COMPASS services available
+2025-11-06 09:29:14,136 - service_manager - WARNING - No COMPASS services available
+2025-11-06 09:29:14,136 - compass_client - ERROR - No COMPASS service available from registry
+2025-11-06 09:29:14,137 - compass_client - INFO - Attempting to refresh service list...
+2025-11-06 09:29:14,139 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (4): localhost:8500
+2025-11-06 09:29:18,178 - services.registry.client - ERROR - Failed to discover services: HTTPConnectionPool(host='localhost', port=8500): Max retries exceeded with url: /api/v1/services?service_name=compass-service&status_filter=healthy (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002079C30E210>: Failed to establish a new connection: [WinError 10061] 由于目标计算机积极拒绝，无法连接。'))
+2025-11-06 09:29:18,179 - registry_client - INFO - Discovered 0 COMPASS service(s)
+2025-11-06 09:29:18,180 - service_manager - INFO - Refreshed service list: 0 service(s) available
+2025-11-06 09:29:18,180 - service_manager - WARNING - No COMPASS services available
+2025-11-06 09:30:16,776 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 09:30:18,803 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 09:30:18,804 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 09:30:18,805 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 09:30:18,805 - service_manager - DEBUG - Selected COMPASS service: compass-service-89b65e6a at http://192.168.1.150:8080
+2025-11-06 09:30:18,806 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 09:30:18,811 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 09:30:18,827 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 09:30:18,828 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:30:18,832 - service_manager - DEBUG - Selected COMPASS service: compass-service-89b65e6a at http://192.168.1.150:8080
+2025-11-06 09:30:18,832 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 09:30:18,836 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 09:30:18,837 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:30:18,848 - service_manager - DEBUG - Selected COMPASS service: compass-service-89b65e6a at http://192.168.1.150:8080
+2025-11-06 09:30:18,848 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 09:30:18,853 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 09:30:18,854 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:32:46,474 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 09:32:48,511 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 666
+2025-11-06 09:32:48,512 - services.registry.client - DEBUG - Discovered 2 services
+2025-11-06 09:32:48,512 - registry_client - INFO - Discovered 2 COMPASS service(s)
+2025-11-06 09:32:48,513 - service_manager - DEBUG - Selected COMPASS service: compass-service-89b65e6a at http://192.168.1.150:8080
+2025-11-06 09:32:48,513 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 09:32:48,516 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 09:32:48,549 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 09:32:48,550 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:32:48,554 - service_manager - DEBUG - Selected COMPASS service: compass-service-fe91ce1b at http://192.168.1.150:8080
+2025-11-06 09:32:48,555 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 09:32:48,559 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 09:32:48,560 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:32:48,571 - service_manager - DEBUG - Selected COMPASS service: compass-service-89b65e6a at http://192.168.1.150:8080
+2025-11-06 09:32:48,571 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 09:32:48,575 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 09:32:48,576 - compass_client - DEBUG - Request successful: 200
+2025-11-06 09:33:44,571 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 09:33:44,572 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 09:33:44,572 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 09:33:44,573 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 09:33:44,573 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 09:33:44,574 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 09:33:44,574 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 09:33:44,574 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 09:33:44,575 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 09:33:44,575 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 10:16:41,057 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 10:16:43,085 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 10:16:43,086 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 10:16:43,086 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 10:16:43,087 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 10:16:43,087 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 10:16:43,090 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 10:16:43,121 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 10:16:43,122 - compass_client - DEBUG - Request successful: 200
+2025-11-06 10:16:43,129 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 10:16:43,129 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 10:16:43,132 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 10:16:43,133 - compass_client - DEBUG - Request successful: 200
+2025-11-06 10:16:43,142 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 10:16:43,143 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 10:16:43,146 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 10:16:43,147 - compass_client - DEBUG - Request successful: 200
+2025-11-06 10:17:55,060 - matplotlib - DEBUG - matplotlib data path: C:\ProgramData\Anaconda3\envs\flash_dock\Lib\site-packages\matplotlib\mpl-data
+2025-11-06 10:17:55,071 - matplotlib - DEBUG - CONFIGDIR=C:\Users\Huangtianxu\.matplotlib
+2025-11-06 10:17:55,076 - matplotlib - DEBUG - interactive is False
+2025-11-06 10:17:55,076 - matplotlib - DEBUG - platform is win32
+2025-11-06 10:17:55,186 - matplotlib - DEBUG - CACHEDIR=C:\Users\Huangtianxu\.matplotlib
+2025-11-06 10:17:55,208 - matplotlib.font_manager - DEBUG - Using fontManager instance from C:\Users\Huangtianxu\.matplotlib\fontlist-v390.json
+2025-11-06 10:18:02,933 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 10:18:04,969 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 10:18:04,970 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 10:18:04,970 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 10:18:04,971 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 10:18:04,971 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 10:18:04,974 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 10:18:04,999 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 10:18:04,999 - compass_client - DEBUG - Request successful: 200
+2025-11-06 10:18:30,300 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 10:18:30,301 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 10:18:30,301 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 10:18:30,302 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 10:18:30,302 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 10:18:30,302 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 10:18:30,303 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 10:18:30,303 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 10:18:30,303 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 10:18:30,303 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 11:12:59,499 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 11:13:01,561 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:13:01,566 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:13:01,569 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:13:01,572 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 1308
+2025-11-06 11:13:01,573 - services.registry.client - DEBUG - Discovered 4 services
+2025-11-06 11:13:01,574 - registry_client - INFO - Discovered 4 COMPASS service(s)
+2025-11-06 11:13:01,574 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 11:13:01,578 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:13:01,579 - service_manager - DEBUG - Selected COMPASS service: compass-service-76737f2c at http://192.168.1.150:8080
+2025-11-06 11:13:01,579 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:13:01,582 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 11:13:01,617 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 11:13:01,617 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:13:01,626 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:13:01,627 - service_manager - DEBUG - Selected COMPASS service: compass-service-34866be5 at http://192.168.1.150:8080
+2025-11-06 11:13:01,627 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 11:13:01,632 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 11:13:01,632 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:13:01,647 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:13:01,647 - service_manager - DEBUG - Selected COMPASS service: compass-service-11922196 at http://192.168.1.150:8080
+2025-11-06 11:13:01,647 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:13:01,651 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 11:13:01,652 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:13:21,155 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 11:13:21,155 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 11:13:21,156 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 11:13:21,156 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 11:13:21,157 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 11:13:21,157 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 11:13:21,157 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 11:13:21,158 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 11:13:21,159 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 11:13:21,159 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 11:18:45,440 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 11:18:47,484 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:18:47,489 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:18:47,493 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:18:47,498 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 25
+2025-11-06 11:18:47,498 - services.registry.client - DEBUG - Discovered 0 services
+2025-11-06 11:18:47,499 - registry_client - INFO - Discovered 0 COMPASS service(s)
+2025-11-06 11:18:47,499 - service_manager - WARNING - No COMPASS services available. Please ensure:
+2025-11-06 11:18:47,499 - service_manager - WARNING -   1. Service registry is running at http://localhost:8500
+2025-11-06 11:18:47,500 - service_manager - WARNING -   2. COMPASS service is registered and healthy
+2025-11-06 11:18:47,508 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:18:47,508 - service_manager - WARNING - No COMPASS services available. Please ensure:
+2025-11-06 11:18:47,509 - service_manager - WARNING -   1. Service registry is running at http://localhost:8500
+2025-11-06 11:18:47,509 - service_manager - WARNING -   2. COMPASS service is registered and healthy
+2025-11-06 11:18:47,509 - compass_client - ERROR - 没有可用的COMPASS服务。请确保COMPASS服务已注册并正在运行。
+2025-11-06 11:18:47,509 - compass_client - INFO - 尝试刷新服务列表...
+2025-11-06 11:18:47,512 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:18:47,515 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 25
+2025-11-06 11:18:47,516 - services.registry.client - DEBUG - Discovered 0 services
+2025-11-06 11:18:47,516 - registry_client - INFO - Discovered 0 COMPASS service(s)
+2025-11-06 11:18:47,516 - service_manager - INFO - Refreshed service list: 0 service(s) available
+2025-11-06 11:18:47,516 - service_manager - WARNING - No COMPASS services available. Please ensure:
+2025-11-06 11:18:47,517 - service_manager - WARNING -   1. Service registry is running at http://localhost:8500
+2025-11-06 11:18:47,517 - service_manager - WARNING -   2. COMPASS service is registered and healthy
+2025-11-06 11:18:47,531 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:18:47,532 - service_manager - WARNING - No COMPASS services available. Please ensure:
+2025-11-06 11:18:47,532 - service_manager - WARNING -   1. Service registry is running at http://localhost:8500
+2025-11-06 11:18:47,532 - service_manager - WARNING -   2. COMPASS service is registered and healthy
+2025-11-06 11:18:47,533 - compass_client - ERROR - 没有可用的COMPASS服务。请确保COMPASS服务已注册并正在运行。
+2025-11-06 11:18:47,533 - compass_client - INFO - 尝试刷新服务列表...
+2025-11-06 11:18:47,535 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:18:47,538 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 25
+2025-11-06 11:18:47,539 - services.registry.client - DEBUG - Discovered 0 services
+2025-11-06 11:18:47,539 - registry_client - INFO - Discovered 0 COMPASS service(s)
+2025-11-06 11:18:47,539 - service_manager - INFO - Refreshed service list: 0 service(s) available
+2025-11-06 11:18:47,540 - service_manager - WARNING - No COMPASS services available. Please ensure:
+2025-11-06 11:18:47,540 - service_manager - WARNING -   1. Service registry is running at http://localhost:8500
+2025-11-06 11:18:47,540 - service_manager - WARNING -   2. COMPASS service is registered and healthy
+2025-11-06 11:18:47,541 - compass_client - ERROR - Failed to list tasks: 没有可用的COMPASS服务。请检查：
+  1. 服务注册中心是否正在运行
+  2. COMPASS服务是否已注册并处于健康状态
+2025-11-06 11:22:10,733 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 11:22:12,817 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:22:12,822 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:22:12,825 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:22:12,830 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 11:22:12,831 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 11:22:12,832 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 11:22:12,832 - service_manager - DEBUG - Selected COMPASS service: compass-service-d10b1d3f at http://192.168.1.150:8080
+2025-11-06 11:22:12,836 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:22:12,837 - service_manager - DEBUG - Selected COMPASS service: compass-service-d10b1d3f at http://192.168.1.150:8080
+2025-11-06 11:22:12,838 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:22:12,843 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 11:22:12,872 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 11:22:12,873 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:22:12,881 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:22:12,882 - service_manager - DEBUG - Selected COMPASS service: compass-service-d10b1d3f at http://192.168.1.150:8080
+2025-11-06 11:22:12,883 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 11:22:12,887 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 11:22:12,888 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:22:12,911 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:22:12,911 - service_manager - DEBUG - Selected COMPASS service: compass-service-d10b1d3f at http://192.168.1.150:8080
+2025-11-06 11:22:12,912 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:22:12,916 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 11:22:12,917 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:15,124 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 11:58:17,207 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:17,211 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:17,216 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:17,220 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 2271
+2025-11-06 11:58:17,222 - services.registry.client - DEBUG - Discovered 7 services
+2025-11-06 11:58:17,222 - registry_client - INFO - Discovered 7 COMPASS service(s)
+2025-11-06 11:58:17,223 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 11:58:17,227 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:17,227 - service_manager - DEBUG - Selected COMPASS service: compass-service-76737f2c at http://192.168.1.150:8080
+2025-11-06 11:58:17,228 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:17,229 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 11:58:17,256 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 755
+2025-11-06 11:58:17,257 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:17,269 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:17,270 - service_manager - DEBUG - Selected COMPASS service: compass-service-34866be5 at http://192.168.1.150:8080
+2025-11-06 11:58:17,271 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 11:58:17,276 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 11:58:17,277 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:17,296 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:17,296 - service_manager - DEBUG - Selected COMPASS service: compass-service-11922196 at http://192.168.1.150:8080
+2025-11-06 11:58:17,297 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:17,302 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 755
+2025-11-06 11:58:17,302 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:17,309 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:17,310 - service_manager - DEBUG - Selected COMPASS service: compass-service-d10b1d3f at http://192.168.1.150:8080
+2025-11-06 11:58:17,311 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks/bb9093be-ed38-4247-b71c-98661b705103/resources
+2025-11-06 11:58:17,316 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks/bb9093be-ed38-4247-b71c-98661b705103/resources HTTP/1.1" 200 288
+2025-11-06 11:58:17,316 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:20,392 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 11:58:22,418 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:22,422 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:22,428 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:22,433 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 2271
+2025-11-06 11:58:22,434 - services.registry.client - DEBUG - Discovered 7 services
+2025-11-06 11:58:22,434 - registry_client - INFO - Discovered 7 COMPASS service(s)
+2025-11-06 11:58:22,434 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 11:58:22,438 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:22,439 - service_manager - DEBUG - Selected COMPASS service: compass-service-76737f2c at http://192.168.1.150:8080
+2025-11-06 11:58:22,439 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:22,441 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 11:58:22,446 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 755
+2025-11-06 11:58:22,447 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:22,457 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:22,458 - service_manager - DEBUG - Selected COMPASS service: compass-service-34866be5 at http://192.168.1.150:8080
+2025-11-06 11:58:22,459 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 11:58:22,464 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 11:58:22,465 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:22,485 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:22,486 - service_manager - DEBUG - Selected COMPASS service: compass-service-11922196 at http://192.168.1.150:8080
+2025-11-06 11:58:22,486 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:22,491 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 755
+2025-11-06 11:58:22,492 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:22,503 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:22,504 - service_manager - DEBUG - Selected COMPASS service: compass-service-d10b1d3f at http://192.168.1.150:8080
+2025-11-06 11:58:22,504 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks/bb9093be-ed38-4247-b71c-98661b705103/resources
+2025-11-06 11:58:22,510 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks/bb9093be-ed38-4247-b71c-98661b705103/resources HTTP/1.1" 429 127
+2025-11-06 11:58:22,510 - compass_client - ERROR - HTTP error 429 from http://192.168.1.150:8080/api/v1/training/tasks/bb9093be-ed38-4247-b71c-98661b705103/resources: 429 Client Error: Too Many Requests for url: http://192.168.1.150:8080/api/v1/training/tasks/bb9093be-ed38-4247-b71c-98661b705103/resources
+2025-11-06 11:58:25,606 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 11:58:27,645 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:27,651 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:27,656 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:27,660 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 2271
+2025-11-06 11:58:27,662 - services.registry.client - DEBUG - Discovered 7 services
+2025-11-06 11:58:27,662 - registry_client - INFO - Discovered 7 COMPASS service(s)
+2025-11-06 11:58:27,662 - service_manager - DEBUG - Selected COMPASS service: compass-service-b7b62dc1 at http://192.168.1.150:8080
+2025-11-06 11:58:27,667 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:27,668 - service_manager - DEBUG - Selected COMPASS service: compass-service-76737f2c at http://192.168.1.150:8080
+2025-11-06 11:58:27,668 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:27,670 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 11:58:27,675 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 429 127
+2025-11-06 11:58:27,676 - compass_client - ERROR - HTTP error 429 from http://192.168.1.150:8080/api/v1/training/tasks: 429 Client Error: Too Many Requests for url: http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:27,677 - compass_client - ERROR - Failed to list tasks: 429 Client Error: Too Many Requests for url: http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:27,689 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:27,690 - service_manager - DEBUG - Selected COMPASS service: compass-service-34866be5 at http://192.168.1.150:8080
+2025-11-06 11:58:27,691 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 11:58:27,697 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 11:58:27,698 - compass_client - DEBUG - Request successful: 200
+2025-11-06 11:58:27,723 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 11:58:27,724 - service_manager - DEBUG - Selected COMPASS service: compass-service-11922196 at http://192.168.1.150:8080
+2025-11-06 11:58:27,724 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:27,729 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 429 127
+2025-11-06 11:58:27,730 - compass_client - ERROR - HTTP error 429 from http://192.168.1.150:8080/api/v1/training/tasks: 429 Client Error: Too Many Requests for url: http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 11:58:27,731 - compass_client - ERROR - Failed to list tasks: 429 Client Error: Too Many Requests for url: http://192.168.1.150:8080/api/v1/training/tasks

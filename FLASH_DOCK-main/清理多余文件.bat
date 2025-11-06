@@ -24,9 +24,6 @@ echo     - Python3.12环境运行指南.md
 echo     - Python版本兼容性分析.md
 echo     - SSL修复总结.md
 echo.
-echo [5] 我创建的临时文档（保留启动指南）
-echo     - 启动指南.md (保留，有用的文档)
-echo.
 echo ============================================
 echo.
 set /p confirm="确认删除这些文件吗？(Y/N): "
@@ -99,10 +96,9 @@ echo ============================================
 echo.
 echo 保留的重要文件：
 echo   - FlashDock.py (主程序)
-echo   - start_flashdock.bat (启动脚本)
+echo   - start_flashdock_fixed.bat (启动脚本)
 echo   - README.md (项目说明)
 echo   - requirements.txt (依赖列表)
-echo   - 启动指南.md (启动说明)
 echo.
 pause
 

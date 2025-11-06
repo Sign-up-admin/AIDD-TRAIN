@@ -9,12 +9,14 @@ from enum import Enum
 
 class TaskStatus(str, Enum):
     """Training task status."""
-    PENDING = "pending"
-    RUNNING = "running"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    CANCELLED = "cancelled"
+    CREATING = "creating"  # Task is being created and validated
+    INITIALIZING = "initializing"  # Task is initializing (resources, threads, etc.)
+    PENDING = "pending"  # Task is created but not started
+    RUNNING = "running"  # Task is running
+    PAUSED = "paused"  # Task is paused
+    COMPLETED = "completed"  # Task completed successfully
+    FAILED = "failed"  # Task failed
+    CANCELLED = "cancelled"  # Task was cancelled
 
 
 class TrainingTaskCreate(BaseModel):

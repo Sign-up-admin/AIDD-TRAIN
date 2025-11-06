@@ -64,9 +64,16 @@ class ServiceInfo:
             metadata=data.get('metadata', {}),
             version=data.get('version', '1.0.0')
         )
+        # Parse datetime strings - handle both string and datetime objects
         if 'registered_at' in data and data['registered_at']:
-            info.registered_at = datetime.fromisoformat(data['registered_at'])
+            if isinstance(data['registered_at'], str):
+                info.registered_at = datetime.fromisoformat(data['registered_at'])
+            elif isinstance(data['registered_at'], datetime):
+                info.registered_at = data['registered_at']
         if 'last_heartbeat' in data and data['last_heartbeat']:
-            info.last_heartbeat = datetime.fromisoformat(data['last_heartbeat'])
+            if isinstance(data['last_heartbeat'], str):
+                info.last_heartbeat = datetime.fromisoformat(data['last_heartbeat'])
+            elif isinstance(data['last_heartbeat'], datetime):
+                info.last_heartbeat = data['last_heartbeat']
         return info
 

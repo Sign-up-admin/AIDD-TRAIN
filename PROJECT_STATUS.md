@@ -50,7 +50,7 @@
 
 # FLASH-DOCK 前端
 cd FLASH_DOCK-main
-.\start_flashdock.bat
+.\start_flashdock_fixed.bat
 ```
 
 ### 重启服务

@@ -16,16 +16,18 @@ logger = logging.getLogger(__name__)
 class RegistryClient:
     """Client for interacting with service registry."""
     
-    def __init__(self, registry_url: str = "http://localhost:8500"):
+    def __init__(self, registry_url: str = "http://localhost:8500", timeout: float = 5.0):
         """
         Initialize registry client.
         
         Args:
             registry_url: URL of the service registry
+            timeout: Default timeout for requests in seconds (default: 5.0)
         """
         self.registry_url = registry_url.rstrip('/')
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
+        self.timeout = timeout
     
     def register_service(
         self,
@@ -59,13 +61,17 @@ class RegistryClient:
         try:
             response = self.session.post(
                 f"{self.registry_url}/api/v1/services/register",
-                json=request.dict()
+                json=request.dict(),
+                timeout=self.timeout
             )
             response.raise_for_status()
             data = response.json()
             service_id = data['service_id']
             logger.info(f"Registered service {service_name} with ID: {service_id}")
             return service_id
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Timeout while registering service: {e}")
+            raise
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to register service: {e}")
             raise
@@ -82,10 +88,14 @@ class RegistryClient:
         """
         try:
             response = self.session.post(
-                f"{self.registry_url}/api/v1/services/{service_id}/heartbeat"
+                f"{self.registry_url}/api/v1/services/{service_id}/heartbeat",
+                timeout=self.timeout
             )
             response.raise_for_status()
             return True
+        except requests.exceptions.Timeout:
+            logger.warning(f"Timeout while sending heartbeat for service {service_id}")
+            return False
         except requests.exceptions.RequestException as e:
             logger.warning(f"Failed to send heartbeat: {e}")
             return False
@@ -102,11 +112,15 @@ class RegistryClient:
         """
         try:
             response = self.session.delete(
-                f"{self.registry_url}/api/v1/services/{service_id}"
+                f"{self.registry_url}/api/v1/services/{service_id}",
+                timeout=self.timeout
             )
             response.raise_for_status()
             logger.info(f"Deregistered service {service_id}")
             return True
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout while deregistering service {service_id}")
+            return False
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to deregister service: {e}")
             return False
@@ -135,7 +149,8 @@ class RegistryClient:
             
             response = self.session.get(
                 f"{self.registry_url}/api/v1/services",
-                params=params
+                params=params,
+                timeout=self.timeout
             )
             response.raise_for_status()
             data = response.json()
@@ -151,6 +166,9 @@ class RegistryClient:
             
             logger.debug(f"Discovered {len(services)} services")
             return services
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Timeout while discovering services: {e}")
+            return []
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to discover services: {e}")
             return []
@@ -167,11 +185,15 @@ class RegistryClient:
         """
         try:
             response = self.session.get(
-                f"{self.registry_url}/api/v1/services/{service_id}"
+                f"{self.registry_url}/api/v1/services/{service_id}",
+                timeout=self.timeout
             )
             response.raise_for_status()
             data = response.json()
             return ServiceInfo.from_dict(data)
+        except requests.exceptions.Timeout:
+            logger.error(f"Timeout while getting service {service_id}")
+            return None
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to get service: {e}")
             return None
@@ -186,7 +208,7 @@ class RegistryClient:
         try:
             response = self.session.get(
                 f"{self.registry_url}/health",
-                timeout=5
+                timeout=self.timeout
             )
             return response.status_code == 200
         except requests.exceptions.RequestException:

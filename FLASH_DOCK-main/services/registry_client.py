@@ -12,6 +12,7 @@ sys.path.insert(0, str(project_root))
 
 from services.registry.client import RegistryClient
 from services.common.service_protocol import ServiceInfo
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -19,25 +20,27 @@ logger = logging.getLogger(__name__)
 class FlashDockRegistryClient:
     """Registry client for FLASH-DOCK service discovery."""
     
-    def __init__(self, registry_url: str = "http://localhost:8500"):
+    def __init__(self, registry_url: str = "http://localhost:8500", timeout: float = 5.0):
         """
         Initialize registry client.
         
         Args:
             registry_url: Registry URL
+            timeout: Request timeout in seconds (default: 5.0)
         """
         self.registry_url = registry_url
-        self.client = RegistryClient(registry_url)
+        self.timeout = timeout
+        self.client = RegistryClient(registry_url, timeout=timeout)
     
     def discover_compass_services(self, healthy_only: bool = True) -> List[ServiceInfo]:
         """
-        Discover COMPASS services.
+        Discover COMPASS services with timeout and error handling.
         
         Args:
             healthy_only: Only return healthy services
             
         Returns:
-            List[ServiceInfo]: List of discovered services
+            List[ServiceInfo]: List of discovered services (empty list on error)
         """
         try:
             status_filter = "healthy" if healthy_only else None
@@ -47,8 +50,19 @@ class FlashDockRegistryClient:
             )
             logger.info(f"Discovered {len(services)} COMPASS service(s)")
             return services
+        except requests.exceptions.Timeout as e:
+            logger.error(f"Timeout while discovering COMPASS services (timeout: {self.timeout}s): {e}")
+            logger.warning("Registry may be unavailable or slow to respond")
+            return []
+        except requests.exceptions.ConnectionError as e:
+            logger.error(f"Connection error while discovering COMPASS services: {e}")
+            logger.warning(f"Could not connect to registry at {self.registry_url}")
+            return []
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request error while discovering COMPASS services: {e}")
+            return []
         except Exception as e:
-            logger.error(f"Failed to discover services: {e}")
+            logger.error(f"Unexpected error while discovering services: {e}", exc_info=True)
             return []
     
     def check_registry_available(self) -> bool:

@@ -85,23 +85,34 @@ class ServiceRegistryStorage:
                 rows = conn.execute("SELECT * FROM services").fetchall()
                 for row in rows:
                     try:
+                        # Convert Row to dict
                         service_dict = dict(row)
+                        
                         # Parse metadata JSON
                         if service_dict.get('metadata'):
-                            service_dict['metadata'] = json.loads(service_dict['metadata'])
+                            try:
+                                service_dict['metadata'] = json.loads(service_dict['metadata'])
+                            except (json.JSONDecodeError, TypeError):
+                                service_dict['metadata'] = {}
                         else:
                             service_dict['metadata'] = {}
                         
-                        # Parse datetime strings
-                        if service_dict.get('registered_at'):
-                            service_dict['registered_at'] = datetime.fromisoformat(service_dict['registered_at'])
-                        if service_dict.get('last_heartbeat'):
-                            service_dict['last_heartbeat'] = datetime.fromisoformat(service_dict['last_heartbeat'])
+                        # Parse datetime strings - keep as strings for from_dict
+                        # from_dict will handle the conversion
+                        if service_dict.get('registered_at') and not isinstance(service_dict['registered_at'], str):
+                            # If it's already a datetime, convert to string
+                            if isinstance(service_dict['registered_at'], datetime):
+                                service_dict['registered_at'] = service_dict['registered_at'].isoformat()
+                        if service_dict.get('last_heartbeat') and not isinstance(service_dict['last_heartbeat'], str):
+                            if isinstance(service_dict['last_heartbeat'], datetime):
+                                service_dict['last_heartbeat'] = service_dict['last_heartbeat'].isoformat()
                         
                         service = ServiceInfo.from_dict(service_dict)
                         services[service.service_id] = service
                     except Exception as e:
-                        logger.warning(f"Failed to load service {row.get('service_id')}: {e}")
+                        # Use dict access instead of .get() for Row object
+                        service_id = dict(row).get('service_id', 'unknown')
+                        logger.warning(f"Failed to load service {service_id}: {e}", exc_info=True)
                         continue
             
             logger.info(f"Loaded {len(services)} services from database")

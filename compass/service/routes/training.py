@@ -14,6 +14,7 @@ from compass.service.models.task import (
 )
 from compass.service.services.training_service import TrainingService
 from compass.service.exceptions import ServiceException, NotFoundError, ValidationError
+from compass.service.error_codes import ErrorCode
 
 router = APIRouter(tags=["training"])
 training_service = TrainingService()
@@ -74,9 +75,23 @@ async def create_task(request: TrainingTaskCreate):
         return task
     except ValueError as e:
         raise ValidationError(str(e))
+    except ServiceException:
+        # Re-raise service exceptions as-is (they already have proper error codes)
+        raise
     except Exception as e:
         logger.error(f"Failed to create task: {e}", exc_info=True)
-        raise ServiceException("Failed to create task", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Provide more detailed error information
+        error_detail = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "config": request.config
+        }
+        raise ServiceException(
+            "Failed to create task",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            error_code=ErrorCode.INTERNAL_ERROR,
+            detail=error_detail
+        )
 
 
 @router.get(
@@ -287,3 +302,36 @@ async def get_task_metrics(task_id: str):
     
     return TaskMetricsResponse(metrics=task.progress)
 
+
+@router.get(
+    "/api/v1/training/tasks/{task_id}/resources",
+    summary="Get Task Resource Usage",
+    description="Get resource usage information (GPU, CPU, Memory) for a training task"
+)
+async def get_task_resources(task_id: str):
+    """
+    Get resource usage for a training task.
+    
+    Args:
+        task_id: Unique task identifier (UUID)
+    
+    Returns:
+        Dict: Resource usage information including GPU, CPU, and memory usage
+    
+    Raises:
+        404: Task not found
+    """
+    task = training_service.get_task(task_id)
+    if not task:
+        raise NotFoundError("Task", task_id)
+    
+    resources = training_service.get_resource_usage(task_id)
+    if resources is None:
+        # Return empty resources if not available yet
+        return {
+            "cpu_percent": 0.0,
+            "memory": {"total_gb": 0.0, "used_gb": 0.0, "percent": 0.0},
+            "gpu": {"available": False}
+        }
+    
+    return resources

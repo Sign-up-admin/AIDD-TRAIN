@@ -66,6 +66,14 @@ class ServiceConfig:
     
     # Upload queue
     max_concurrent_uploads: int = 2
+    
+    # Task creation settings
+    max_concurrent_tasks: int = 4  # Maximum concurrent training tasks
+    task_creation_timeout: int = 30  # Task creation timeout in seconds
+    task_initialization_timeout: int = 60  # Task initialization timeout in seconds
+    min_available_memory_gb: float = 2.0  # Minimum available memory (GB) required for new tasks
+    max_cpu_percent: float = 90.0  # Maximum CPU usage percent before rejecting new tasks
+    enable_resource_check: bool = True  # Enable resource pre-check before task creation
 
 
 class ConfigManager:
@@ -161,6 +169,14 @@ class ConfigManager:
             
             # Upload queue
             'MAX_CONCURRENT_UPLOADS': 'max_concurrent_uploads',
+            
+            # Task creation settings
+            'MAX_CONCURRENT_TASKS': 'max_concurrent_tasks',
+            'TASK_CREATION_TIMEOUT': 'task_creation_timeout',
+            'TASK_INITIALIZATION_TIMEOUT': 'task_initialization_timeout',
+            'MIN_AVAILABLE_MEMORY_GB': 'min_available_memory_gb',
+            'MAX_CPU_PERCENT': 'max_cpu_percent',
+            'ENABLE_RESOURCE_CHECK': 'enable_resource_check',
         }
         
         for env_var, attr_name in env_mapping.items():
