@@ -72,5 +72,12 @@ class FlashDockRegistryClient:
         Returns:
             bool: True if registry is available
         """
-        return self.client.check_registry_health()
+        try:
+            logger.debug(f"Checking registry health at {self.registry_url} (timeout: {self.timeout}s)")
+            result = self.client.check_registry_health()
+            logger.debug(f"Registry health check result: {result}")
+            return result
+        except Exception as e:
+            logger.warning(f"Error checking registry health: {e}", exc_info=True)
+            return False
 

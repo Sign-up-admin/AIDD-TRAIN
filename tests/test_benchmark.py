@@ -72,3 +72,4 @@ def test_benchmark_runner_get_results():
     assert results[0]['name'] == "Test 1"
     assert results[1]['name'] == "Test 2"
 
+

@@ -211,3 +211,4 @@ curl -X POST http://localhost:8080/api/v1/inference/predict ...
 **修复完成时间**: 2025-01-XX  
 **下一步**: 继续修复P2和P3级别问题，或进行系统测试和部署准备
 
+

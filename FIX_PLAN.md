@@ -684,3 +684,4 @@ def batch_predict(self, requests: List[InferenceRequest]) -> BatchInferenceRespo
 **修复计划版本**: 1.0  
 **最后更新**: 2025-01-XX
 
+

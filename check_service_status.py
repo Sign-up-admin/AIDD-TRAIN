@@ -43,3 +43,4 @@ else:
         print("  - COMPASS服务未运行")
     sys.exit(1)
 
+

@@ -123,7 +123,7 @@ default_window = int(os.getenv('RATE_LIMIT_WINDOW', '60'))
 # Per-endpoint rate limits
 per_endpoint_limits = {
     "/api/v1/training/tasks": {
-        "limit": int(os.getenv('RATE_LIMIT_TRAINING', '5')),
+        "limit": int(os.getenv('RATE_LIMIT_TRAINING', '30')),  # 从5增加到30，允许更频繁的请求
         "window": int(os.getenv('RATE_LIMIT_TRAINING_WINDOW', '60'))
     },
     "/api/v1/data/upload": {

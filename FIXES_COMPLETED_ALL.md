@@ -387,3 +387,4 @@ for i in {1..150}; do curl http://localhost:8080/api/v1/training/tasks; done
 **修复版本**: 5.0  
 **状态**: ✅ 主要修复完成，系统已具备生产部署条件
 
+

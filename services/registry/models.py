@@ -34,3 +34,4 @@ class HealthCheckResponse(BaseModel):
     message: str
     timestamp: datetime = Field(default_factory=datetime.now)
 
+

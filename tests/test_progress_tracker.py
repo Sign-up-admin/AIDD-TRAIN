@@ -69,3 +69,4 @@ def test_progress_tracker_get_progress():
     assert progress['training']['total_epochs'] == 10
     assert progress['cancelled'] is False
 
+

@@ -83,3 +83,4 @@ def test_upload_queue_manager_task_status():
     assert status is not None
     assert status.status == UploadStatus.COMPLETED
 
+

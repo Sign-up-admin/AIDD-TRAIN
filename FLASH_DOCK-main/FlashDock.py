@@ -92,18 +92,16 @@ if st.sidebar.button("批量口袋预测与对接"):
     # 新增“预测亲和力”按钮
 if st.sidebar.button("预测亲和力"):
     st.session_state['page'] = "预测亲和力"
-# 新增“训练管理”按钮
-if st.sidebar.button("训练管理"):
-    st.session_state['page'] = "训练管理"
-# 新增“数据管理”按钮
+
+# 添加数据管理、服务监控、训练管理按钮
+st.sidebar.markdown("---")
+st.sidebar.subheader("服务管理")
 if st.sidebar.button("数据管理"):
     st.session_state['page'] = "数据管理"
-# 新增“服务监控”按钮
 if st.sidebar.button("服务监控"):
     st.session_state['page'] = "服务监控"
-# 新增“作者信息”按钮
-if st.sidebar.button("作者信息"):
-    st.session_state['page'] = "作者信息"
+if st.sidebar.button("训练管理"):
+    st.session_state['page'] = "训练管理"
 
 # 获取当前页面
 page = st.session_state['page']
@@ -703,9 +701,6 @@ elif page == "预测亲和力":
         # 模式选择
         mode = st.radio("选择模式", ("单个预测", "批量预测"))
 
-        # 模型选择
-        model_choice = st.radio("选择预测模型", ("COMPASS (ViSNet)", "PLANET (传统)"), index=0)
-        
         if mode == "单个预测":
             st.subheader("单个蛋白与小分子的亲和力预测")
 
@@ -736,66 +731,34 @@ elif page == "预测亲和力":
                                 with open(ligand_path, "wb") as f:
                                     f.write(ligand_file.getbuffer())
 
-                                # 使用COMPASS或PLANET
-                                if model_choice == "COMPASS (ViSNet)":
-                                    try:
-                                        # 尝试使用COMPASS服务
-                                        import sys
-                                        from pathlib import Path
-                                        project_root = Path(__file__).parent.parent
-                                        sys.path.insert(0, str(project_root))
-                                        flashdock_services = Path(__file__).parent / "services"
-                                        sys.path.insert(0, str(flashdock_services))
-                                        from compass_client import CompassClient
-                                        client = CompassClient()
-                                        binding_affinity = client.predict(protein_path, ligand_path)
-                                        
-                                        st.success("预测完成！")
-                                        st.metric("结合亲和力 (pKd)", f"{binding_affinity:.4f}")
-                                        
-                                        # 保存结果
-                                        result_df = pd.DataFrame([{
-                                            'Protein_File': protein_file.name,
-                                            'Ligand_File': ligand_file.name,
-                                            'Binding_Affinity': binding_affinity,
-                                            'Model': 'COMPASS'
-                                        }])
-                                        st.dataframe(result_df)
-                                    except Exception as e:
-                                        st.warning(f"COMPASS服务不可用: {e}")
-                                        st.info("正在回退到PLANET模型...")
-                                        # 回退到PLANET
-                                        model_choice = "PLANET (传统)"
-                                
-                                if model_choice == "PLANET (传统)":
-                                    # 输出 CSV 文件路径
-                                    output_csv_path = os.path.join(tmpdir, "single_prediction.csv")
+                                # 输出 CSV 文件路径
+                                output_csv_path = os.path.join(tmpdir, "single_prediction.csv")
 
-                                    # 调用预测脚本
-                                    pred_dir = "./others/PLANET"
-                                    pred_script = "pred.py"
-                                    pred_script_path = os.path.join(pred_dir, pred_script)
+                                # 调用预测脚本
+                                pred_dir = "./others/PLANET"
+                                pred_script = "pred.py"
+                                pred_script_path = os.path.join(pred_dir, pred_script)
 
-                                    cmd = [
-                                        "python",
-                                        pred_script_path,
-                                        "-p", protein_path,
-                                        "-l", ligand_path,
-                                        "-m", ligand_path,
-                                        "-o", output_csv_path
-                                    ]
+                                cmd = [
+                                    "python",
+                                    pred_script_path,
+                                    "-p", protein_path,
+                                    "-l", ligand_path,
+                                    "-m", ligand_path,
+                                    "-o", output_csv_path
+                                ]
 
-                                    result = subprocess.run(cmd, capture_output=True, text=True)
+                                result = subprocess.run(cmd, capture_output=True, text=True)
 
-                                    if result.returncode != 0:
-                                        st.error(f"预测过程中发生错误:\n{result.stderr}")
+                                if result.returncode != 0:
+                                    st.error(f"预测过程中发生错误:\n{result.stderr}")
+                                else:
+                                    if os.path.exists(output_csv_path):
+                                        df = pd.read_csv(output_csv_path)
+                                        st.success("预测完成！结果如下：")
+                                        st.dataframe(df)
                                     else:
-                                        if os.path.exists(output_csv_path):
-                                            df = pd.read_csv(output_csv_path)
-                                            st.success("预测完成！结果如下：")
-                                            st.dataframe(df)
-                                        else:
-                                            st.error("预测完成但未找到输出 CSV 文件。")
+                                        st.error("预测完成但未找到输出 CSV 文件。")
                         except Exception as e:
                             st.error(f"发生异常: {e}")
 
@@ -896,78 +859,214 @@ elif page == "预测亲和力":
                     except Exception as e:
                         st.error(f"发生异常: {e}")
 
-
-
-
-# ------------------------------------------------------------------------------
-# 训练管理
-# ------------------------------------------------------------------------------
-
-elif page == "训练管理":
-    import sys
-    import os
-    from pathlib import Path
-    # Add project root to path
-    project_root = Path(__file__).parent.parent.parent
-    sys.path.insert(0, str(project_root))
-    # Import page module
-    pages_dir = Path(__file__).parent / "pages"
-    if str(pages_dir) not in sys.path:
-        sys.path.insert(0, str(pages_dir))
-    try:
-        import training_management
-        # Execute the page
-        pass
-    except Exception as e:
-        st.error(f"无法加载训练管理页面: {e}")
-        st.exception(e)
-
 # ------------------------------------------------------------------------------
 # 数据管理
 # ------------------------------------------------------------------------------
-
 elif page == "数据管理":
     import sys
-    import os
     from pathlib import Path
-    # Add project root to path
-    project_root = Path(__file__).parent.parent.parent
+    
+    # Add parent directory to path
+    project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
-    # Import page module
-    pages_dir = Path(__file__).parent / "pages"
-    if str(pages_dir) not in sys.path:
-        sys.path.insert(0, str(pages_dir))
+    # Add FLASH_DOCK-main/services to path
+    flashdock_services = Path(__file__).parent / "services"
+    sys.path.insert(0, str(flashdock_services))
+    
+    from compass_client import CompassClient
+    
+    st.title("数据管理")
+    st.write("管理COMPASS训练数据集")
+    
+    # Initialize client
     try:
-        import data_management
-        # Execute the page
-        pass
+        client = CompassClient()
+        st.success("已连接到COMPASS服务")
     except Exception as e:
-        st.error(f"无法加载数据管理页面: {e}")
-        st.exception(e)
+        st.error(f"无法连接到COMPASS服务: {e}")
+        st.stop()
+    
+    # Tabs
+    tab1, tab2 = st.tabs(["上传数据集", "数据集列表"])
+    
+    with tab1:
+        st.subheader("上传数据集")
+        
+        uploaded_file = st.file_uploader("选择数据集文件", type=["zip", "tar", "tar.gz"])
+        
+        if uploaded_file:
+            dataset_name = st.text_input("数据集名称", value=uploaded_file.name)
+            dataset_description = st.text_area("数据集描述（可选）")
+            
+            if st.button("上传"):
+                with st.spinner("正在上传数据集..."):
+                    try:
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp_file:
+                            tmp_file.write(uploaded_file.getbuffer())
+                            tmp_path = tmp_file.name
+                        
+                        dataset_id = client.upload_dataset(tmp_path, name=dataset_name, description=dataset_description)
+                        os.remove(tmp_path)
+                        
+                        st.success(f"数据集上传成功！数据集ID: {dataset_id}")
+                    except Exception as e:
+                        st.error(f"上传失败: {e}")
+    
+    with tab2:
+        st.subheader("数据集列表")
+        
+        if st.button("刷新列表"):
+            st.rerun()
+        
+        try:
+            datasets = client.list_datasets()
+            
+            if datasets:
+                df = pd.DataFrame([
+                    {
+                        "数据集ID": ds['dataset_id'],
+                        "名称": ds['name'],
+                        "大小 (MB)": f"{ds['size'] / (1024*1024):.2f}",
+                        "文件数": ds['file_count'],
+                        "状态": ds['status'],
+                        "创建时间": ds['created_at']
+                    }
+                    for ds in datasets
+                ])
+                st.dataframe(df, width='stretch')
+                
+                # Delete dataset
+                selected_dataset_id = st.selectbox("选择要删除的数据集", [ds['dataset_id'] for ds in datasets])
+                
+                if st.button("删除数据集"):
+                    try:
+                        client.delete_dataset(selected_dataset_id)
+                        st.success(f"数据集 {selected_dataset_id} 已删除")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"删除失败: {e}")
+            else:
+                st.info("暂无数据集")
+        except Exception as e:
+            st.error(f"获取数据集列表失败: {e}")
 
 # ------------------------------------------------------------------------------
 # 服务监控
 # ------------------------------------------------------------------------------
-
 elif page == "服务监控":
     import sys
-    import os
     from pathlib import Path
-    # Add project root to path
-    project_root = Path(__file__).parent.parent.parent
+    
+    # Add parent directory to path
+    project_root = Path(__file__).parent.parent
     sys.path.insert(0, str(project_root))
-    # Import page module
-    pages_dir = Path(__file__).parent / "pages"
-    if str(pages_dir) not in sys.path:
-        sys.path.insert(0, str(pages_dir))
+    # Add FLASH_DOCK-main/services to path
+    flashdock_services = Path(__file__).parent / "services"
+    sys.path.insert(0, str(flashdock_services))
+    
+    from service_manager import ServiceManager
+    from compass_client import CompassClient
+    
+    st.title("服务监控")
+    st.write("监控COMPASS服务状态")
+    
+    # Initialize service manager
     try:
-        import service_monitor
-        # Execute the page
-        pass
+        service_manager = ServiceManager()
+        client = CompassClient()
+        st.success("已连接到服务注册中心")
     except Exception as e:
-        st.error(f"无法加载服务监控页面: {e}")
-        st.exception(e)
+        st.error(f"无法连接到服务注册中心: {e}")
+        st.stop()
+    
+    # Refresh services
+    if st.button("刷新服务列表"):
+        service_manager.refresh_services()
+        st.rerun()
+    
+    # Service status
+    st.subheader("COMPASS服务状态")
+    
+    try:
+        services = service_manager.registry_client.discover_compass_services(healthy_only=False)
+        
+        if services:
+            df = pd.DataFrame([
+                {
+                    "服务ID": s.service_id,
+                    "地址": f"{s.host}:{s.port}",
+                    "状态": s.status.value,
+                    "版本": s.version,
+                    "最后心跳": s.last_heartbeat.isoformat() if s.last_heartbeat else "N/A"
+                }
+                for s in services
+            ])
+            st.dataframe(df, width='stretch')
+            
+            # Health status summary
+            healthy_count = sum(1 for s in services if s.status.value == "healthy")
+            total_count = len(services)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("健康服务数", healthy_count)
+            with col2:
+                st.metric("总服务数", total_count)
+        else:
+            st.warning("未发现COMPASS服务")
+    except Exception as e:
+        st.error(f"获取服务状态失败: {e}")
+    
+    # Inference status
+    st.subheader("推理服务状态")
+    
+    try:
+        inference_status = client.get_inference_status()
+        st.json(inference_status)
+    except Exception as e:
+        st.error(f"获取推理服务状态失败: {e}")
+    
+    # Model list
+    st.subheader("可用模型")
+    
+    try:
+        models = client.list_models()
+        
+        if models:
+            df = pd.DataFrame([
+                {
+                    "模型ID": m['model_id'],
+                    "名称": m['name'],
+                    "版本": m['version'],
+                    "大小 (MB)": f"{m['file_size'] / (1024*1024):.2f}",
+                    "创建时间": m['created_at']
+                }
+                for m in models
+            ])
+            st.dataframe(df, width='stretch')
+        else:
+            st.info("暂无可用模型")
+    except Exception as e:
+        st.error(f"获取模型列表失败: {e}")
 
 # ------------------------------------------------------------------------------
-# 作者信息
+# 训练管理
 # ------------------------------------------------------------------------------
+elif page == "训练管理":
+    import sys
+    from pathlib import Path
+    
+    # Add parent directory to path
+    project_root = Path(__file__).parent.parent
+    sys.path.insert(0, str(project_root))
+    # Add FLASH_DOCK-main/services to path
+    flashdock_services = Path(__file__).parent / "services"
+    sys.path.insert(0, str(flashdock_services))
+    
+    # Import and execute training management page
+    import importlib.util
+    training_management_path = Path(__file__).parent / "pages" / "training_management.py"
+    spec = importlib.util.spec_from_file_location("training_management", training_management_path)
+    training_management = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(training_management)
+

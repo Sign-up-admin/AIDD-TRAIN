@@ -371,3 +371,561 @@
 2025-11-06 11:58:27,729 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 429 127
 2025-11-06 11:58:27,730 - compass_client - ERROR - HTTP error 429 from http://192.168.1.150:8080/api/v1/training/tasks: 429 Client Error: Too Many Requests for url: http://192.168.1.150:8080/api/v1/training/tasks
 2025-11-06 11:58:27,731 - compass_client - ERROR - Failed to list tasks: 429 Client Error: Too Many Requests for url: http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:25:28,130 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 12:25:30,166 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:25:30,171 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:25:30,175 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:25:30,180 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 12:25:30,181 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 12:25:30,182 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 12:25:30,183 - service_manager - DEBUG - Selected COMPASS service: compass-service-6ccecf1d at http://192.168.1.150:8080
+2025-11-06 12:25:30,186 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:25:30,187 - service_manager - DEBUG - Selected COMPASS service: compass-service-6ccecf1d at http://192.168.1.150:8080
+2025-11-06 12:25:30,188 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:25:30,191 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 12:25:30,220 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:25:30,221 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:25:30,228 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:25:30,229 - service_manager - DEBUG - Selected COMPASS service: compass-service-6ccecf1d at http://192.168.1.150:8080
+2025-11-06 12:25:30,229 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 12:25:30,233 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 12:25:30,234 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:25:30,248 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:25:30,249 - service_manager - DEBUG - Selected COMPASS service: compass-service-6ccecf1d at http://192.168.1.150:8080
+2025-11-06 12:25:30,249 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:25:30,254 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:25:30,255 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:25:45,919 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:25:45,920 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:25:45,920 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:25:45,921 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:25:45,921 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:25:45,921 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:25:45,922 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:25:45,922 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:25:45,922 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:25:45,923 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:32:21,989 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:21,990 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:21,993 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 12:32:24,055 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,056 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,057 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,057 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,058 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,063 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,064 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,064 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,065 - service_manager - DEBUG - Cache expired or force refresh requested, refreshing service list...
+2025-11-06 12:32:24,065 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,066 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,070 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,071 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,072 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,077 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 12:32:24,078 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 12:32:24,078 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 12:32:24,079 - service_manager - DEBUG - Service discovery completed in 0.01s
+2025-11-06 12:32:24,079 - service_manager - DEBUG - Selected COMPASS service: compass-service-2d902a50 at http://192.168.1.150:8080
+2025-11-06 12:32:24,080 - compass_client - INFO - Starting list_tasks() with timeout=10s, retry_on_429=True
+2025-11-06 12:32:24,080 - compass_client - DEBUG - Attempt 1/3: Checking service availability before making request
+2025-11-06 12:32:24,081 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,082 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,086 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,087 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,087 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,088 - service_manager - DEBUG - Selected COMPASS service: compass-service-2d902a50 at http://192.168.1.150:8080
+2025-11-06 12:32:24,088 - compass_client - DEBUG - Attempt 1/3: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:32:24,088 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:32:24,089 - compass_client - DEBUG - Checking registry availability...
+2025-11-06 12:32:24,089 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,090 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,094 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,095 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,096 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,096 - compass_client - DEBUG - Registry is available (check took 0.01s)
+2025-11-06 12:32:24,097 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:32:24,097 - service_manager - DEBUG - Selected COMPASS service: compass-service-2d902a50 at http://192.168.1.150:8080
+2025-11-06 12:32:24,098 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:32:24,098 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:32:24,101 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 12:32:24,125 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:32:24,126 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:32:24,126 - compass_client - INFO - HTTP request completed in 0.04s
+2025-11-06 12:32:24,126 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:32:24,127 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:32:24,132 - compass_client - DEBUG - _make_request: GET /api/v1/data/datasets
+2025-11-06 12:32:24,132 - compass_client - DEBUG - Checking registry availability...
+2025-11-06 12:32:24,132 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,133 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,138 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,139 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,139 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,139 - compass_client - DEBUG - Registry is available (check took 0.01s)
+2025-11-06 12:32:24,140 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:32:24,140 - service_manager - DEBUG - Selected COMPASS service: compass-service-2d902a50 at http://192.168.1.150:8080
+2025-11-06 12:32:24,141 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:32:24,141 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 12:32:24,145 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 12:32:24,146 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:32:24,159 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,160 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,163 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,164 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,165 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,165 - service_manager - DEBUG - Selected COMPASS service: compass-service-2d902a50 at http://192.168.1.150:8080
+2025-11-06 12:32:24,165 - compass_client - INFO - Starting list_tasks() with timeout=10s, retry_on_429=True
+2025-11-06 12:32:24,166 - compass_client - DEBUG - Attempt 1/3: Checking service availability before making request
+2025-11-06 12:32:24,166 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,166 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,169 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,170 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,170 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,170 - service_manager - DEBUG - Selected COMPASS service: compass-service-2d902a50 at http://192.168.1.150:8080
+2025-11-06 12:32:24,171 - compass_client - DEBUG - Attempt 1/3: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:32:24,171 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:32:24,171 - compass_client - DEBUG - Checking registry availability...
+2025-11-06 12:32:24,171 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,172 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:32:24,174 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:32:24,175 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:32:24,175 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:32:24,175 - compass_client - DEBUG - Registry is available (check took 0.00s)
+2025-11-06 12:32:24,176 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:32:24,176 - service_manager - DEBUG - Selected COMPASS service: compass-service-2d902a50 at http://192.168.1.150:8080
+2025-11-06 12:32:24,176 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:32:24,176 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:32:24,180 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:32:24,181 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:32:24,181 - compass_client - INFO - HTTP request completed in 0.01s
+2025-11-06 12:32:24,181 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:32:24,182 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:32:59,899 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:32:59,900 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:32:59,900 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:32:59,900 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:32:59,901 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:32:59,901 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:32:59,902 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:32:59,902 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:32:59,902 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:32:59,902 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:39:26,035 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:26,035 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:26,039 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 12:39:28,101 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,103 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,103 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,104 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,105 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,109 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,110 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,111 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,111 - service_manager - DEBUG - Cache expired or force refresh requested, refreshing service list...
+2025-11-06 12:39:28,111 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,112 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,116 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,117 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,117 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,121 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 12:39:28,122 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 12:39:28,123 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 12:39:28,123 - service_manager - DEBUG - Service discovery completed in 0.00s
+2025-11-06 12:39:28,123 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:39:28,124 - compass_client - INFO - Starting list_tasks() with timeout=10s, retry_on_429=True
+2025-11-06 12:39:28,124 - compass_client - DEBUG - Attempt 1/3: Checking service availability before making request
+2025-11-06 12:39:28,124 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,125 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,128 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,129 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,129 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,129 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:39:28,130 - compass_client - DEBUG - Attempt 1/3: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:39:28,130 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:39:28,130 - compass_client - DEBUG - Checking registry availability...
+2025-11-06 12:39:28,130 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,131 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,134 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,135 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,135 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,135 - compass_client - DEBUG - Registry is available (check took 0.01s)
+2025-11-06 12:39:28,136 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:39:28,136 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:39:28,137 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:39:28,137 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:39:28,142 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 12:39:28,172 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:39:28,173 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:39:28,173 - compass_client - INFO - HTTP request completed in 0.04s
+2025-11-06 12:39:28,174 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:39:28,174 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:39:28,179 - compass_client - DEBUG - _make_request: GET /api/v1/data/datasets
+2025-11-06 12:39:28,179 - compass_client - DEBUG - Checking registry availability...
+2025-11-06 12:39:28,180 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,181 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,185 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,185 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,186 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,186 - compass_client - DEBUG - Registry is available (check took 0.01s)
+2025-11-06 12:39:28,186 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:39:28,187 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:39:28,187 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:39:28,187 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 12:39:28,192 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 12:39:28,192 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:39:28,205 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,205 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,209 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,210 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,211 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,211 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:39:28,211 - compass_client - INFO - Starting list_tasks() with timeout=10s, retry_on_429=True
+2025-11-06 12:39:28,212 - compass_client - DEBUG - Attempt 1/3: Checking service availability before making request
+2025-11-06 12:39:28,212 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,212 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,215 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,215 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,216 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,216 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:39:28,216 - compass_client - DEBUG - Attempt 1/3: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:39:28,216 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:39:28,217 - compass_client - DEBUG - Checking registry availability...
+2025-11-06 12:39:28,217 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,217 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:39:28,220 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:39:28,221 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:39:28,221 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:39:28,221 - compass_client - DEBUG - Registry is available (check took 0.00s)
+2025-11-06 12:39:28,222 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:39:28,222 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:39:28,222 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:39:28,223 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:39:28,227 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:39:28,227 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:39:28,228 - compass_client - INFO - HTTP request completed in 0.01s
+2025-11-06 12:39:28,228 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:39:28,228 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:47:20,964 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:47:20,965 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:47:20,965 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:47:20,966 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:47:20,966 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:47:20,967 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:47:20,967 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:47:20,968 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:47:20,968 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:47:20,969 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:51:50,310 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:51:50,310 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:51:50,313 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 12:51:52,359 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:51:52,361 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:51:52,361 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:51:52,362 - compass_client - DEBUG - is_service_available: Cache expired or None, checking registry (cache_valid=False, cache=None) [Check #1]
+2025-11-06 12:51:52,362 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:51:52,363 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:51:52,368 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:51:52,369 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:51:52,369 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:51:52,370 - compass_client - DEBUG - is_service_available: Registry check #1 result: True, cached until 1762404717.36
+2025-11-06 12:51:52,370 - service_manager - DEBUG - Cache expired or force refresh requested, refreshing service list...
+2025-11-06 12:51:52,371 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:51:52,372 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:51:52,376 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:51:52,377 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:51:52,377 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:51:52,383 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 12:51:52,383 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 12:51:52,384 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 12:51:52,384 - service_manager - DEBUG - Service discovery completed in 0.01s
+2025-11-06 12:51:52,385 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:51:52,385 - compass_client - INFO - Starting list_tasks() with timeout=10s, retry_on_429=True
+2025-11-06 12:51:52,386 - compass_client - DEBUG - Attempt 1/3: Checking service availability before making request
+2025-11-06 12:51:52,386 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.02s, cache hits: 1)
+2025-11-06 12:51:52,387 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:51:52,387 - compass_client - DEBUG - Attempt 1/3: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:51:52,388 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:51:52,388 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.03s, TTL: 5.0s, cache hits: 2)
+2025-11-06 12:51:52,388 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:51:52,389 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:51:52,389 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:51:52,389 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:51:52,392 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 12:51:52,415 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:51:52,415 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:51:52,415 - compass_client - INFO - HTTP request completed in 0.03s
+2025-11-06 12:51:52,416 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:51:52,416 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:51:52,420 - compass_client - DEBUG - _make_request: GET /api/v1/data/datasets
+2025-11-06 12:51:52,421 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.06s, TTL: 5.0s, cache hits: 3)
+2025-11-06 12:51:52,421 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:51:52,421 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:51:52,422 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:51:52,422 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 12:51:52,427 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 12:51:52,428 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:51:52,437 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.08s, cache hits: 4)
+2025-11-06 12:51:52,438 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:51:52,439 - compass_client - INFO - Starting list_tasks() with timeout=10s, retry_on_429=True
+2025-11-06 12:51:52,439 - compass_client - DEBUG - Attempt 1/3: Checking service availability before making request
+2025-11-06 12:51:52,440 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.08s, cache hits: 5)
+2025-11-06 12:51:52,440 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:51:52,440 - compass_client - DEBUG - Attempt 1/3: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:51:52,441 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:51:52,441 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.08s, TTL: 5.0s, cache hits: 6)
+2025-11-06 12:51:52,442 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:51:52,443 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:51:52,443 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:51:52,444 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:51:52,449 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:51:52,450 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:51:52,450 - compass_client - INFO - HTTP request completed in 0.01s
+2025-11-06 12:51:52,450 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:51:52,451 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:58:38,389 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:58:38,390 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:58:38,394 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 12:58:40,458 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:58:40,460 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:58:40,460 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:58:40,461 - compass_client - DEBUG - is_service_available: Cache expired or None, checking registry (cache_valid=False, cache=None) [Check #1]
+2025-11-06 12:58:40,461 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:58:40,462 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:58:40,467 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:58:40,468 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:58:40,469 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:58:40,469 - compass_client - DEBUG - is_service_available: Registry check #1 result: True, cached until 1762405125.46
+2025-11-06 12:58:40,470 - service_manager - DEBUG - Cache expired or force refresh requested, refreshing service list...
+2025-11-06 12:58:40,470 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:58:40,471 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 12:58:40,475 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 12:58:40,476 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 12:58:40,477 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 12:58:40,481 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 987
+2025-11-06 12:58:40,482 - services.registry.client - DEBUG - Discovered 3 services
+2025-11-06 12:58:40,482 - registry_client - INFO - Discovered 3 COMPASS service(s)
+2025-11-06 12:58:40,483 - service_manager - DEBUG - Service discovery completed in 0.01s
+2025-11-06 12:58:40,483 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:58:40,484 - compass_client - INFO - Starting list_tasks() with timeout=5s, retry_on_429=False
+2025-11-06 12:58:40,484 - compass_client - DEBUG - Attempt 1/1: Checking service availability before making request
+2025-11-06 12:58:40,485 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.02s, cache hits: 1)
+2025-11-06 12:58:40,485 - service_manager - DEBUG - Selected COMPASS service: compass-service-6e6f151d at http://192.168.1.150:8080
+2025-11-06 12:58:40,485 - compass_client - DEBUG - Attempt 1/1: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:58:40,486 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:58:40,486 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.02s, TTL: 5.0s, cache hits: 2)
+2025-11-06 12:58:40,486 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:58:40,487 - service_manager - DEBUG - Selected COMPASS service: compass-service-bcc9148d at http://192.168.1.150:8080
+2025-11-06 12:58:40,487 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:58:40,487 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:58:40,490 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 12:58:40,508 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:58:40,509 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:58:40,510 - compass_client - INFO - HTTP request completed in 0.02s
+2025-11-06 12:58:40,510 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:58:40,510 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:58:40,515 - compass_client - DEBUG - _make_request: GET /api/v1/data/datasets
+2025-11-06 12:58:40,516 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.05s, TTL: 5.0s, cache hits: 3)
+2025-11-06 12:58:40,516 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:58:40,517 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:58:40,518 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:58:40,518 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 12:58:40,524 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 12:58:40,525 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:58:40,540 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.08s, cache hits: 4)
+2025-11-06 12:58:40,541 - service_manager - DEBUG - Selected COMPASS service: compass-service-6e6f151d at http://192.168.1.150:8080
+2025-11-06 12:58:40,541 - compass_client - INFO - Starting list_tasks() with timeout=5s, retry_on_429=False
+2025-11-06 12:58:40,542 - compass_client - DEBUG - Attempt 1/1: Checking service availability before making request
+2025-11-06 12:58:40,542 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.08s, cache hits: 5)
+2025-11-06 12:58:40,543 - service_manager - DEBUG - Selected COMPASS service: compass-service-bcc9148d at http://192.168.1.150:8080
+2025-11-06 12:58:40,543 - compass_client - DEBUG - Attempt 1/1: Making HTTP request to /api/v1/training/tasks
+2025-11-06 12:58:40,544 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 12:58:40,544 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.08s, TTL: 5.0s, cache hits: 6)
+2025-11-06 12:58:40,545 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 12:58:40,546 - service_manager - DEBUG - Selected COMPASS service: compass-service-b9ac8b73 at http://192.168.1.150:8080
+2025-11-06 12:58:40,546 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 12:58:40,546 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 12:58:40,552 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 12:58:40,552 - compass_client - DEBUG - Request successful: 200
+2025-11-06 12:58:40,553 - compass_client - INFO - HTTP request completed in 0.01s
+2025-11-06 12:58:40,553 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 12:58:40,554 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 12:58:52,277 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:58:52,277 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:58:52,278 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:58:52,278 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:58:52,279 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:58:52,279 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:58:52,279 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:58:52,280 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:58:52,280 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:58:52,281 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:59:09,705 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:59:09,706 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:59:09,706 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:59:09,707 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:59:09,707 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 12:59:09,708 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 12:59:09,709 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 12:59:09,709 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 12:59:09,710 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 12:59:09,710 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 13:17:16,842 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:17:16,843 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:17:16,846 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 13:17:18,916 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 13:17:18,918 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 13:17:18,918 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 13:17:18,919 - compass_client - DEBUG - is_service_available: Cache expired or None, checking registry (cache_valid=False, cache=None) [Check #1]
+2025-11-06 13:17:18,919 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:17:18,919 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:17:18,923 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 13:17:18,923 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 13:17:18,924 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 13:17:18,924 - compass_client - DEBUG - is_service_available: Registry check #1 result: True, cached until 1762406243.92
+2025-11-06 13:17:18,925 - service_manager - DEBUG - Cache expired or force refresh requested, refreshing service list...
+2025-11-06 13:17:18,925 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:17:18,926 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:17:18,929 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 13:17:18,930 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 13:17:18,931 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 13:17:18,934 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 13:17:18,935 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 13:17:18,935 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 13:17:18,936 - service_manager - DEBUG - Service discovery completed in 0.01s
+2025-11-06 13:17:18,936 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:17:18,937 - compass_client - INFO - Starting list_tasks() with timeout=5s, retry_on_429=False
+2025-11-06 13:17:18,937 - compass_client - DEBUG - Attempt 1/1: Checking service availability before making request
+2025-11-06 13:17:18,937 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.02s, cache hits: 1)
+2025-11-06 13:17:18,938 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:17:18,938 - compass_client - DEBUG - Attempt 1/1: Making HTTP request to /api/v1/training/tasks
+2025-11-06 13:17:18,938 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 13:17:18,939 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.02s, TTL: 5.0s, cache hits: 2)
+2025-11-06 13:17:18,939 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 13:17:18,939 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:17:18,940 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 13:17:18,940 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 13:17:18,943 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 13:17:18,968 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 13:17:18,968 - compass_client - DEBUG - Request successful: 200
+2025-11-06 13:17:18,969 - compass_client - INFO - HTTP request completed in 0.03s
+2025-11-06 13:17:18,969 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 13:17:18,969 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 13:17:18,974 - compass_client - DEBUG - _make_request: GET /api/v1/data/datasets
+2025-11-06 13:17:18,974 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.06s, TTL: 5.0s, cache hits: 3)
+2025-11-06 13:17:18,974 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 13:17:18,975 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:17:18,975 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 13:17:18,975 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 13:17:18,980 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 13:17:18,980 - compass_client - DEBUG - Request successful: 200
+2025-11-06 13:17:18,991 - training_management - DEBUG - [MANUAL_REFRESH] Checking service availability (timeout=3.0s)
+2025-11-06 13:17:18,991 - training_management - DEBUG - [TIMEOUT_WRAPPER] Starting is_service_available with timeout=3.0s
+2025-11-06 13:17:18,992 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.07s, cache hits: 4)
+2025-11-06 13:17:18,993 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:17:18,993 - training_management - DEBUG - [TIMEOUT_WRAPPER] is_service_available completed in 0.002s
+2025-11-06 13:17:18,994 - training_management - INFO - [MANUAL_REFRESH] Service availability check: True (took 0.003s)
+2025-11-06 13:17:18,994 - training_management - DEBUG - [MANUAL_REFRESH] Listing tasks (timeout=5.0s)
+2025-11-06 13:17:18,995 - training_management - DEBUG - [TIMEOUT_WRAPPER] Starting <lambda> with timeout=5.0s
+2025-11-06 13:17:18,996 - compass_client - INFO - Starting list_tasks() with timeout=4s, retry_on_429=False
+2025-11-06 13:17:18,996 - compass_client - DEBUG - Attempt 1/1: Checking service availability before making request
+2025-11-06 13:17:18,997 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.08s, cache hits: 5)
+2025-11-06 13:17:18,997 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:17:18,997 - compass_client - DEBUG - Attempt 1/1: Making HTTP request to /api/v1/training/tasks
+2025-11-06 13:17:18,998 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 13:17:18,998 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.08s, TTL: 5.0s, cache hits: 6)
+2025-11-06 13:17:18,999 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 13:17:18,999 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:17:19,000 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 13:17:19,000 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 13:17:19,005 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 13:17:19,006 - compass_client - DEBUG - Request successful: 200
+2025-11-06 13:17:19,006 - compass_client - INFO - HTTP request completed in 0.01s
+2025-11-06 13:17:19,006 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 13:17:19,006 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 13:17:19,007 - training_management - DEBUG - [TIMEOUT_WRAPPER] <lambda> completed in 0.012s
+2025-11-06 13:17:19,007 - training_management - INFO - [MANUAL_REFRESH] Retrieved 0 task(s) (took 0.012s)
+2025-11-06 13:17:47,084 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 13:17:47,085 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 13:17:47,086 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 13:17:47,086 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 13:17:47,086 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 13:17:47,087 - PIL.PngImagePlugin - DEBUG - STREAM b'IHDR' 16 13
+2025-11-06 13:17:47,087 - PIL.PngImagePlugin - DEBUG - STREAM b'sRGB' 41 1
+2025-11-06 13:17:47,088 - PIL.PngImagePlugin - DEBUG - STREAM b'pHYs' 54 9
+2025-11-06 13:17:47,088 - PIL.PngImagePlugin - DEBUG - STREAM b'tEXt' 75 25
+2025-11-06 13:17:47,088 - PIL.PngImagePlugin - DEBUG - STREAM b'IDAT' 112 65424
+2025-11-06 13:33:06,140 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:33:06,141 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:33:06,148 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 13:33:08,195 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 13:33:08,196 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 13:33:08,197 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 13:33:08,197 - compass_client - DEBUG - is_service_available: Cache expired or None, checking registry (cache_valid=False, cache=None) [Check #1]
+2025-11-06 13:33:08,198 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:33:08,198 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:33:08,203 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 13:33:08,204 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 13:33:08,205 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 13:33:08,205 - compass_client - DEBUG - is_service_available: Registry check #1 result: True, cached until 1762407193.20
+2025-11-06 13:33:08,206 - service_manager - DEBUG - Cache expired or force refresh requested, refreshing service list...
+2025-11-06 13:33:08,206 - service_manager - DEBUG - Checking registry availability at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:33:08,207 - registry_client - DEBUG - Checking registry health at http://localhost:8500 (timeout: 5.0s)
+2025-11-06 13:33:08,211 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 13:33:08,212 - registry_client - DEBUG - Registry health check result: True
+2025-11-06 13:33:08,212 - service_manager - DEBUG - Registry availability check result: True
+2025-11-06 13:33:08,217 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service&status_filter=healthy HTTP/1.1" 200 345
+2025-11-06 13:33:08,218 - services.registry.client - DEBUG - Discovered 1 services
+2025-11-06 13:33:08,219 - registry_client - INFO - Discovered 1 COMPASS service(s)
+2025-11-06 13:33:08,220 - service_manager - DEBUG - Service discovery completed in 0.01s
+2025-11-06 13:33:08,220 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:33:08,221 - compass_client - INFO - Starting list_tasks() with timeout=5s, retry_on_429=False
+2025-11-06 13:33:08,221 - compass_client - DEBUG - Attempt 1/1: Checking service availability before making request
+2025-11-06 13:33:08,221 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.02s, cache hits: 1)
+2025-11-06 13:33:08,222 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:33:08,222 - compass_client - DEBUG - Attempt 1/1: Making HTTP request to /api/v1/training/tasks
+2025-11-06 13:33:08,223 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 13:33:08,223 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.03s, TTL: 5.0s, cache hits: 2)
+2025-11-06 13:33:08,224 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 13:33:08,225 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:33:08,225 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 13:33:08,226 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 13:33:08,230 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 13:33:08,263 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 13:33:08,264 - compass_client - DEBUG - Request successful: 200
+2025-11-06 13:33:08,264 - compass_client - INFO - HTTP request completed in 0.04s
+2025-11-06 13:33:08,265 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 13:33:08,265 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 13:33:08,269 - compass_client - DEBUG - _make_request: GET /api/v1/data/datasets
+2025-11-06 13:33:08,269 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.07s, TTL: 5.0s, cache hits: 3)
+2025-11-06 13:33:08,270 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 13:33:08,270 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:33:08,271 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 13:33:08,271 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/data/datasets
+2025-11-06 13:33:08,276 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/data/datasets HTTP/1.1" 200 25
+2025-11-06 13:33:08,277 - compass_client - DEBUG - Request successful: 200
+2025-11-06 13:33:08,287 - training_management - DEBUG - [MANUAL_REFRESH] Checking service availability (timeout=3.0s)
+2025-11-06 13:33:08,288 - training_management - DEBUG - [TIMEOUT_WRAPPER] Starting is_service_available with timeout=3.0s
+2025-11-06 13:33:08,289 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.09s, cache hits: 4)
+2025-11-06 13:33:08,290 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:33:08,291 - training_management - DEBUG - [TIMEOUT_WRAPPER] is_service_available completed in 0.003s
+2025-11-06 13:33:08,291 - training_management - INFO - [MANUAL_REFRESH] Service availability check: True (took 0.003s)
+2025-11-06 13:33:08,291 - training_management - DEBUG - [MANUAL_REFRESH] Listing tasks (timeout=5.0s)
+2025-11-06 13:33:08,292 - training_management - DEBUG - [TIMEOUT_WRAPPER] Starting <lambda> with timeout=5.0s
+2025-11-06 13:33:08,293 - compass_client - INFO - Starting list_tasks() with timeout=4s, retry_on_429=False
+2025-11-06 13:33:08,293 - compass_client - DEBUG - Attempt 1/1: Checking service availability before making request
+2025-11-06 13:33:08,294 - compass_client - DEBUG - is_service_available: Using cached registry availability: True (age: 0.10s, cache hits: 5)
+2025-11-06 13:33:08,294 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:33:08,295 - compass_client - DEBUG - Attempt 1/1: Making HTTP request to /api/v1/training/tasks
+2025-11-06 13:33:08,295 - compass_client - DEBUG - _make_request: GET /api/v1/training/tasks
+2025-11-06 13:33:08,296 - compass_client - DEBUG - _make_request: Using cached registry availability: True (age: 0.10s, TTL: 5.0s, cache hits: 6)
+2025-11-06 13:33:08,296 - compass_client - DEBUG - Getting COMPASS service instance...
+2025-11-06 13:33:08,297 - service_manager - DEBUG - Selected COMPASS service: compass-service-84d829a8 at http://192.168.1.150:8080
+2025-11-06 13:33:08,297 - compass_client - DEBUG - Service get operation took 0.00s
+2025-11-06 13:33:08,298 - compass_client - DEBUG - Making GET request to http://192.168.1.150:8080/api/v1/training/tasks
+2025-11-06 13:33:08,302 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /api/v1/training/tasks HTTP/1.1" 200 22
+2025-11-06 13:33:08,303 - compass_client - DEBUG - Request successful: 200
+2025-11-06 13:33:08,304 - compass_client - INFO - HTTP request completed in 0.01s
+2025-11-06 13:33:08,304 - compass_client - DEBUG - Parsing response JSON
+2025-11-06 13:33:08,305 - compass_client - INFO - Successfully retrieved 0 task(s)
+2025-11-06 13:33:08,305 - training_management - DEBUG - [TIMEOUT_WRAPPER] <lambda> completed in 0.013s
+2025-11-06 13:33:08,306 - training_management - INFO - [MANUAL_REFRESH] Retrieved 0 task(s) (took 0.014s)

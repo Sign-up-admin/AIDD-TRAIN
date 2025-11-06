@@ -96,3 +96,4 @@ def test_backup_manager_disabled(backup_config):
     backup_path = manager.create_backup()
     assert backup_path is None
 
+

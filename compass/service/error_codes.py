@@ -155,3 +155,4 @@ def get_http_status_code(error_code: ErrorCode) -> int:
     
     return status_map.get(code_prefix, 500)
 
+

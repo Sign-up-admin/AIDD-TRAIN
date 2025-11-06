@@ -67,3 +67,4 @@ async def delete_model(model_id: str):
         )
     return {"message": f"Model {model_id} deleted", "model_id": model_id}
 
+

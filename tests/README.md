@@ -70,3 +70,4 @@ When adding new tests:
 4. Use markers for test categorization (`@pytest.mark.unit`, `@pytest.mark.integration`, etc.)
 5. Ensure tests are independent and can run in any order
 
+

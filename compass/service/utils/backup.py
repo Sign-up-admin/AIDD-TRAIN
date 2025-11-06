@@ -303,3 +303,4 @@ def get_backup_manager() -> Optional[BackupManager]:
     
     return BackupManager(backup_config) if backup_config.enabled else None
 
+

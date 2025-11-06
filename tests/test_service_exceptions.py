@@ -75,3 +75,4 @@ def test_rate_limit_error():
     assert exc.status_code == 429
     assert exc.error_code == ErrorCode.RATE_LIMIT_EXCEEDED
 
+
