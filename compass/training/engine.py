@@ -145,5 +145,17 @@ class Trainer:
 
         current_lr = self.optimizer.param_groups[0]['lr']
         self.logger.log(f"Epoch {epoch:02d}/{self.config['epochs']} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f} | LR: {current_lr:.6f}")
+        
+        # Update progress tracker with validation loss
+        if hasattr(self.logger, 'progress_tracker'):
+            self.logger.progress_tracker.update_training(
+                epoch=epoch,
+                total_epochs=self.config['epochs'],
+                batch=len(self.train_loader),
+                total_batches=len(self.train_loader),
+                train_loss=train_loss,
+                val_loss=val_loss,
+                message=f"Epoch {epoch}/{self.config['epochs']} completed | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}"
+            )
 
         self._save_regular_checkpoint(epoch, val_loss)

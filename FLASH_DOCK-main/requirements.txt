@@ -1,0 +1,43 @@
+# Flash_Dock 项目依赖文件
+# 核心框架
+streamlit>=1.28.0
+pandas>=1.4.0
+numpy<2.0.0  # RDKit 需要 numpy < 2.0.0
+
+# 分子处理
+rdkit-pypi==2022.9.3  # 或使用 rdkit（如果可用）
+# 注意：如果安装失败，可以尝试：pip install rdkit -i https://pypi.tuna.tsinghua.edu.cn/simple/
+
+# 可视化
+py3dmol>=2.0.0
+stmol>=0.0.6
+streamlit-molstar
+streamlit-ketcher
+
+# PyTorch（根据系统选择CPU或GPU版本）
+# CPU版本：
+# torch>=1.11.0
+# GPU版本（CUDA 11.3）：
+# torch>=1.11.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+
+# Uni-Mol 相关
+# 可以通过 pip 安装或从源码安装
+# pip install unimol_tools
+huggingface_hub  # 用于自动下载模型
+
+# 数据处理
+scikit-learn>=1.0.0
+tqdm>=4.64.0
+biopandas==0.4.1
+
+# 其他工具
+pyyaml>=6.0
+addict>=2.4.0
+joblib>=1.1.0
+
+# 注意：
+# 1. 需要 Java 17-23 用于 P2Rank（系统级别安装）
+# 2. 需要下载模型文件：unimol_docking_v2_240517.pt (464MB)
+# 3. 需要确保 PLANET.param 文件存在
+
+

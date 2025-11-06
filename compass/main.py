@@ -171,6 +171,9 @@ def main(config, logger):
         data_paths=all_data_paths,
         num_workers=config['processing_num_workers']
     )
+    # Attach logger to dataset for progress tracking during processing
+    if hasattr(logger, 'progress_tracker') and hasattr(dataset, '__dict__'):
+        dataset._logger = logger
 
     if not os.path.exists(version_file_path):
         with open(version_file_path, 'w') as f:

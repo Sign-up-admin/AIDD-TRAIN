@@ -1,5 +1,6 @@
 import os
 import logging
+from pathlib import Path
 
 import torch
 import numpy as np
@@ -14,11 +15,11 @@ from compass.data.utils.helpers import count_pdb_atoms
 # Suppress RDKit warnings
 RDLogger.logger().setLevel(RDLogger.CRITICAL)
 
-# Configure logging to file
-log_directory = "E:/GitHub/AIDD-TRAIN/logs"
-if not os.path.exists(log_directory):
-    os.makedirs(log_directory)
-log_file = os.path.join(log_directory, "processing.log")
+# Configure logging to file - use relative path or environment variable
+log_directory = os.getenv('COMPASS_LOG_DIR', 'logs')
+log_directory = Path(log_directory).resolve()
+log_directory.mkdir(parents=True, exist_ok=True)
+log_file = log_directory / "processing.log"
 
 # Clear existing handlers to ensure no console output for warnings
 # and configure new handler for file logging.
@@ -27,7 +28,7 @@ for handler in logging.root.handlers[:]:
 logging.basicConfig(
     level=logging.WARNING,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    filename=log_file,
+    filename=str(log_file),
     filemode='a'
 )
 

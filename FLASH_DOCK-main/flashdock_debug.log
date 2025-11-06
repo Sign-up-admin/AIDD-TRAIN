@@ -1,0 +1,18 @@
+2025-11-06 06:13:47,102 - debug_monitor - INFO - Running full service diagnostic...
+2025-11-06 06:13:47,107 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 06:13:49,174 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 06:13:49,179 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service HTTP/1.1" 200 345
+2025-11-06 06:13:49,182 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 06:13:49,206 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /health HTTP/1.1" 200 61
+2025-11-06 06:13:56,688 - debug_monitor - INFO - Running full service diagnostic...
+2025-11-06 06:13:56,695 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): localhost:8500
+2025-11-06 06:13:58,771 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /health HTTP/1.1" 200 101
+2025-11-06 06:13:58,775 - urllib3.connectionpool - DEBUG - http://localhost:8500 "GET /api/v1/services?service_name=compass-service HTTP/1.1" 200 345
+2025-11-06 06:13:58,777 - urllib3.connectionpool - DEBUG - Starting new HTTP connection (1): 192.168.1.150:8080
+2025-11-06 06:13:58,804 - urllib3.connectionpool - DEBUG - http://192.168.1.150:8080 "GET /health HTTP/1.1" 200 61
+2025-11-06 08:44:34,493 - matplotlib - DEBUG - matplotlib data path: C:\ProgramData\Anaconda3\envs\flash_dock\Lib\site-packages\matplotlib\mpl-data
+2025-11-06 08:44:34,503 - matplotlib - DEBUG - CONFIGDIR=C:\Users\Huangtianxu\.matplotlib
+2025-11-06 08:44:34,506 - matplotlib - DEBUG - interactive is False
+2025-11-06 08:44:34,506 - matplotlib - DEBUG - platform is win32
+2025-11-06 08:44:34,599 - matplotlib - DEBUG - CACHEDIR=C:\Users\Huangtianxu\.matplotlib
+2025-11-06 08:44:34,602 - matplotlib.font_manager - DEBUG - Using fontManager instance from C:\Users\Huangtianxu\.matplotlib\fontlist-v390.json

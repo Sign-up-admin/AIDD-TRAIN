@@ -1,0 +1,42 @@
+# COMPASS Service Requirements
+# Updated: 2025-01-XX
+
+# Core Framework
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+python-multipart>=0.0.6
+
+# HTTP Client
+requests>=2.31.0
+httpx>=0.25.0
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Configuration
+pyyaml>=6.0.1  # Optional, for YAML config support
+
+# Testing (optional, for development)
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# Logging
+# Python's built-in logging is used, no additional dependencies
+
+# Type Checking (optional, for development)
+mypy>=1.5.0
+types-requests>=2.31.0
+types-pyyaml>=6.0.15
+
+# Performance Monitoring
+# Metrics are collected via built-in middleware, no external dependencies required
+
+# Backup & Compression
+# Uses Python's built-in tarfile and zipfile modules
+
+# Note: PyTorch and related ML dependencies are in the main requirements.txt
+# This file is for service-specific dependencies only
+

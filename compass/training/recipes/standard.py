@@ -19,4 +19,9 @@ def run(trainer):
     # The entire training process is defined here.
     # The recipe has full control over the trainer.
     for epoch in range(trainer.start_epoch, trainer.config['epochs'] + 1):
+        # Check for cancellation before each epoch
+        if hasattr(trainer.logger, 'progress_tracker') and trainer.logger.progress_tracker.is_cancelled():
+            from compass.training.exceptions import TrainingCancelled
+            raise TrainingCancelled("Training cancelled by user")
+        
         trainer.run_epoch(epoch, current_stage=0) # 0 for standard

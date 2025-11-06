@@ -96,15 +96,29 @@ class PDBBindDataset(Dataset):
             print(f"Processing data in parallel with {self.num_workers} cores...")
             with Pool(processes=self.num_workers) as pool:
                 pbar = tqdm(pool.imap_unordered(_process_and_save_helper, tasks), total=len(tasks), desc="Processing Raw Data")
-                for result, error_msg in pbar:
+                for idx, (result, error_msg) in enumerate(pbar):
                     success_count += result
                     if error_msg: logging.warning(error_msg)
+                    # Update progress if logger has progress tracker
+                    if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
+                        self._logger.progress_tracker.update_data_processing(
+                            completed=idx + 1,
+                            total=len(tasks),
+                            message=f"Processing {idx + 1}/{len(tasks)} data points"
+                        )
         else:
             print("Processing data sequentially...")
-            for task in tqdm(tasks, desc="Processing Raw Data"):
+            for idx, task in enumerate(tqdm(tasks, desc="Processing Raw Data")):
                 result, error_msg = _process_and_save_helper(task)
                 success_count += result
                 if error_msg: logging.warning(error_msg)
+                # Update progress if logger has progress tracker
+                if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
+                    self._logger.progress_tracker.update_data_processing(
+                        completed=idx + 1,
+                        total=len(tasks),
+                        message=f"Processing {idx + 1}/{len(tasks)} data points"
+                    )
 
         print("--- Processing Finished ---")
         skipped_count = len(tasks) - success_count

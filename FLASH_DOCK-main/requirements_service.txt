@@ -1,0 +1,8 @@
+# Service client dependencies for FLASH-DOCK
+
+# HTTP client
+httpx>=0.25.0
+requests>=2.31.0
+
+# Data validation (needed for service registry models)
+pydantic>=2.0.0

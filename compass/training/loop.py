@@ -54,13 +54,29 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
         pbar.set_description(f"Resuming Epoch {epoch} (from batch {start_batch})")
 
     for i, batch in pbar:
+        # Check for cancellation
+        if hasattr(logger, 'progress_tracker') and logger.progress_tracker.is_cancelled():
+            from .exceptions import TrainingCancelled
+            raise TrainingCancelled("Training cancelled by user")
+        
         if i < start_batch:
             continue
         
         if i == start_batch and start_batch > 0:
             pbar.set_description(f"Training Epoch {epoch}")
-
+        
         trainer.training_state['batch_idx'] = i
+        
+        # Update progress if logger has progress tracker
+        if hasattr(logger, 'progress_tracker'):
+            logger.progress_tracker.update_training(
+                epoch=epoch,
+                total_epochs=config.get('epochs', 1),
+                batch=i + 1,
+                total_batches=len(loader),
+                train_loss=0.0,  # Will be updated after loss calculation
+                message=f"Training Epoch {epoch}/{config.get('epochs', 1)}, Batch {i+1}/{len(loader)}"
+            )
 
         data = batch.to(device)
         if data.num_graphs == 0:
@@ -98,6 +114,18 @@ def train_epoch(model, loader, optimizer, device, scaler, config, trainer, logge
             
             total_loss += loss.item() * grad_accum_steps * data.num_graphs
             processed_graphs += data.num_graphs
+            
+            # Update progress with current loss (every N batches to avoid too frequent updates)
+            if hasattr(logger, 'progress_tracker') and (i + 1) % 10 == 0:
+                current_loss = total_loss / processed_graphs if processed_graphs > 0 else 0.0
+                logger.progress_tracker.update_training(
+                    epoch=epoch,
+                    total_epochs=config.get('epochs', 1),
+                    batch=i + 1,
+                    total_batches=len(loader),
+                    train_loss=current_loss,
+                    message=f"Training Epoch {epoch}/{config.get('epochs', 1)}, Batch {i+1}/{len(loader)}, Loss: {current_loss:.4f}"
+                )
 
         except torch.cuda.OutOfMemoryError as e:
             if checkpoint_dir:
@@ -153,4 +181,9 @@ def validate_epoch(model, loader, device, logger=None, current_stage=0):
             if not torch.isnan(loss):
                 total_loss += loss.item() * data.num_graphs
                 processed_graphs += data.num_graphs
+
+            # Explicitly free memory to prevent accumulation during the validation loop
+            del loss, output, data
+            torch.cuda.empty_cache()
+
     return total_loss / processed_graphs if processed_graphs > 0 else 0

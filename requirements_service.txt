@@ -1,0 +1,20 @@
+# Service dependencies for COMPASS microservices architecture
+
+# Web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# HTTP client
+httpx>=0.25.0
+requests>=2.31.0
+
+# Data validation
+pydantic>=2.0.0
+
+# Existing COMPASS dependencies
+torch
+numpy
+torch-geometric
+rdkit-pypi
+tqdm
+
