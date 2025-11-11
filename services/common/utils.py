@@ -1,6 +1,7 @@
 """
 Common utility functions for services.
 """
+
 import socket
 import uuid
 from typing import Optional
@@ -12,7 +13,7 @@ def get_local_ip() -> str:
         # Connect to a remote server to determine local IP
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
+        ip = str(s.getsockname()[0])
         s.close()
         return ip
     except Exception:
@@ -28,9 +29,8 @@ def validate_url(url: str) -> bool:
     """Validate URL format."""
     try:
         from urllib.parse import urlparse
+
         result = urlparse(url)
         return all([result.scheme, result.netloc])
     except Exception:
         return False
-
-

@@ -6,8 +6,6 @@ import os
 
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
 
-from compass.optimizer.utils import load_optimized_settings
-
 # --- Execution Mode ---
 # Selects the operational mode, controlling all major hyperparameters.
 # - 'validation_tuned': A tuned version for better GPU utilization on 6-8GB cards.
@@ -16,7 +14,7 @@ from compass.optimizer.utils import load_optimized_settings
 # ... and others
 #
 # Options: 'validation_tuned', 'validation', 'prototyping', 'smoke_test', 'production'
-EXECUTION_MODE = "validation_tuned"
+EXECUTION_MODE = "smoke_test"
 
 
 # --- Hyperparameter Sets for Each Mode ---
@@ -56,7 +54,7 @@ MODES = {
         "batch_size": 1,
         "gradient_accumulation_steps": 1,
         "profile": False,
-        "max_atoms": 1000,
+        "max_atoms": 4000,
     },
     "production": {
         "epochs": 100,
@@ -84,7 +82,7 @@ def get_config(mode_name=EXECUTION_MODE):
     # --- Base Configuration ---
     config = {
         "execution_mode": mode_name,
-        "force_data_reprocessing": True,  # Must be true when max_atoms changes
+        "force_data_reprocessing": False,
         "data_processing_mode": "strict",
         "max_atoms": 4000,  # Match the tuned mode
         "failed_cases_dir": r"failed_cases",
@@ -132,7 +130,10 @@ def get_config(mode_name=EXECUTION_MODE):
     # load_optimized_settings(config)
 
     # --- Post-processing and Validation ---
-    run_name = f"visnet_{mode_name}_lr{config['learning_rate']}_bs{config['batch_size']}x{config['gradient_accumulation_steps']}"
+    lr = config["learning_rate"]
+    bs = config["batch_size"]
+    ga = config["gradient_accumulation_steps"]
+    run_name = f"visnet_{mode_name}_lr{lr}_bs{bs}x{ga}"
     config["run_name"] = run_name
     config["log_dir"] = os.path.join("logs", run_name)
     config["checkpoint_dir"] = os.path.join("checkpoints", run_name)

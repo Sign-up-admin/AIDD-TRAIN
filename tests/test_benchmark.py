@@ -73,3 +73,13 @@ def test_benchmark_runner_get_results():
     assert results[1]['name'] == "Test 2"
 
 
+
+
+
+
+
+
+
+
+
+

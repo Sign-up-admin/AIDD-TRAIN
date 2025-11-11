@@ -135,6 +135,43 @@ This project was forged through a deep-dive debugging session to solve the sudde
 
 This journey underscores the COMPASS philosophy: true progress in scientific machine learning comes not just from powerful architectures, but from a relentless commitment to understanding and purifying the data that fuels them.
 
+---
+
+## Code Quality
+
+This project maintains high code quality standards using automated tools:
+
+### Quick Start
+
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run all code quality checks
+python scripts/run_all_checks.py
+
+# Auto-fix formatting issues
+python scripts/run_all_checks.py --format
+
+# Run tests
+python scripts/run_tests.bat
+```
+
+### Tools Used
+
+- **Black**: Code formatting (PEP 8)
+- **Flake8**: Code style and complexity checking
+- **Pylint**: Code quality analysis
+- **MyPy**: Static type checking
+- **Bandit**: Security vulnerability scanning
+- **Pytest**: Unit testing and coverage
+
+### Reports
+
+All quality check reports are saved to `lint_reports/` directory. For detailed information, see [Code Quality Guide](docs/CODE_QUALITY.md).
+
+---
+
 ## License
 
 This project is licensed under the GNU AGPLv3 License. See the `LICENSE` file for details.

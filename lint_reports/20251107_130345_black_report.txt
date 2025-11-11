@@ -1,0 +1,218 @@
+Report generated at: 2025-11-07T13:04:04.230167
+Tool: black
+Description: Code formatting check
+Exit Code: 1
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\models\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\registry\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\models\dataset.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\services\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\training\exceptions.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\error_codes.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\models.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\services\progress_logger.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\middleware\rate_limit.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\services\model_service.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\services\progress_tracker.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\benchmark.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\monitoring\alert_manager.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\services\task_lifecycle_logger.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\training.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+20 files would be reformatted, 40 files would be left unchanged.
+
+
+================================================================================
+Checking: services
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\common\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\models.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\server.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+5 files would be reformatted, 5 files would be left unchanged.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/services
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\__init__.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted, 5 files would be left unchanged.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/pages
+================================================================================
+All done! \u2728 \U0001f370 \u2728
+3 files would be left unchanged.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/FlashDock.py
+================================================================================
+All done! \u2728 \U0001f370 \u2728
+1 file would be left unchanged.
+
+
+================================================================================
+Checking: scripts
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\scripts\analyze_problem_batch.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\scripts\generate_reports.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+3 files would be reformatted.
+
+
+================================================================================
+Checking: check_and_start_services.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: check_ports.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\check_ports.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: check_service_status.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\check_service_status.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: check_websocket_route.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\check_websocket_route.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: test_compass_service.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\test_compass_service.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: test_output_streaming.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\test_output_streaming.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: test_stop_training.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\test_stop_training.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: test_websocket_stream.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\test_websocket_stream.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: test_ws_simple.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\test_ws_simple.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: verify_fixes.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\verify_fixes.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: debug_training_management.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\debug_training_management.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: diagnose_compass_registration.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\diagnose_compass_registration.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+
+================================================================================
+Checking: quick_test_stop.py
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\quick_test_stop.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted.
+
+================================================================================
+Summary of Issues:
+  - compass: Formatting issues found
+  - services: Formatting issues found
+  - FLASH_DOCK-main/services: Formatting issues found
+  - scripts: Formatting issues found
+  - check_and_start_services.py: Formatting issues found
+  - check_ports.py: Formatting issues found
+  - check_service_status.py: Formatting issues found
+  - check_websocket_route.py: Formatting issues found
+  - test_compass_service.py: Formatting issues found
+  - test_output_streaming.py: Formatting issues found
+  - test_stop_training.py: Formatting issues found
+  - test_websocket_stream.py: Formatting issues found
+  - test_ws_simple.py: Formatting issues found
+  - verify_fixes.py: Formatting issues found
+  - debug_training_management.py: Formatting issues found
+  - diagnose_compass_registration.py: Formatting issues found
+  - quick_test_stop.py: Formatting issues found

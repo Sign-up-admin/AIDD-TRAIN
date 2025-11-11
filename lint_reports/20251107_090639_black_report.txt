@@ -1,0 +1,73 @@
+Report generated at: 2025-11-07T09:06:47.174362
+Tool: black
+Description: Code formatting check
+Exit Code: 123
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\io\results.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\logging_setup.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\io\data.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\utils.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\hardware_utils.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\search_space\builder.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\training\recipes\standard.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\core\prober.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\__main__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\config.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\training\engine.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\main.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\training.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+16 files would be reformatted, 44 files would be left unchanged.
+
+
+================================================================================
+Checking: services
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\common\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\__init__.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\models.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\common\utils.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\common\service_protocol.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\health_checker.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\client.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py
+would reformat E:\Qinchaojun\AIDD-TRAIN\services\registry\server.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+10 files would be reformatted.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/services
+================================================================================
+would reformat E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+1 file would be reformatted, 5 files would be left unchanged.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/pages
+================================================================================
+error: cannot format E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py: unindent does not match any outer indentation level (<tokenize>, line 1064)
+
+Oh no! \U0001f4a5 \U0001f494 \U0001f4a5
+2 files would be left unchanged, 1 file would fail to reformat.
+
+================================================================================
+Summary of Issues:
+  - compass: Formatting issues found
+  - services: Formatting issues found
+  - FLASH_DOCK-main/services: Formatting issues found
+  - FLASH_DOCK-main/pages: Formatting issues found

@@ -56,3 +56,13 @@ def test_get_http_status_code():
     assert get_http_status_code(ErrorCode.REGISTRY_ERROR) == 503
 
 
+
+
+
+
+
+
+
+
+
+

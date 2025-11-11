@@ -1,0 +1,6113 @@
+{
+  "runtime": {
+    "critical": [],
+    "warning": [],
+    "info": []
+  },
+  "pylint": [
+    {
+      "file": "compass\\main.py",
+      "line": 171,
+      "type": "convention",
+      "message": "Line too long (113/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\main.py",
+      "line": 9,
+      "type": "error",
+      "message": "Unable to import 'torch_geometric.data'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\main.py",
+      "line": 112,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\main.py",
+      "line": 113,
+      "type": "error",
+      "message": "Unable to import 'torch.utils.data'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\main.py",
+      "line": 114,
+      "type": "error",
+      "message": "Unable to import 'torch_geometric.loader'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service_main.py",
+      "line": 13,
+      "type": "convention",
+      "message": "Import \"from compass.service.server import main\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\utils.py",
+      "line": 38,
+      "type": "convention",
+      "message": "Line too long (101/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\utils.py",
+      "line": 7,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 20,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 45,
+      "type": "convention",
+      "message": "Line too long (103/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 85,
+      "type": "convention",
+      "message": "Line too long (101/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 100,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 109,
+      "type": "convention",
+      "message": "Line too long (127/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 119,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 138,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 153,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 167,
+      "type": "convention",
+      "message": "Line too long (107/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 176,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 183,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 190,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 198,
+      "type": "convention",
+      "message": "Line too long (131/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 6,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 7,
+      "type": "error",
+      "message": "Unable to import 'torch_geometric.data'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 29,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 39,
+      "type": "refactor",
+      "message": "Too many positional arguments (6/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 59,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 198,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 67,
+      "type": "convention",
+      "message": "Line too long (109/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 86,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 5,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 7,
+      "type": "error",
+      "message": "Unable to import 'torch_geometric.data'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 8,
+      "type": "error",
+      "message": "Unable to import 'rdkit'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 62,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 67,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 78,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 83,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 88,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 93,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 107,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 117,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\hardware_utils.py",
+      "line": 24,
+      "type": "convention",
+      "message": "Line too long (103/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\hardware_utils.py",
+      "line": 48,
+      "type": "convention",
+      "message": "Line too long (112/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\hardware_utils.py",
+      "line": 49,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\hardware_utils.py",
+      "line": 53,
+      "type": "convention",
+      "message": "Line too long (137/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\hardware_utils.py",
+      "line": 3,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 15,
+      "type": "convention",
+      "message": "Line too long (103/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 44,
+      "type": "convention",
+      "message": "Line too long (104/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 102,
+      "type": "convention",
+      "message": "Line too long (144/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 194,
+      "type": "convention",
+      "message": "Line too long (172/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 202,
+      "type": "convention",
+      "message": "Line too long (110/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 230,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 238,
+      "type": "convention",
+      "message": "Line too long (107/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 43,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 52,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 61,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 75,
+      "type": "refactor",
+      "message": "Too many positional arguments (7/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 101,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 112,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 120,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 128,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 128,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 149,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 193,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 229,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 237,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\utils.py",
+      "line": 35,
+      "type": "convention",
+      "message": "Line too long (112/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\utils.py",
+      "line": 21,
+      "type": "warning",
+      "message": "Using open without explicitly specifying an encoding",
+      "symbol": "unspecified-encoding"
+    },
+    {
+      "file": "compass\\optimizer\\utils.py",
+      "line": 24,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\utils.py",
+      "line": 34,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\utils.py",
+      "line": 39,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\utils.py",
+      "line": 50,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\utils.py",
+      "line": 52,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 43,
+      "type": "convention",
+      "message": "Line too long (175/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 141,
+      "type": "convention",
+      "message": "Line too long (111/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 9,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 9,
+      "type": "convention",
+      "message": "Import \"import torch\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 10,
+      "type": "convention",
+      "message": "Import \"import json\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 11,
+      "type": "convention",
+      "message": "Import \"import argparse\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 12,
+      "type": "convention",
+      "message": "Import \"import logging\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 13,
+      "type": "convention",
+      "message": "Import \"from itertools import product\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 15,
+      "type": "convention",
+      "message": "Import \"from compass.optimizer.logging_setup import setup_logging\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 16,
+      "type": "convention",
+      "message": "Import \"from compass.optimizer.io.data import prepare_real_data\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 17,
+      "type": "convention",
+      "message": "Import \"from compass.optimizer.io.results import save_results\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 18,
+      "type": "convention",
+      "message": "Import \"from compass.optimizer.search_space.builder import get_parameter_cap, get_search_space\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 19,
+      "type": "convention",
+      "message": "Import \"from compass.optimizer.strategies import _optimize_for_production, _optimize_for_efficiency_modes, _optimize_for_smoke_test\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 24,
+      "type": "convention",
+      "message": "Import \"from compass.optimizer.config import OPTIMIZATION_HIERARCHY, TEST_SAMPLE_CONFIG\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 42,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 50,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 58,
+      "type": "warning",
+      "message": "Using open without explicitly specifying an encoding",
+      "symbol": "unspecified-encoding"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 74,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 105,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 110,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 160,
+      "type": "refactor",
+      "message": "Unnecessary \"else\" after \"break\", remove the \"else\" and de-indent the code inside it",
+      "symbol": "no-else-break"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 10,
+      "type": "convention",
+      "message": "standard import \"json\" should be placed before third party import \"torch\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 11,
+      "type": "convention",
+      "message": "standard import \"argparse\" should be placed before third party import \"torch\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 12,
+      "type": "convention",
+      "message": "standard import \"logging\" should be placed before third party import \"torch\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 13,
+      "type": "convention",
+      "message": "standard import \"itertools.product\" should be placed before third party import \"torch\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\optimizer\\1jmf\\__init__.py",
+      "line": 1,
+      "type": "convention",
+      "message": "Module name \"1jmf\" doesn't conform to snake_case naming style ('[^\\\\W\\\\dA-Z][^\\\\WA-Z]*$' pattern)",
+      "symbol": "invalid-name"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 257,
+      "type": "convention",
+      "message": "Unnecessary parens after 'not' keyword",
+      "symbol": "superfluous-parens"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 218,
+      "type": "warning",
+      "message": "Redefining built-in 'format'",
+      "symbol": "redefined-builtin"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 245,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise Exception(f'Failed to save config to {file_path}: {e}') from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 245,
+      "type": "warning",
+      "message": "Raising too general exception: Exception",
+      "symbol": "broad-exception-raised"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 297,
+      "type": "warning",
+      "message": "Using the global statement",
+      "symbol": "global-statement"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 9,
+      "type": "warning",
+      "message": "Unused field imported from dataclasses",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\error_codes.py",
+      "line": 153,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\exceptions.py",
+      "line": 6,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\exceptions.py",
+      "line": 6,
+      "type": "warning",
+      "message": "Unused HTTPException imported from fastapi",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 33,
+      "type": "convention",
+      "message": "Line too long (112/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 12,
+      "type": "refactor",
+      "message": "Too many positional arguments (8/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 51,
+      "type": "warning",
+      "message": "os.getenv default type is builtins.int. Expected str or None.",
+      "symbol": "invalid-envvar-default"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 52,
+      "type": "warning",
+      "message": "os.getenv default type is builtins.int. Expected str or None.",
+      "symbol": "invalid-envvar-default"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 9,
+      "type": "warning",
+      "message": "Unused Optional imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 90,
+      "type": "convention",
+      "message": "Line too long (111/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 218,
+      "type": "convention",
+      "message": "Line too long (105/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 9,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 10,
+      "type": "error",
+      "message": "Unable to import 'fastapi.middleware.cors'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 11,
+      "type": "error",
+      "message": "Unable to import 'fastapi.exceptions'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 12,
+      "type": "error",
+      "message": "Unable to import 'fastapi.responses'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 13,
+      "type": "error",
+      "message": "Unable to import 'uvicorn'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 117,
+      "type": "convention",
+      "message": "Import \"from compass.service.middleware.rate_limit import RateLimitMiddleware\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 118,
+      "type": "warning",
+      "message": "Reimport 'os' (imported line 5)",
+      "symbol": "reimported"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 118,
+      "type": "convention",
+      "message": "Import \"import os\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 148,
+      "type": "convention",
+      "message": "Import \"from compass.service.middleware.metrics import MetricsMiddleware, get_metrics_collector\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 157,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 182,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 197,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 220,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 222,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 227,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 229,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 231,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 234,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 235,
+      "type": "convention",
+      "message": "Constant name \"websocket_found\" doesn't conform to UPPER_CASE naming style ('([^\\\\W\\\\da-z][^\\\\Wa-z]*|__.*__)$' pattern)",
+      "symbol": "invalid-name"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 239,
+      "type": "convention",
+      "message": "Constant name \"route_type\" doesn't conform to UPPER_CASE naming style ('([^\\\\W\\\\da-z][^\\\\Wa-z]*|__.*__)$' pattern)",
+      "symbol": "invalid-name"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 242,
+      "type": "convention",
+      "message": "Constant name \"route_type\" doesn't conform to UPPER_CASE naming style ('([^\\\\W\\\\da-z][^\\\\Wa-z]*|__.*__)$' pattern)",
+      "symbol": "invalid-name"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 243,
+      "type": "convention",
+      "message": "Constant name \"websocket_found\" doesn't conform to UPPER_CASE naming style ('([^\\\\W\\\\da-z][^\\\\Wa-z]*|__.*__)$' pattern)",
+      "symbol": "invalid-name"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 245,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 246,
+      "type": "convention",
+      "message": "Constant name \"websocket_found\" doesn't conform to UPPER_CASE naming style ('([^\\\\W\\\\da-z][^\\\\Wa-z]*|__.*__)$' pattern)",
+      "symbol": "invalid-name"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 247,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 256,
+      "type": "warning",
+      "message": "Using the global statement",
+      "symbol": "global-statement"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 272,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 274,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 304,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 305,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 307,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 322,
+      "type": "warning",
+      "message": "Using global for 'registry_client' but no assignment is done",
+      "symbol": "global-variable-not-assigned"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 329,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 362,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 363,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 118,
+      "type": "convention",
+      "message": "standard import \"os\" should be placed before third party imports \"fastapi.FastAPI\", \"fastapi.middleware.cors.CORSMiddleware\", \"fastapi.exceptions.RequestValidationError\", \"fastapi.responses.JSONResponse\", \"uvicorn\" and first party imports \"compass.service.config.SERVICE_CONFIG\", \"compass.service.registry.client.CompassRegistryClient\", \"compass.service.routes.health\" (...) \"compass.service.logging_config.setup_logging\", \"services.common.utils.get_local_ip\", \"compass.service.middleware.rate_limit.RateLimitMiddleware\" ",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 118,
+      "type": "convention",
+      "message": "Imports from package os are not grouped",
+      "symbol": "ungrouped-imports"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 117,
+      "type": "convention",
+      "message": "Imports from package compass are not grouped",
+      "symbol": "ungrouped-imports"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 9,
+      "type": "warning",
+      "message": "Unused WebSocket imported from fastapi",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 148,
+      "type": "warning",
+      "message": "Unused get_metrics_collector imported from compass.service.middleware.metrics",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\__init__.py",
+      "line": 7,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\models\\dataset.py",
+      "line": 41,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\models\\dataset.py",
+      "line": 6,
+      "type": "convention",
+      "message": "standard import \"typing.Dict\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\dataset.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"datetime.datetime\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 40,
+      "type": "error",
+      "message": "Method 'validate_protein_path' should have \"self\" as first argument",
+      "symbol": "no-self-argument"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 51,
+      "type": "error",
+      "message": "Method 'validate_ligand_path' should have \"self\" as first argument",
+      "symbol": "no-self-argument"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 62,
+      "type": "error",
+      "message": "Method 'validate_model_id' should have \"self\" as first argument",
+      "symbol": "no-self-argument"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 87,
+      "type": "error",
+      "message": "Method 'validate_pairs' should have \"self\" as first argument",
+      "symbol": "no-self-argument"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 107,
+      "type": "error",
+      "message": "Method 'validate_model_id' should have \"self\" as first argument",
+      "symbol": "no-self-argument"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 6,
+      "type": "convention",
+      "message": "standard import \"typing.Dict\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"datetime.datetime\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\model.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"pathlib.Path\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\task.py",
+      "line": 32,
+      "type": "error",
+      "message": "Method 'validate_config' should have \"self\" as first argument",
+      "symbol": "no-self-argument"
+    },
+    {
+      "file": "compass\\service\\models\\task.py",
+      "line": 68,
+      "type": "error",
+      "message": "Method 'validate_dataset_id' should have \"self\" as first argument",
+      "symbol": "no-self-argument"
+    },
+    {
+      "file": "compass\\service\\models\\task.py",
+      "line": 6,
+      "type": "convention",
+      "message": "standard import \"typing.Dict\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\task.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"datetime.datetime\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\task.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"enum.Enum\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\models\\task.py",
+      "line": 6,
+      "type": "warning",
+      "message": "Unused Any imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\models\\__init__.py",
+      "line": 7,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 84,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 33,
+      "type": "refactor",
+      "message": "Too many positional arguments (8/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 74,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 83,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 90,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 95,
+      "type": "warning",
+      "message": "Raising too general exception: Exception",
+      "symbol": "broad-exception-raised"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 119,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 161,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 163,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 11,
+      "type": "warning",
+      "message": "Unused get_local_ip imported from services.common.utils",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\registry\\__init__.py",
+      "line": 7,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 167,
+      "type": "convention",
+      "message": "Line too long (110/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 5,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 57,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 69,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 75,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 80,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 211,
+      "type": "warning",
+      "message": "Redefining name 'status' from outer scope (line 5)",
+      "symbol": "redefined-outer-name"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 98,
+      "type": "error",
+      "message": "Using variable 'status' before assignment",
+      "symbol": "used-before-assignment"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 129,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 130,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Failed to read uploaded file') from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 188,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 190,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 212,
+      "type": "refactor",
+      "message": "Unnecessary \"elif\" after \"raise\", remove the leading \"el\" from \"elif\"",
+      "symbol": "no-else-raise"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 239,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 240,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail='Failed to upload dataset') from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 249,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 160,
+      "type": "warning",
+      "message": "Unused variable 'queue_size'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 193,
+      "type": "warning",
+      "message": "Unused variable 'upload_task'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 6,
+      "type": "convention",
+      "message": "standard import \"typing.Optional\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"tempfile\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"os\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 9,
+      "type": "convention",
+      "message": "standard import \"zipfile\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 10,
+      "type": "convention",
+      "message": "standard import \"tarfile\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 11,
+      "type": "convention",
+      "message": "standard import \"pathlib.Path\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 12,
+      "type": "convention",
+      "message": "standard import \"logging\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 13,
+      "type": "convention",
+      "message": "standard import \"asyncio\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 15,
+      "type": "warning",
+      "message": "Unused DatasetCreate imported from compass.service.models.dataset",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 5,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 6,
+      "type": "error",
+      "message": "Unable to import 'fastapi.responses'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 118,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 128,
+      "type": "refactor",
+      "message": "Unnecessary \"else\" after \"return\", remove the \"else\" and de-indent the code inside it",
+      "symbol": "no-else-return"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 131,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 154,
+      "type": "refactor",
+      "message": "Consider merging these comparisons with 'in' by using 'benchmark_type in ('inference', 'all')'. Use a set instead if elements are hashable.",
+      "symbol": "consider-using-in"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 161,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 162,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 164,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise HTTPException(status_code=500, detail=f'Benchmark failed: {str(e)}') from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 194,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 196,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'except ValueError as exc' and 'raise HTTPException(status_code=400, detail=f'Invalid alert level: {level}') from exc'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"datetime.datetime\" should be placed before third party imports \"fastapi.APIRouter\", \"fastapi.responses.JSONResponse\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"typing.Dict\" should be placed before third party imports \"fastapi.APIRouter\", \"fastapi.responses.JSONResponse\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 9,
+      "type": "convention",
+      "message": "standard import \"logging\" should be placed before third party imports \"fastapi.APIRouter\", \"fastapi.responses.JSONResponse\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 5,
+      "type": "warning",
+      "message": "Unused Query imported from fastapi",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\routes\\health.py",
+      "line": 6,
+      "type": "warning",
+      "message": "Unused JSONResponse imported from fastapi.responses",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 5,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 33,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ValidationError(sanitize_error_message(e)) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 35,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 36,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ServiceException('Prediction failed', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 59,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ValidationError(sanitize_error_message(e)) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 61,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 62,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ServiceException('Batch prediction failed', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 6,
+      "type": "convention",
+      "message": "standard import \"logging\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\inference.py",
+      "line": 5,
+      "type": "warning",
+      "message": "Unused HTTPException imported from fastapi",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 72,
+      "type": "convention",
+      "message": "Line too long (101/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 5,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 6,
+      "type": "error",
+      "message": "Unable to import 'fastapi.responses'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 27,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 28,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ServiceException('Failed to list models', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 44,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 45,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ServiceException(f'Failed to get model {model_id}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 70,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 71,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ServiceException(f'Failed to download model {model_id}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 87,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 88,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ServiceException(f'Failed to delete model {model_id}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"typing.Optional\" should be placed before third party imports \"fastapi.APIRouter\", \"fastapi.responses.FileResponse\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"os\" should be placed before third party imports \"fastapi.APIRouter\", \"fastapi.responses.FileResponse\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 9,
+      "type": "convention",
+      "message": "standard import \"logging\" should be placed before third party imports \"fastapi.APIRouter\", \"fastapi.responses.FileResponse\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 5,
+      "type": "warning",
+      "message": "Unused HTTPException imported from fastapi",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\routes\\models.py",
+      "line": 7,
+      "type": "warning",
+      "message": "Unused Optional imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 42,
+      "type": "convention",
+      "message": "Line too long (118/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 202,
+      "type": "convention",
+      "message": "Line too long (115/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 352,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 402,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 414,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 416,
+      "type": "convention",
+      "message": "Line too long (112/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 426,
+      "type": "convention",
+      "message": "Line too long (109/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 468,
+      "type": "convention",
+      "message": "Line too long (103/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 536,
+      "type": "convention",
+      "message": "Line too long (105/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 5,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 78,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ValidationError(str(e)) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 83,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 90,
+      "type": "warning",
+      "message": "Consider explicitly re-raising using 'raise ServiceException('Failed to create task', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, error_code=ErrorCode.INTERNAL_ERROR, detail=error_detail) from e'",
+      "symbol": "raise-missing-from"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 351,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 354,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 357,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 366,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 367,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 383,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 401,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 416,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 441,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 476,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 484,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 467,
+      "type": "warning",
+      "message": "Unused variable 'log_data'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 503,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 511,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 535,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 540,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 547,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 551,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 555,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 561,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 578,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 586,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 592,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 616,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 619,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 449,
+      "type": "warning",
+      "message": "Unused variable 'check_connection_alive'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 603,
+      "type": "warning",
+      "message": "Unused variable 'done'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 6,
+      "type": "convention",
+      "message": "standard import \"typing.Optional\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"logging\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"json\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 9,
+      "type": "convention",
+      "message": "standard import \"asyncio\" should be placed before third party import \"fastapi.APIRouter\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 6,
+      "type": "warning",
+      "message": "Unused Optional imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\routes\\__init__.py",
+      "line": 7,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\services\\data_service.py",
+      "line": 85,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\data_service.py",
+      "line": 129,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\data_service.py",
+      "line": 132,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\data_service.py",
+      "line": 145,
+      "type": "warning",
+      "message": "Unused variable 'dirs'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\services\\data_service.py",
+      "line": 193,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 134,
+      "type": "convention",
+      "message": "Line too long (101/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 350,
+      "type": "convention",
+      "message": "Line too long (114/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 13,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 14,
+      "type": "error",
+      "message": "Unable to import 'torch_geometric.data'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 73,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 78,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 92,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 133,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 172,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 176,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 206,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 268,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 292,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 294,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 338,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 349,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 384,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 9,
+      "type": "warning",
+      "message": "Unused OrderedDict imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 14,
+      "type": "warning",
+      "message": "Unused Batch imported from torch_geometric.data",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 21,
+      "type": "warning",
+      "message": "Unused get_pdb_info imported from compass.data.loader.paths",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 21,
+      "type": "warning",
+      "message": "Unused get_data_paths imported from compass.data.loader.paths",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 23,
+      "type": "warning",
+      "message": "Unused SERVICE_CONFIG imported from compass.service.config",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\model_service.py",
+      "line": 157,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\services\\model_service.py",
+      "line": 61,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\model_service.py",
+      "line": 96,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\model_service.py",
+      "line": 152,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\model_service.py",
+      "line": 5,
+      "type": "warning",
+      "message": "Unused import os",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\model_service.py",
+      "line": 14,
+      "type": "warning",
+      "message": "Unused load_latest_checkpoint_file imported from compass.training.checkpoint",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\progress_logger.py",
+      "line": 44,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\progress_logger.py",
+      "line": 53,
+      "type": "convention",
+      "message": "Line too long (119/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 81,
+      "type": "refactor",
+      "message": "Too many positional arguments (8/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 6,
+      "type": "warning",
+      "message": "Unused import time",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 7,
+      "type": "warning",
+      "message": "Unused Optional imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 291,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 39,
+      "type": "refactor",
+      "message": "Too many positional arguments (7/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 100,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 112,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 127,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 137,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 148,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 158,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 168,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 179,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 186,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 214,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 227,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 234,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 245,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 259,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 285,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 8,
+      "type": "warning",
+      "message": "Unused Any imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 354,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 359,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 375,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 392,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 407,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 413,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 424,
+      "type": "convention",
+      "message": "Line too long (122/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 692,
+      "type": "convention",
+      "message": "Line too long (121/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 799,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 808,
+      "type": "convention",
+      "message": "Line too long (116/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 833,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1007,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1016,
+      "type": "convention",
+      "message": "Line too long (113/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1017,
+      "type": "convention",
+      "message": "Line too long (110/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1069,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1074,
+      "type": "convention",
+      "message": "Line too long (128/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1115,
+      "type": "convention",
+      "message": "Line too long (127/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1132,
+      "type": "convention",
+      "message": "Line too long (111/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1139,
+      "type": "convention",
+      "message": "Line too long (130/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1160,
+      "type": "convention",
+      "message": "Line too long (122/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1167,
+      "type": "convention",
+      "message": "Line too long (104/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1177,
+      "type": "convention",
+      "message": "Line too long (102/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1179,
+      "type": "convention",
+      "message": "Line too long (107/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1311,
+      "type": "convention",
+      "message": "Line too long (103/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1,
+      "type": "convention",
+      "message": "Too many lines in module (1411/1000)",
+      "symbol": "too-many-lines"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 83,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 86,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 107,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 151,
+      "type": "refactor",
+      "message": "Either all return statements in a function should return an expression, or none of them should.",
+      "symbol": "inconsistent-return-statements"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 160,
+      "type": "warning",
+      "message": "Redefining name 'logging' from outer scope (line 10)",
+      "symbol": "redefined-outer-name"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 160,
+      "type": "warning",
+      "message": "Reimport 'logging' (imported line 10)",
+      "symbol": "reimported"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 167,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 185,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 190,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 374,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 391,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 406,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 495,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 497,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 509,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 429,
+      "type": "warning",
+      "message": "Unused argument 'dataset_id'",
+      "symbol": "unused-argument"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 586,
+      "type": "refactor",
+      "message": "Consider merging these comparisons with 'in' by using 'task.status not in (TaskStatus.PENDING, TaskStatus.PAUSED)'. Use a set instead if elements are hashable.",
+      "symbol": "consider-using-in"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 606,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 608,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 618,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 627,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 635,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 647,
+      "type": "warning",
+      "message": "Redefining name 'sys' from outer scope (line 6)",
+      "symbol": "redefined-outer-name"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 647,
+      "type": "warning",
+      "message": "Reimport 'sys' (imported line 6)",
+      "symbol": "reimported"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 651,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 655,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 658,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 649,
+      "type": "warning",
+      "message": "Unused argument 'frame'",
+      "symbol": "unused-argument"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 691,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 693,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 698,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 712,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 716,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 643,
+      "type": "warning",
+      "message": "Unused variable 'training_thread'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 711,
+      "type": "warning",
+      "message": "Unused variable 'thread'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 715,
+      "type": "warning",
+      "message": "Unused variable 'monitor_thread'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 727,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 738,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 760,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 761,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 776,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 777,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 787,
+      "type": "refactor",
+      "message": "Too many positional arguments (6/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 814,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 826,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 840,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 860,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 868,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 871,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 898,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 946,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 948,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 978,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1022,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1028,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1170,
+      "type": "warning",
+      "message": "Redefining name 'sys' from outer scope (line 6)",
+      "symbol": "redefined-outer-name"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1173,
+      "type": "warning",
+      "message": "Redefining name 'os' from outer scope (line 5)",
+      "symbol": "redefined-outer-name"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1062,
+      "type": "refactor",
+      "message": "Consider merging these comparisons with 'in' by using 'task.status not in (TaskStatus.RUNNING, TaskStatus.INITIALIZING)'. Use a set instead if elements are hashable.",
+      "symbol": "consider-using-in"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1068,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1073,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1077,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1081,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1088,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1093,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1096,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1109,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1114,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1131,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1138,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1153,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1156,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1159,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1166,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1170,
+      "type": "warning",
+      "message": "Reimport 'sys' (imported line 6)",
+      "symbol": "reimported"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1173,
+      "type": "warning",
+      "message": "Reimport 'os' (imported line 5)",
+      "symbol": "reimported"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1178,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1182,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1186,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1173,
+      "type": "warning",
+      "message": "Unused import os",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1213,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1244,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1310,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1321,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1328,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1355,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1357,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1364,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 1370,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 14,
+      "type": "warning",
+      "message": "Unused import json",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 15,
+      "type": "warning",
+      "message": "Unused Set imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 18,
+      "type": "warning",
+      "message": "Unused deque imported from collections",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 32,
+      "type": "warning",
+      "message": "Unused TrainingLogger imported from compass.logger",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 38,
+      "type": "warning",
+      "message": "Unused ValidationError imported from compass.service.exceptions",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\upload_queue.py",
+      "line": 88,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\upload_queue.py",
+      "line": 97,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\upload_queue.py",
+      "line": 103,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "compass\\service\\services\\upload_queue.py",
+      "line": 5,
+      "type": "warning",
+      "message": "Unused import asyncio",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\service\\services\\__init__.py",
+      "line": 7,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\training\\checkpoint.py",
+      "line": 133,
+      "type": "convention",
+      "message": "Line too long (129/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\training\\checkpoint.py",
+      "line": 148,
+      "type": "convention",
+      "message": "Line too long (121/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\training\\checkpoint.py",
+      "line": 2,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\checkpoint.py",
+      "line": 5,
+      "type": "refactor",
+      "message": "Too many positional arguments (8/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\training\\checkpoint.py",
+      "line": 83,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\training\\checkpoint.py",
+      "line": 88,
+      "type": "warning",
+      "message": "Using an f-string that does not have any interpolated variables",
+      "symbol": "f-string-without-interpolation"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 217,
+      "type": "convention",
+      "message": "Line too long (137/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 229,
+      "type": "convention",
+      "message": "Line too long (133/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 4,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 5,
+      "type": "error",
+      "message": "Unable to import 'torch.amp'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 6,
+      "type": "error",
+      "message": "Unable to import 'torch.optim.lr_scheduler'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 7,
+      "type": "error",
+      "message": "Unable to import 'torch.profiler'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 21,
+      "type": "refactor",
+      "message": "Too many positional arguments (7/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 86,
+      "type": "warning",
+      "message": "Redefining name 'sys' from outer scope (line 2)",
+      "symbol": "redefined-outer-name"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 86,
+      "type": "warning",
+      "message": "Reimport 'sys' (imported line 2)",
+      "symbol": "reimported"
+    },
+    {
+      "file": "compass\\training\\engine.py",
+      "line": 2,
+      "type": "warning",
+      "message": "Unused import sys",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "compass\\training\\exceptions.py",
+      "line": 13,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "compass\\training\\exceptions.py",
+      "line": 9,
+      "type": "warning",
+      "message": "Unnecessary pass statement",
+      "symbol": "unnecessary-pass"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 92,
+      "type": "convention",
+      "message": "Line too long (103/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 155,
+      "type": "convention",
+      "message": "Line too long (133/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 231,
+      "type": "convention",
+      "message": "Line too long (112/100)",
+      "symbol": "line-too-long"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 2,
+      "type": "error",
+      "message": "Unable to import 'torch.amp'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 3,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 33,
+      "type": "refactor",
+      "message": "Too many positional arguments (9/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 205,
+      "type": "warning",
+      "message": "Unused argument 'current_stage'",
+      "symbol": "unused-argument"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 4,
+      "type": "convention",
+      "message": "standard import \"os\" should be placed before third party imports \"tqdm.tqdm\", \"torch.amp.autocast\", \"torch\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 7,
+      "type": "convention",
+      "message": "first party import \"compass.utils.report_gpu_memory\" should be placed before local import \"checkpoint.save_checkpoint\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "compass\\training\\model.py",
+      "line": 1,
+      "type": "error",
+      "message": "Unable to import 'torch'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\model.py",
+      "line": 2,
+      "type": "error",
+      "message": "Unable to import 'torch_geometric.nn.models'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "compass\\training\\model.py",
+      "line": 15,
+      "type": "refactor",
+      "message": "Too many positional arguments (8/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "compass\\training\\__init__.py",
+      "line": 1,
+      "type": "refactor",
+      "message": "Similar lines in 2 files\n==compass.main:[334:342]\n==compass.service.services.inference_service:[188:196]\n        model = ViSNetPDB(\n            hidden_channels=config.get(\"visnet_hidden_channels\", 128),\n            num_layers=config.get(\"visnet_num_layers\", 6),\n            num_rbf=config.get(\"visnet_num_rbf\", 64),\n            cutoff=config.get(\"visnet_cutoff\", 8.0),\n            max_num_neighbors=config.get(\"max_num_neighbors\", 32),\n            lmax=config.get(\"visnet_lmax\", 1),\n            vecnorm_type=config.get(\"visnet_vecnorm_type\", \"max_min\"),",
+      "symbol": "duplicate-code"
+    },
+    {
+      "file": "compass\\training\\__init__.py",
+      "line": 1,
+      "type": "refactor",
+      "message": "Similar lines in 2 files\n==compass.service.routes.health:[121:128]\n==compass.service.server:[265:271]\n    backup_path = backup_manager.create_backup(\n        datasets_dir=SERVICE_CONFIG.get(\"data_dir\"),\n        models_dir=SERVICE_CONFIG.get(\"checkpoint_dir\"),\n        database_file=os.getenv(\"REGISTRY_DB_PATH\", \"registry.db\"),\n    )\n\n    if backup_path:",
+      "symbol": "duplicate-code"
+    },
+    {
+      "file": "services\\__init__.py",
+      "line": 8,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "services\\common\\service_protocol.py",
+      "line": 6,
+      "type": "warning",
+      "message": "Unused List imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\common\\utils.py",
+      "line": 7,
+      "type": "warning",
+      "message": "Unused Optional imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\common\\__init__.py",
+      "line": 7,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 33,
+      "type": "refactor",
+      "message": "Too many positional arguments (6/5)",
+      "symbol": "too-many-positional-arguments"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 71,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 74,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 77,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 97,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 100,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 118,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 121,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 124,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 159,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 162,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 165,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 168,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 189,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 192,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"typing.List\" should be placed before third party import \"requests\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 9,
+      "type": "convention",
+      "message": "standard import \"datetime.datetime\" should be placed before third party import \"requests\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 9,
+      "type": "warning",
+      "message": "Unused datetime imported from datetime",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\client.py",
+      "line": 11,
+      "type": "warning",
+      "message": "Unused ServiceStatus imported from services.common.service_protocol",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 47,
+      "type": "refactor",
+      "message": "Unnecessary \"else\" after \"return\", remove the \"else\" and de-indent the code inside it",
+      "symbol": "no-else-return"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 52,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 55,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 58,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 88,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 90,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 109,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 114,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 8,
+      "type": "convention",
+      "message": "standard import \"logging\" should be placed before third party import \"requests\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 9,
+      "type": "convention",
+      "message": "standard import \"datetime.datetime\" should be placed before third party import \"requests\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 10,
+      "type": "convention",
+      "message": "standard import \"typing.Dict\" should be placed before third party import \"requests\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 11,
+      "type": "convention",
+      "message": "standard import \"threading.Thread\" should be placed before third party import \"requests\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 9,
+      "type": "warning",
+      "message": "Unused timedelta imported from datetime",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\health_checker.py",
+      "line": 10,
+      "type": "warning",
+      "message": "Unused List imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\models.py",
+      "line": 44,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    },
+    {
+      "file": "services\\registry\\models.py",
+      "line": 6,
+      "type": "convention",
+      "message": "standard import \"typing.Dict\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\models.py",
+      "line": 7,
+      "type": "convention",
+      "message": "standard import \"datetime.datetime\" should be placed before third party import \"pydantic.BaseModel\"",
+      "symbol": "wrong-import-order"
+    },
+    {
+      "file": "services\\registry\\models.py",
+      "line": 6,
+      "type": "warning",
+      "message": "Unused Optional imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 38,
+      "type": "convention",
+      "message": "Trailing whitespace",
+      "symbol": "trailing-whitespace"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 15,
+      "type": "convention",
+      "message": "Import \"import logging\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 16,
+      "type": "convention",
+      "message": "Import \"import argparse\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 17,
+      "type": "convention",
+      "message": "Import \"from contextlib import asynccontextmanager\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 18,
+      "type": "convention",
+      "message": "Import \"from typing import Dict, List, Optional\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 19,
+      "type": "convention",
+      "message": "Import \"from datetime import datetime\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 20,
+      "type": "error",
+      "message": "Unable to import 'fastapi'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 20,
+      "type": "convention",
+      "message": "Import \"from fastapi import FastAPI, HTTPException, status\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 21,
+      "type": "error",
+      "message": "Unable to import 'fastapi.middleware.cors'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 21,
+      "type": "convention",
+      "message": "Import \"from fastapi.middleware.cors import CORSMiddleware\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 22,
+      "type": "error",
+      "message": "Unable to import 'uvicorn'",
+      "symbol": "import-error"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 22,
+      "type": "convention",
+      "message": "Import \"import uvicorn\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 24,
+      "type": "convention",
+      "message": "Import \"from services.registry.models import ServiceRegistrationRequest, ServiceRegistrationResponse, ServiceQueryResponse, HealthCheckResponse\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 30,
+      "type": "convention",
+      "message": "Import \"from services.registry.health_checker import HealthChecker\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 31,
+      "type": "convention",
+      "message": "Import \"from services.registry.storage import ServiceRegistryStorage\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 32,
+      "type": "convention",
+      "message": "Import \"from services.common.service_protocol import ServiceInfo, ServiceStatus\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 33,
+      "type": "convention",
+      "message": "Import \"from services.common.utils import generate_service_id\" should be placed at the top of the module",
+      "symbol": "wrong-import-position"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 76,
+      "type": "warning",
+      "message": "Redefining name 'app' from outer scope (line 113)",
+      "symbol": "redefined-outer-name"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 79,
+      "type": "warning",
+      "message": "Using global for 'services' but no assignment is done",
+      "symbol": "global-variable-not-assigned"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 83,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 105,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 76,
+      "type": "warning",
+      "message": "Unused argument 'app'",
+      "symbol": "unused-argument"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 177,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 207,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 227,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 225,
+      "type": "warning",
+      "message": "Unused variable 'service'",
+      "symbol": "unused-variable"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 298,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\server.py",
+      "line": 18,
+      "type": "warning",
+      "message": "Unused List imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 31,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 77,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 130,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 133,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 135,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 176,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 178,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 200,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 222,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 240,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 263,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 266,
+      "type": "warning",
+      "message": "Use lazy % formatting in logging functions",
+      "symbol": "logging-fstring-interpolation"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 10,
+      "type": "warning",
+      "message": "Unused Optional imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\storage.py",
+      "line": 10,
+      "type": "warning",
+      "message": "Unused List imported from typing",
+      "symbol": "unused-import"
+    },
+    {
+      "file": "services\\registry\\__init__.py",
+      "line": 7,
+      "type": "convention",
+      "message": "Trailing newlines",
+      "symbol": "trailing-newlines"
+    }
+  ],
+  "flake8": [
+    {
+      "file": "E",
+      "line": 0,
+      "col": 20,
+      "code": "30",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 32,
+      "code": "1",
+      "message": "E302:expected 2 blank lines, found 1"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 36,
+      "code": "71",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 47,
+      "code": "82",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 48,
+      "code": "86",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 50,
+      "code": "86",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 51,
+      "code": "86",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 59,
+      "code": "19",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 87,
+      "code": "5",
+      "message": "C901:'PDBBindDataset.process' is too complex (16)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 100,
+      "code": "22",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 119,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 138,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 176,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 183,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 190,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 27,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 43,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 62,
+      "code": "1",
+      "message": "C901:'get_protein_graph' is too complex (11)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 101,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 109,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 140,
+      "code": "15",
+      "message": "E261:at least two spaces before inline comment"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 144,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 4,
+      "code": "1",
+      "message": "E302:expected 2 blank lines, found 1"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 4,
+      "code": "1",
+      "message": "E302:expected 2 blank lines, found 1"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 4,
+      "code": "1",
+      "message": "E302:expected 2 blank lines, found 1"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 27,
+      "code": "1",
+      "message": "E302:expected 2 blank lines, found 1"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 35,
+      "code": "1",
+      "message": "C901:'process_item' is too complex (12)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 35,
+      "code": "1",
+      "message": "E302:expected 2 blank lines, found 1"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 29,
+      "code": "1",
+      "message": "C901:'discover_and_select_recipe' is too complex (16)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 108,
+      "code": "1",
+      "message": "C901:'main' is too complex (29)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 29,
+      "code": "1",
+      "message": "C901:'find_optimal_configs' is too complex (13)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 6,
+      "code": "1",
+      "message": "C901:'get_hardware_recommendations' is too complex (13)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 59,
+      "code": "16",
+      "message": "E741:ambiguous variable name 'l'"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 59,
+      "code": "47",
+      "message": "E741:ambiguous variable name 'l'"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 87,
+      "code": "96",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 44,
+      "code": "33",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 52,
+      "code": "60",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 52,
+      "code": "84",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 61,
+      "code": "52",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 75,
+      "code": "1",
+      "message": "C901:'_optimize_for_efficiency_modes' is too complex (13)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 120,
+      "code": "59",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 128,
+      "code": "28",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 230,
+      "code": "42",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 230,
+      "code": "90",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 7,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 153,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 167,
+      "code": "31",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 186,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 7,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 41,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 313,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 7,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 7,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 88,
+      "code": "1",
+      "message": "C901:'upload_dataset' is too complex (22)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 131,
+      "code": "25",
+      "message": "F823:local variable 'status' defined in enclosing scope on line 5 referenced before assignment"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 160,
+      "code": "9",
+      "message": "F841:local variable 'queue_size' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 193,
+      "code": "9",
+      "message": "F841:local variable 'upload_task' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 337,
+      "code": "1",
+      "message": "C901:'stream_task_logs' is too complex (57)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 352,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 414,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 467,
+      "code": "21",
+      "message": "F841:local variable 'log_data' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 35,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 37,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 42,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 44,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 46,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 48,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 53,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 55,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 60,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 62,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 70,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 72,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 7,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 65,
+      "code": "21",
+      "message": "F841:local variable 'lru_model' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 84,
+      "code": "17",
+      "message": "F841:local variable 'model' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 157,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 39,
+      "code": "5",
+      "message": "C901:'ProgressAwareLogger._update_progress_from_message' is too complex (16)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 44,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 291,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 342,
+      "code": "5",
+      "message": "C901:'TrainingService._check_resources' is too complex (15)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 354,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 359,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 375,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 392,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 407,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 564,
+      "code": "5",
+      "message": "C901:'TrainingService.start_task' is too complex (24)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 617,
+      "code": "36",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 618,
+      "code": "29",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 622,
+      "code": "35",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 627,
+      "code": "30",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 635,
+      "code": "31",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 643,
+      "code": "13",
+      "message": "F841:local variable 'training_thread' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 658,
+      "code": "35",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 691,
+      "code": "42",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 693,
+      "code": "43",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 711,
+      "code": "25",
+      "message": "F841:local variable 'thread' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 715,
+      "code": "25",
+      "message": "F841:local variable 'monitor_thread' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 741,
+      "code": "5",
+      "message": "C901:'TrainingService._run_training' is too complex (48)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 759,
+      "code": "35",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 760,
+      "code": "28",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 761,
+      "code": "28",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 762,
+      "code": "34",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 776,
+      "code": "47",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 777,
+      "code": "47",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 799,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 833,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 860,
+      "code": "47",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 868,
+      "code": "22",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 870,
+      "code": "53",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 871,
+      "code": "47",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 872,
+      "code": "53",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 946,
+      "code": "22",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 948,
+      "code": "47",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 964,
+      "code": "55",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 978,
+      "code": "51",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1007,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1022,
+      "code": "42",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1047,
+      "code": "5",
+      "message": "C901:'TrainingService.stop_task' is too complex (20)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1080,
+      "code": "36",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1081,
+      "code": "29",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1088,
+      "code": "29",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1089,
+      "code": "35",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1186,
+      "code": "36",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 1288,
+      "code": "5",
+      "message": "C901:'TrainingService._health_monitor_loop' is too complex (20)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 167,
+      "code": "5",
+      "message": "C901:'BackupManager._cleanup_old_backups' is too complex (11)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 269,
+      "code": "21",
+      "message": "F841:local variable 'metadata' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 291,
+      "code": "5",
+      "message": "F811:redefinition of unused 'os' from line 5"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 294,
+      "code": "5",
+      "message": "F841:local variable 'manager' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 312,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 201,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 54,
+      "code": "1",
+      "message": "C901:'load_latest_checkpoint_file' is too complex (15)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 83,
+      "code": "24",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 88,
+      "code": "24",
+      "message": "F541:f-string is missing placeholders"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 86,
+      "code": "9",
+      "message": "F811:redefinition of unused 'sys' from line 2"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 13,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 33,
+      "code": "1",
+      "message": "C901:'train_epoch' is too complex (23)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 72,
+      "code": "92",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 92,
+      "code": "85",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 155,
+      "code": "89",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 197,
+      "code": "47",
+      "message": "E226:missing whitespace around arithmetic operator"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 8,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 7,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 7,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 44,
+      "code": "1",
+      "message": "W391:blank line at end of file"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 38,
+      "code": "1",
+      "message": "W293:blank line contains whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 225,
+      "code": "5",
+      "message": "F841:local variable 'service' is assigned to but never used"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 56,
+      "code": "60",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 62,
+      "code": "54",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 82,
+      "code": "5",
+      "message": "C901:'ServiceRegistryStorage.load_all_services' is too complex (13)"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 150,
+      "code": "52",
+      "message": "W291:trailing whitespace"
+    },
+    {
+      "file": "E",
+      "line": 0,
+      "col": 151,
+      "code": "77",
+      "message": "W291:trailing whitespace"
+    }
+  ],
+  "mypy": [
+    {
+      "file": "compass\\data\\loader\\paths.py",
+      "line": 2,
+      "type": "error",
+      "message": " Library stubs not installed for \"tqdm\"  [import-untyped]"
+    },
+    {
+      "file": "compass\\data\\loader\\paths.py",
+      "line": 2,
+      "type": "note",
+      "message": " Hint: \"python3 -m pip install types-tqdm\""
+    },
+    {
+      "file": "compass\\data\\loader\\paths.py",
+      "line": 2,
+      "type": "note",
+      "message": " (or run \"mypy --install-types\" to install all missing stub packages)"
+    },
+    {
+      "file": "compass\\data\\loader\\paths.py",
+      "line": 2,
+      "type": "note",
+      "message": " See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 14,
+      "type": "error",
+      "message": " Library stubs not installed for \"yaml\"  [import-untyped]"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 14,
+      "type": "note",
+      "message": " Hint: \"python3 -m pip install types-PyYAML\""
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 112,
+      "type": "error",
+      "message": " Need type annotation for \"file_config\" (hint: \"file_config: dict[<type>, <type>] = ...\")  [var-annotated]"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 190,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"int\", variable has type \"str | None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\config_manager.py",
+      "line": 192,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"bool\", variable has type \"str | None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 59,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"datetime\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 61,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"datetime\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 79,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"datetime\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 125,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"datetime\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 133,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"datetime\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 140,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"datetime\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 157,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\services\\progress_tracker.py",
+      "line": 188,
+      "type": "error",
+      "message": " \"None\" has no attribute \"isoformat\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 71,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"float\", target has type \"str\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 76,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"float\", target has type \"str\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 83,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"dict[Any, Any]\", target has type \"str\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 87,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"dict[str, str]\", target has type \"str\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\task_lifecycle_logger.py",
+      "line": 271,
+      "type": "error",
+      "message": " Need type annotation for \"events\" (hint: \"events: list[<type>] = ...\")  [var-annotated]"
+    },
+    {
+      "file": "compass\\service\\monitoring\\alert_manager.py",
+      "line": 185,
+      "type": "error",
+      "message": " Unsupported target for indexed assignment (\"object\")  [index]"
+    },
+    {
+      "file": "compass\\service\\middleware\\rate_limit.py",
+      "line": 11,
+      "type": "error",
+      "message": " Cannot find implementation or library stub for module named \"starlette.middleware.base\"  [import-not-found]"
+    },
+    {
+      "file": "compass\\service\\middleware\\rate_limit.py",
+      "line": 88,
+      "type": "error",
+      "message": " Function \"builtins.callable\" is not valid as a type  [valid-type]"
+    },
+    {
+      "file": "compass\\service\\middleware\\rate_limit.py",
+      "line": 88,
+      "type": "note",
+      "message": " Perhaps you meant \"typing.Callable\" instead of \"callable\"?"
+    },
+    {
+      "file": "compass\\service\\middleware\\rate_limit.py",
+      "line": 124,
+      "type": "error",
+      "message": " Returning Any from function declared to return \"str\"  [no-any-return]"
+    },
+    {
+      "file": "compass\\service\\middleware\\rate_limit.py",
+      "line": 129,
+      "type": "error",
+      "message": " Returning Any from function declared to return \"str\"  [no-any-return]"
+    },
+    {
+      "file": "compass\\service\\middleware\\rate_limit.py",
+      "line": 133,
+      "type": "error",
+      "message": " Returning Any from function declared to return \"str\"  [no-any-return]"
+    },
+    {
+      "file": "compass\\optimizer\\search_space\\builder.py",
+      "line": 24,
+      "type": "error",
+      "message": " Argument \"key\" to \"sorted\" has incompatible type \"Callable[[str], object]\"; expected \"Callable[[str], SupportsDunderLT[Any] | SupportsDunderGT[Any]]\"  [arg-type]"
+    },
+    {
+      "file": "compass\\optimizer\\search_space\\builder.py",
+      "line": 24,
+      "type": "error",
+      "message": " Incompatible return value type (got \"object\", expected \"SupportsDunderLT[Any] | SupportsDunderGT[Any]\")  [return-value]"
+    },
+    {
+      "file": "compass\\optimizer\\search_space\\builder.py",
+      "line": 34,
+      "type": "error",
+      "message": " Value of type \"object\" is not indexable  [index]"
+    },
+    {
+      "file": "compass\\optimizer\\core\\prober.py",
+      "line": 6,
+      "type": "error",
+      "message": " Unused \"type: ignore\" comment  [unused-ignore]"
+    },
+    {
+      "file": "compass\\optimizer\\core\\prober.py",
+      "line": 33,
+      "type": "error",
+      "message": " Unused \"type: ignore\" comment  [unused-ignore]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 18,
+      "type": "error",
+      "message": " Incompatible default for argument \"max_bytes\" (default has type \"None\", argument has type \"int\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 18,
+      "type": "note",
+      "message": " PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 18,
+      "type": "note",
+      "message": " Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 19,
+      "type": "error",
+      "message": " Incompatible default for argument \"backup_count\" (default has type \"None\", argument has type \"int\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 19,
+      "type": "note",
+      "message": " PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 19,
+      "type": "note",
+      "message": " Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 87,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"RotatingFileHandler\", variable has type \"TimedRotatingFileHandler\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 108,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"RotatingFileHandler\", variable has type \"TimedRotatingFileHandler\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\utils\\backup.py",
+      "line": 232,
+      "type": "error",
+      "message": " Argument \"key\" to \"sort\" of \"list\" has incompatible type \"Callable[[dict[str, object]], object]\"; expected \"Callable[[dict[str, object]], SupportsDunderLT[Any] | SupportsDunderGT[Any]]\"  [arg-type]"
+    },
+    {
+      "file": "compass\\service\\utils\\backup.py",
+      "line": 232,
+      "type": "error",
+      "message": " Incompatible return value type (got \"object\", expected \"SupportsDunderLT[Any] | SupportsDunderGT[Any]\")  [return-value]"
+    },
+    {
+      "file": "compass\\service\\middleware\\metrics.py",
+      "line": 10,
+      "type": "error",
+      "message": " Cannot find implementation or library stub for module named \"starlette.middleware.base\"  [import-not-found]"
+    },
+    {
+      "file": "compass\\service\\middleware\\metrics.py",
+      "line": 11,
+      "type": "error",
+      "message": " Cannot find implementation or library stub for module named \"starlette.responses\"  [import-not-found]"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 11,
+      "type": "error",
+      "message": " Cannot find implementation or library stub for module named \"skopt\"  [import-not-found]"
+    },
+    {
+      "file": "compass\\optimizer\\strategies.py",
+      "line": 12,
+      "type": "error",
+      "message": " Cannot find implementation or library stub for module named \"skopt.space\"  [import-not-found]"
+    },
+    {
+      "file": "compass\\service\\registry\\client.py",
+      "line": 117,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"float\", variable has type \"int\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 205,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"float\", variable has type \"int\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 214,
+      "type": "error",
+      "message": " \"str\" has no attribute \"HTTP_500_INTERNAL_SERVER_ERROR\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\routes\\data.py",
+      "line": 241,
+      "type": "error",
+      "message": " \"str\" has no attribute \"HTTP_500_INTERNAL_SERVER_ERROR\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 20,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"Path\", variable has type \"str\")  [assignment]"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 21,
+      "type": "error",
+      "message": " \"str\" has no attribute \"mkdir\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\data\\processing.py",
+      "line": 22,
+      "type": "error",
+      "message": " Unsupported left operand type for / (\"str\")  [operator]"
+    },
+    {
+      "file": "compass\\training\\loop.py",
+      "line": 1,
+      "type": "error",
+      "message": " Library stubs not installed for \"tqdm\"  [import-untyped]"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 170,
+      "type": "error",
+      "message": " Argument 1 to \"get\" of \"LRUModelCache\" has incompatible type \"str | None\"; expected \"str\"  [arg-type]"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 204,
+      "type": "error",
+      "message": " Argument 1 to \"put\" of \"LRUModelCache\" has incompatible type \"str | None\"; expected \"str\"  [arg-type]"
+    },
+    {
+      "file": "compass\\service\\services\\inference_service.py",
+      "line": 262,
+      "type": "error",
+      "message": " Item \"None\" of \"ModelResponse | None\" has no attribute \"model_id\"  [union-attr]"
+    },
+    {
+      "file": "compass\\data\\dataset.py",
+      "line": 8,
+      "type": "error",
+      "message": " Library stubs not installed for \"tqdm\"  [import-untyped]"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 89,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"tuple[str, Any, Any, Any, Any, Any, Any]\", variable has type \"tuple[list[tuple[Any, Any]], Any, Any, Any, Any]\")  [assignment]"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 99,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"tuple[list[tuple[Any, Any]], Any, Any]\", variable has type \"tuple[list[tuple[Any, Any]], Any, Any, Any, Any]\")  [assignment]"
+    },
+    {
+      "file": "compass\\optimizer\\__main__.py",
+      "line": 101,
+      "type": "error",
+      "message": " Cannot call function of unknown type  [operator]"
+    },
+    {
+      "file": "compass\\main.py",
+      "line": 94,
+      "type": "error",
+      "message": " Argument 1 to \"int\" has incompatible type \"str | None\"; expected \"str | Buffer | SupportsInt | SupportsIndex | SupportsTrunc\"  [arg-type]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 21,
+      "type": "error",
+      "message": " Library stubs not installed for \"psutil\"  [import-untyped]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 21,
+      "type": "note",
+      "message": " Hint: \"python3 -m pip install types-psutil\""
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 141,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"AbstractEventLoop\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 143,
+      "type": "error",
+      "message": " \"None\" has no attribute \"run_forever\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 145,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"Thread\", variable has type \"None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 146,
+      "type": "error",
+      "message": " \"None\" has no attribute \"start\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 155,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 195,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 229,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 267,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 383,
+      "type": "error",
+      "message": " \"object\" has no attribute \"append\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 396,
+      "type": "error",
+      "message": " \"object\" has no attribute \"append\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 412,
+      "type": "error",
+      "message": " \"object\" has no attribute \"append\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 424,
+      "type": "error",
+      "message": " \"object\" has no attribute \"append\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 692,
+      "type": "error",
+      "message": " Item \"None\" of \"datetime | None\" has no attribute \"strftime\"  [union-attr]"
+    },
+    {
+      "file": "compass\\service\\services\\training_service.py",
+      "line": 892,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"float\", variable has type \"int\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 463,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 473,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 496,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 500,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 573,
+      "type": "error",
+      "message": " Statement is unreachable  [unreachable]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 609,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"Task[Any]\", variable has type \"TrainingTaskResponse | None\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 610,
+      "type": "error",
+      "message": " \"TrainingTaskResponse\" has no attribute \"cancel\"  [attr-defined]"
+    },
+    {
+      "file": "compass\\service\\routes\\training.py",
+      "line": 612,
+      "type": "error",
+      "message": " Incompatible types in \"await\" (actual type \"TrainingTaskResponse\", expected type \"Awaitable[Any]\")  [misc]"
+    },
+    {
+      "file": "compass\\service\\server.py",
+      "line": 250,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"None\", variable has type \"CompassRegistryClient\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 18,
+      "type": "error",
+      "message": " Incompatible default for argument \"max_bytes\" (default has type \"None\", argument has type \"int\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 18,
+      "type": "note",
+      "message": " PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 18,
+      "type": "note",
+      "message": " Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 19,
+      "type": "error",
+      "message": " Incompatible default for argument \"backup_count\" (default has type \"None\", argument has type \"int\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 19,
+      "type": "note",
+      "message": " PEP 484 prohibits implicit Optional. Accordingly, mypy has changed its default to no_implicit_optional=True"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 19,
+      "type": "note",
+      "message": " Use https://github.com/hauntsaninja/no_implicit_optional to automatically upgrade your codebase"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 87,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"RotatingFileHandler\", variable has type \"TimedRotatingFileHandler\")  [assignment]"
+    },
+    {
+      "file": "compass\\service\\logging_config.py",
+      "line": 108,
+      "type": "error",
+      "message": " Incompatible types in assignment (expression has type \"RotatingFileHandler\", variable has type \"TimedRotatingFileHandler\")  [assignment]"
+    }
+  ],
+  "syntax": [],
+  "batch": [
+    {
+      "file": "check_ports.bat",
+      "issues": [
+        {
+          "line": 10,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 11,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 13,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 21,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用Python但缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "Windows批处理文件应使用反斜杠路径分隔符",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "file": "start_all_services.bat",
+      "issues": [
+        {
+          "line": 10,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 11,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 12,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 15,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 16,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 17,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 20,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 21,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 22,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 25,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "file": "test_start_script.bat",
+      "issues": [
+        {
+          "line": 11,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 12,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 13,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 14,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 16,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 17,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 18,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 20,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 24,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 25,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 26,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 27,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 29,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 30,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 31,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 33,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用Python但缺少PYTHONPATH设置",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "file": "scripts\\format_code.bat",
+      "issues": [
+        {
+          "line": 9,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用Python但缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "缺少chcp 65001设置，可能导致中文显示问题",
+          "severity": "info"
+        }
+      ]
+    },
+    {
+      "file": "scripts\\install_check_tools.bat",
+      "issues": [
+        {
+          "line": 6,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 11,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用Python但缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "缺少chcp 65001设置，可能导致中文显示问题",
+          "severity": "info"
+        }
+      ]
+    },
+    {
+      "file": "scripts\\run_checks_in_conda.bat",
+      "issues": [
+        {
+          "line": 12,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 26,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 28,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用了%~dp0但可能缺少cd命令切换到脚本目录",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用Python但缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "缺少chcp 65001设置，可能导致中文显示问题",
+          "severity": "info"
+        }
+      ]
+    },
+    {
+      "file": "scripts\\run_lint.bat",
+      "issues": [
+        {
+          "line": 6,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用Python但缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "缺少chcp 65001设置，可能导致中文显示问题",
+          "severity": "info"
+        }
+      ]
+    },
+    {
+      "file": "scripts\\run_tests.bat",
+      "issues": [
+        {
+          "line": 6,
+          "issue": "使用Python但可能缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "使用Python但缺少PYTHONPATH设置",
+          "severity": "warning"
+        },
+        {
+          "line": 0,
+          "issue": "缺少chcp 65001设置，可能导致中文显示问题",
+          "severity": "info"
+        }
+      ]
+    }
+  ]
+}

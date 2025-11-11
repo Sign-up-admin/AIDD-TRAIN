@@ -1,0 +1,142 @@
+Report generated at: 2025-11-07T12:49:20.222686
+Tool: black
+Description: Code formatting check
+Exit Code: 1
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: services
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: FLASH_DOCK-main/services
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: FLASH_DOCK-main/pages
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: FLASH_DOCK-main/FlashDock.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: scripts
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: check_and_start_services.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: check_ports.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: check_service_status.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: check_websocket_route.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: test_compass_service.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: test_output_streaming.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: test_stop_training.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: test_websocket_stream.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: test_ws_simple.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: verify_fixes.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: debug_training_management.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: diagnose_compass_registration.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+
+================================================================================
+Checking: quick_test_stop.py
+================================================================================
+C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe: No module named black
+
+================================================================================
+Summary of Issues:
+  - compass: Formatting issues found
+  - services: Formatting issues found
+  - FLASH_DOCK-main/services: Formatting issues found
+  - FLASH_DOCK-main/pages: Formatting issues found
+  - FLASH_DOCK-main/FlashDock.py: Formatting issues found
+  - scripts: Formatting issues found
+  - check_and_start_services.py: Formatting issues found
+  - check_ports.py: Formatting issues found
+  - check_service_status.py: Formatting issues found
+  - check_websocket_route.py: Formatting issues found
+  - test_compass_service.py: Formatting issues found
+  - test_output_streaming.py: Formatting issues found
+  - test_stop_training.py: Formatting issues found
+  - test_websocket_stream.py: Formatting issues found
+  - test_ws_simple.py: Formatting issues found
+  - verify_fixes.py: Formatting issues found
+  - debug_training_management.py: Formatting issues found
+  - diagnose_compass_registration.py: Formatting issues found
+  - quick_test_stop.py: Formatting issues found

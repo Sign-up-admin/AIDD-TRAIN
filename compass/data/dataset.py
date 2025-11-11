@@ -58,10 +58,21 @@ class PDBBindDataset(Dataset):
         if force_reprocess_flag and os.path.exists(root):
             print(f"\n--- FORCE REPROCESSING ENABLED ---")
             print(f"Deleting existing root data directory: {root}")
-            shutil.rmtree(root)
-            print("--- Deletion complete. Starting fresh processing. ---\n")
+            try:
+                shutil.rmtree(root)
+                print("--- Deletion complete. Starting fresh processing. ---\n")
+            except (OSError, PermissionError) as e:
+                # On Windows, rmtree may fail if files are in use
+                # Check if cancellation was requested before raising
+                if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
+                    if self._logger.progress_tracker.is_cancelled():
+                        print("--- Deletion skipped due to cancellation ---\n")
+                        raise RuntimeError("Data processing cancelled by user") from e
+                # If not cancelled, re-raise the error
+                print(f"--- Warning: Failed to delete directory (may be in use): {e} ---\n")
+                raise
 
-        super(PDBBindDataset, self).__init__(root, transform, pre_transform)
+        super().__init__(root, transform, pre_transform)
 
     @property
     def raw_file_names(self):
@@ -97,8 +108,18 @@ class PDBBindDataset(Dataset):
             with Pool(processes=self.num_workers) as pool:
                 pbar = tqdm(pool.imap_unordered(_process_and_save_helper, tasks), total=len(tasks), desc="Processing Raw Data")
                 for idx, (result, error_msg) in enumerate(pbar):
+                    # Check for cancellation during data processing
+                    if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
+                        if self._logger.progress_tracker.is_cancelled():
+                            print("\n--- Data processing cancelled by user ---")
+                            pbar.close()
+                            pool.terminate()
+                            pool.join()
+                            raise RuntimeError("Data processing cancelled by user")
+                    
                     success_count += result
-                    if error_msg: logging.warning(error_msg)
+                    if error_msg:
+                        logging.warning(error_msg)
                     # Update progress if logger has progress tracker
                     if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
                         self._logger.progress_tracker.update_data_processing(
@@ -109,9 +130,16 @@ class PDBBindDataset(Dataset):
         else:
             print("Processing data sequentially...")
             for idx, task in enumerate(tqdm(tasks, desc="Processing Raw Data")):
+                # Check for cancellation during data processing
+                if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
+                    if self._logger.progress_tracker.is_cancelled():
+                        print("\n--- Data processing cancelled by user ---")
+                        raise RuntimeError("Data processing cancelled by user")
+                
                 result, error_msg = _process_and_save_helper(task)
                 success_count += result
-                if error_msg: logging.warning(error_msg)
+                if error_msg:
+                    logging.warning(error_msg)
                 # Update progress if logger has progress tracker
                 if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
                     self._logger.progress_tracker.update_data_processing(
@@ -140,7 +168,8 @@ class PDBBindDataset(Dataset):
         """
         try:
             path = os.path.join(self.processed_dir, self.processed_file_names[idx])
-            if not os.path.exists(path): return None
+            if not os.path.exists(path):
+                return None
             data = torch.load(path, weights_only=False)
             if data is not None:
                 data.pdb_code = self.data_paths[idx].get('pdb_code', f'index_{idx}')

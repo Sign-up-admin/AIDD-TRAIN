@@ -5,7 +5,17 @@ secondaryBackgroundColor = "#F0F2F6"
 textColor = "#262730"
 font = "sans serif"
 
-[server]
-enableCORS = false
-enableXsrfProtection = false
+# Sidebar 主题配置
+# 为所有必需的颜色属性设置有效值，避免空字符串导致的解析错误
+[theme.sidebar]
+backgroundColor = "#F0F2F6"
+textColor = "#262730"
+widgetBackgroundColor = "#FFFFFF"
+widgetBorderColor = "#E0E0E0"
+skeletonBackgroundColor = "#F0F2F6"
 
+[server]
+# 禁用某些外部连接以减少代理错误
+# 这些设置不会影响应用的核心功能
+enableCORS = false
+enableXsrfProtection = true

@@ -73,6 +73,21 @@ class TrainingTaskCreate(BaseModel):
             raise ValueError("dataset_id cannot be empty")
         return v
 
+    @validator("description")
+    def validate_description(cls, v):
+        """Validate and sanitize description field."""
+        if v is not None:
+            if not isinstance(v, str):
+                raise ValueError("description must be a string")
+            # Remove potentially dangerous characters (XSS prevention)
+            # Since this is stored and returned as JSON, HTML/script tags won't execute
+            # But we still sanitize to prevent issues
+            if len(v) > 10000:  # Limit description length
+                raise ValueError("description must be less than 10000 characters")
+            # Remove null bytes and control characters
+            v = v.replace("\x00", "").replace("\r", "")
+        return v
+
 
 class TrainingTaskResponse(BaseModel):
     """Response model for training task."""

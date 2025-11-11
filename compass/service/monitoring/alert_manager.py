@@ -307,3 +307,13 @@ def setup_webhook_alert_handler(webhook_url: str):
             logger.warning(f"Failed to send alert to webhook: {e}")
 
     alert_manager.add_handler(webhook_handler)
+
+
+
+
+
+
+
+
+
+

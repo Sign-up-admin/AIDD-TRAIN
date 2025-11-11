@@ -195,3 +195,13 @@ def benchmark_inference_service(
             pass
 
     return runner.run_benchmark("Inference Service", inference_func, iterations=num_iterations)
+
+
+
+
+
+
+
+
+
+

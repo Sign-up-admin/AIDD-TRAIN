@@ -27,6 +27,7 @@ def run(trainer):
         ):
             from compass.training.exceptions import TrainingCancelled
 
+            trainer.logger.log(f"[CANCELLATION] Training cancelled detected before epoch {epoch}")
             raise TrainingCancelled("Training cancelled by user")
 
         trainer.run_epoch(epoch, current_stage=0)  # 0 for standard

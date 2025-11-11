@@ -78,6 +78,8 @@ class ServiceConfig:
     min_available_memory_gb: float = 2.0  # Minimum available memory (GB) required for new tasks
     max_cpu_percent: float = 90.0  # Maximum CPU usage percent before rejecting new tasks
     enable_resource_check: bool = True  # Enable resource pre-check before task creation
+    test_mode: bool = False  # Test mode - relaxes resource checks for testing
+    resource_check_relaxed: bool = False  # Relaxed resource check mode - allows higher CPU usage
 
 
 class ConfigManager:
@@ -175,6 +177,8 @@ class ConfigManager:
             "MIN_AVAILABLE_MEMORY_GB": "min_available_memory_gb",
             "MAX_CPU_PERCENT": "max_cpu_percent",
             "ENABLE_RESOURCE_CHECK": "enable_resource_check",
+            "TEST_MODE": "test_mode",
+            "RESOURCE_CHECK_RELAXED": "resource_check_relaxed",
         }
 
         for env_var, attr_name in env_mapping.items():

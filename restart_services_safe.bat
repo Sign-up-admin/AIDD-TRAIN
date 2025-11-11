@@ -7,17 +7,13 @@ echo Restarting COMPASS Microservices
 echo ========================================
 echo.
 
-REM Get project root (relative to script location)
-set "PROJECT_ROOT=%~dp0"
-set "PROJECT_ROOT=%PROJECT_ROOT:~0,-1%"
+REM Get project root (absolute path)
+cd /d %~dp0
+set "PROJECT_ROOT=%CD%"
 
-REM Check if conda is available
-where conda >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    set "USE_CONDA=1"
-) else (
-    set "USE_CONDA=0"
-)
+REM Find conda python executables (will be set later)
+set PYTHON_AIDDTRAIN=python
+set PYTHON_FLASHDOCK=python
 
 echo [Step 1/5] Stopping existing services...
 echo Finding and stopping processes on ports 8500, 8080, and 8501...
@@ -48,10 +44,24 @@ echo.
 REM Set PYTHONPATH
 set "PYTHONPATH=%PROJECT_ROOT%"
 
-if "%USE_CONDA%"=="1" (
-    start "Service Registry - Port 8500" cmd /k "cd /d \"%PROJECT_ROOT%\" && conda activate AIDDTRAIN && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500"
+REM Find conda python executables
+set PYTHON_AIDDTRAIN=python
+set PYTHON_FLASHDOCK=python
+
+if exist "%USERPROFILE%\anaconda3\envs\AIDDTRAIN\python.exe" (
+    set PYTHON_AIDDTRAIN=%USERPROFILE%\anaconda3\envs\AIDDTRAIN\python.exe
+    set PYTHON_FLASHDOCK=%USERPROFILE%\anaconda3\envs\flash_dock\python.exe
 ) else (
-    start "Service Registry - Port 8500" cmd /k "cd /d \"%PROJECT_ROOT%\" && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500"
+    if exist "C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe" (
+        set PYTHON_AIDDTRAIN=C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe
+        set PYTHON_FLASHDOCK=C:\ProgramData\Anaconda3\envs\flash_dock\python.exe
+    )
+)
+
+if exist "%PYTHON_AIDDTRAIN%" (
+    start "Service Registry - Port 8500" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && %PYTHON_AIDDTRAIN% services\registry\server.py --host 0.0.0.0 --port 8500"
+) else (
+    start "Service Registry - Port 8500" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500"
 )
 
 echo Waiting for Service Registry to start...
@@ -59,10 +69,10 @@ timeout /t 5 /nobreak >nul 2>&1
 
 echo.
 echo [Step 3/5] Starting COMPASS Service (port 8080)...
-if "%USE_CONDA%"=="1" (
-    start "COMPASS Service - Port 8080" cmd /k "cd /d \"%PROJECT_ROOT%\" && conda activate AIDDTRAIN && set PYTHONPATH=%PROJECT_ROOT% && python compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500"
+if exist "%PYTHON_AIDDTRAIN%" (
+    start "COMPASS Service - Port 8080" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && %PYTHON_AIDDTRAIN% compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500"
 ) else (
-    start "COMPASS Service - Port 8080" cmd /k "cd /d \"%PROJECT_ROOT%\" && set PYTHONPATH=%PROJECT_ROOT% && python compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500"
+    start "COMPASS Service - Port 8080" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && python compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500"
 )
 
 echo Waiting for COMPASS service to register...
@@ -70,10 +80,10 @@ timeout /t 5 /nobreak >nul 2>&1
 
 echo.
 echo [Step 4/5] Starting FLASH-DOCK (port 8501)...
-if "%USE_CONDA%"=="1" (
-    start "FLASH-DOCK - Port 8501" cmd /k "cd /d \"%PROJECT_ROOT%\FLASH_DOCK-main\" && conda activate flash_dock && set PYTHONPATH=%PROJECT_ROOT% && python -m streamlit run FlashDock.py --server.port 8501"
+if exist "%PYTHON_FLASHDOCK%" (
+    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %PROJECT_ROOT%\FLASH_DOCK-main && set PYTHONPATH=%PROJECT_ROOT% && %PYTHON_FLASHDOCK% -m streamlit run FlashDock.py --server.port 8501"
 ) else (
-    start "FLASH-DOCK - Port 8501" cmd /k "cd /d \"%PROJECT_ROOT%\FLASH_DOCK-main\" && set PYTHONPATH=%PROJECT_ROOT% && python -m streamlit run FlashDock.py --server.port 8501"
+    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %PROJECT_ROOT%\FLASH_DOCK-main && set PYTHONPATH=%PROJECT_ROOT% && python -m streamlit run FlashDock.py --server.port 8501"
 )
 
 echo.

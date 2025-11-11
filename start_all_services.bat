@@ -26,32 +26,39 @@ if exist "%USERPROFILE%\anaconda3\envs\AIDDTRAIN\python.exe" (
     )
 )
 
+REM Get project root directory (absolute path)
+cd /d %~dp0
+set "PROJECT_ROOT=%CD%"
+
 REM Set PYTHONPATH
-set PYTHONPATH=%~dp0
+set "PYTHONPATH=%PROJECT_ROOT%"
+
+echo Project Root: %PROJECT_ROOT%
+echo.
 
 echo Step 1: Starting Service Registry...
 if exist "%PYTHON_AIDDTRAIN%" (
-    start "Service Registry - Port 8500" cmd /k "cd /d %~dp0 && set PYTHONPATH=%~dp0 && %PYTHON_AIDDTRAIN% services\registry\server.py --host 0.0.0.0 --port 8500 && pause"
+    start "Service Registry - Port 8500" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && %PYTHON_AIDDTRAIN% services\registry\server.py --host 0.0.0.0 --port 8500 && pause"
 ) else (
-    start "Service Registry - Port 8500" cmd /k "cd /d %~dp0 && set PYTHONPATH=%~dp0 && python services\registry\server.py --host 0.0.0.0 --port 8500 && pause"
+    start "Service Registry - Port 8500" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500 && pause"
 )
 echo Waiting for Service Registry to start...
 timeout /t 5 /nobreak >nul 2>&1
 
 echo Step 2: Starting COMPASS Service...
 if exist "%PYTHON_AIDDTRAIN%" (
-    start "COMPASS Service - Port 8080" cmd /k "cd /d %~dp0 && set PYTHONPATH=%~dp0 && %PYTHON_AIDDTRAIN% compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500 && pause"
+    start "COMPASS Service - Port 8080" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && %PYTHON_AIDDTRAIN% compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500 && pause"
 ) else (
-    start "COMPASS Service - Port 8080" cmd /k "cd /d %~dp0 && set PYTHONPATH=%~dp0 && python compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500 && pause"
+    start "COMPASS Service - Port 8080" cmd /k "cd /d %PROJECT_ROOT% && set PYTHONPATH=%PROJECT_ROOT% && python compass\service_main.py --host 0.0.0.0 --port 8080 --registry-url http://localhost:8500 && pause"
 )
 echo Waiting for COMPASS service to register...
 timeout /t 5 /nobreak >nul 2>&1
 
 echo Step 3: Starting FLASH-DOCK...
 if exist "%PYTHON_FLASHDOCK%" (
-    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %~dp0FLASH_DOCK-main && set PYTHONPATH=%~dp0 && %PYTHON_FLASHDOCK% -m streamlit run FlashDock.py --server.port 8501 && pause"
+    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %PROJECT_ROOT%\FLASH_DOCK-main && set PYTHONPATH=%PROJECT_ROOT% && %PYTHON_FLASHDOCK% -m streamlit run FlashDock.py --server.port 8501 && pause"
 ) else (
-    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %~dp0FLASH_DOCK-main && set PYTHONPATH=%~dp0 && python -m streamlit run FlashDock.py --server.port 8501 && pause"
+    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %PROJECT_ROOT%\FLASH_DOCK-main && set PYTHONPATH=%PROJECT_ROOT% && python -m streamlit run FlashDock.py --server.port 8501 && pause"
 )
 
 echo.

@@ -1,0 +1,528 @@
+Run started:2025-11-06 17:56:50.605003
+
+Test results:
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: .\FLASH_DOCK-main/FlashDock.py:5:0
+4	import shutil
+5	import subprocess
+6	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: .\FLASH_DOCK-main/FlashDock.py:49:27
+48	                if fg:
+49	                    return subprocess.run(cmd_list, cwd=cwd, check=False)
+50	                else:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: .\FLASH_DOCK-main/FlashDock.py:51:27
+50	                else:
+51	                    return subprocess.Popen(cmd_list, cwd=cwd)
+52	
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: .\FLASH_DOCK-main/FlashDock.py:71:0
+70	import json
+71	import subprocess
+72	import tempfile  # 用于创建临时文件
+
+--------------------------------------------------
+>> Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified, security issue.
+   Severity: High   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b602_subprocess_popen_with_shell_equals_true.html
+   Location: .\FLASH_DOCK-main/FlashDock.py:456:29
+455	                    # 执行命令
+456	                    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+457	
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: .\FLASH_DOCK-main/FlashDock.py:499:4
+498	    import pandas as pd
+499	    import subprocess
+500	    import tempfile
+
+--------------------------------------------------
+>> Issue: [B602:subprocess_popen_with_shell_equals_true] subprocess call with shell=True identified, security issue.
+   Severity: High   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b602_subprocess_popen_with_shell_equals_true.html
+   Location: .\FLASH_DOCK-main/FlashDock.py:665:53
+664	                                            result = subprocess.run(
+665	                                                command, shell=True, capture_output=True, text=True
+666	                                            )
+667	
+668	                                            if result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: .\FLASH_DOCK-main/FlashDock.py:717:4
+716	    import tempfile
+717	    import subprocess
+718	    import pandas as pd
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: .\FLASH_DOCK-main/FlashDock.py:782:41
+781	
+782	                                result = subprocess.run(cmd, capture_output=True, text=True)
+783	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: .\FLASH_DOCK-main/FlashDock.py:849:49
+848	
+849	                                        result = subprocess.run(cmd, capture_output=True, text=True)
+850	
+
+--------------------------------------------------
+>> Issue: [B608:hardcoded_sql_expressions] Possible SQL injection vector through string-based query construction.
+   Severity: Medium   Confidence: Low
+   CWE: CWE-89 (https://cwe.mitre.org/data/definitions/89.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b608_hardcoded_sql_expressions.html
+   Location: FLASH_DOCK-main/pages\training_management.py:480:11
+479	    
+480	    return f"""
+481	    <!DOCTYPE html>
+482	    <html>
+483	    <head>
+484	        <meta charset="UTF-8">
+485	        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+486	        <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.js"></script>
+487	        <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit@0.8.0/lib/xterm-addon-fit.js"></script>
+488	        <style>
+489	            body {{
+490	                margin: 0;
+491	                padding: 10px;
+492	                background-color: #1e1e1e;
+493	                font-family: monospace;
+494	            }}
+495	            #terminal {{
+496	                width: 100%;
+497	                height: 480px;
+498	            }}
+499	            #resources {{
+500	                display: grid;
+501	                grid-template-columns: repeat(4, 1fr);
+502	                gap: 10px;
+503	                padding: 10px;
+504	                background-color: #2d2d2d;
+505	                border-bottom: 1px solid #3e3e3e;
+506	            }}
+507	            .resource-item {{
+508	                background-color: #1e1e1e;
+509	                padding: 10px;
+510	                border-radius: 4px;
+511	                border: 1px solid #3e3e3e;
+512	            }}
+513	            .resource-label {{
+514	                color: #d4d4d4;
+515	                font-size: 12px;
+516	                margin-bottom: 5px;
+517	            }}
+518	            .resource-value {{
+519	                color: #0dbc79;
+520	                font-size: 18px;
+521	                font-weight: bold;
+522	                margin-bottom: 5px;
+523	            }}
+524	            .resource-detail {{
+525	                color: #888;
+526	                font-size: 11px;
+527	            }}
+528	            .progress-bar {{
+529	                width: 100%;
+530	                height: 6px;
+531	                background-color: #3e3e3e;
+532	                border-radius: 3px;
+533	                overflow: hidden;
+534	                margin-top: 5px;
+535	            }}
+536	            .progress-fill {{
+537	                height: 100%;
+538	                background-color: #0dbc79;
+539	                transition: width 0.3s ease;
+540	            }}
+541	            #status {{
+542	                color: #d4d4d4;
+543	                font-size: 12px;
+544	                padding: 5px;
+545	                background-color: #2d2d2d;
+546	                border-bottom: 1px solid #3e3e3e;
+547	            }}
+548	            .status-connected {{
+549	                color: #0dbc79;
+550	            }}
+551	            .status-connecting {{
+552	                color: #e5e510;
+553	            }}
+554	            .status-disconnected {{
+555	                color: #cd3131;
+556	            }}
+557	        </style>
+558	    </head>
+559	    <body>
+560	        <div id="status">状态: <span id="status-text" class="status-connecting">连接中...</span></div>
+561	        <div id="resources">
+562	            <div class="resource-item">
+563	                <div class="resource-label">CPU</div>
+564	                <div class="resource-value" id="cpu-value">0.0%</div>
+565	                <div class="progress-bar"><div class="progress-fill" id="cpu-progress" style="width: 0%"></div></div>
+566	            </div>
+567	            <div class="resource-item">
+568	                <div class="resource-label">内存</div>
+569	                <div class="resource-value" id="memory-value">0.0%</div>
+570	                <div class="resource-detail" id="memory-detail">0.0 GB / 0.0 GB</div>
+571	                <div class="progress-bar"><div class="progress-fill" id="memory-progress" style="width: 0%"></div></div>
+572	            </div>
+573	            <div class="resource-item">
+574	                <div class="resource-label">GPU</div>
+575	                <div class="resource-value" id="gpu-value">不可用</div>
+576	                <div class="resource-detail" id="gpu-detail"></div>
+577	                <div class="progress-bar"><div class="progress-fill" id="gpu-progress" style="width: 0%"></div></div>
+578	            </div>
+579	            <div class="resource-item">
+580	                <div class="resource-label">存储</div>
+581	                <div class="resource-value" id="storage-value">0.0%</div>
+582	                <div class="resource-detail" id="storage-detail">0.0 GB / 0.0 GB</div>
+583	                <div class="progress-bar"><div class="progress-fill" id="storage-progress" style="width: 0%"></div></div>
+584	            </div>
+585	        </div>
+586	        <div id="terminal"></div>
+587	        <script>
+588	            const wsUrl = {ws_url_escaped};
+589	            const taskId = {task_id_escaped};
+590	            
+591	            // Initialize terminal
+592	            const term = new Terminal({{
+593	                theme: {{
+594	                    background: '#1e1e1e',
+595	                    foreground: '#d4d4d4',
+596	                    cursor: '#aeafad',
+597	                    selection: '#3e3e3e',
+598	                    black: '#1e1e1e',
+599	                    red: '#cd3131',
+600	                    green: '#0dbc79',
+601	                    yellow: '#e5e510',
+602	                    blue: '#2472c8',
+603	                    magenta: '#bc3fbc',
+604	                    cyan: '#11a8cd',
+605	                    white: '#e5e5e5',
+606	                    brightBlack: '#666666',
+607	                    brightRed: '#f14c4c',
+608	                    brightGreen: '#23d18b',
+609	                    brightYellow: '#f5f543',
+610	                    brightBlue: '#3b8eea',
+611	                    brightMagenta: '#d670d6',
+612	                    brightCyan: '#29b8db',
+613	                    brightWhite: '#e5e5e5'
+614	                }},
+615	                fontSize: 12,
+616	                fontFamily: 'Consolas, "Courier New", monospace',
+617	                cursorBlink: true,
+618	                cursorStyle: 'block',
+619	                scrollback: 10000,
+620	                convertEol: true,
+621	                disableStdin: false  // Allow input for future command support
+622	            }});
+623	            
+624	            const fitAddon = new FitAddon.FitAddon();
+625	            term.loadAddon(fitAddon);
+626	            
+627	            term.open(document.getElementById('terminal'));
+628	            fitAddon.fit();
+629	            
+630	            // WebSocket connection
+631	            let ws = null;
+632	            let reconnectDelay = 1000;
+633	            let maxReconnectDelay = 60000;
+634	            let reconnectTimer = null;
+635	            let isReconnecting = false;
+636	            let lastPongTime = Date.now();
+637	            const pingInterval = 30000; // 30 seconds
+638	            const pongTimeout = 60000; // 60 seconds
+639	            
+640	            // Status element
+641	            const statusText = document.getElementById('status-text');
+642	            
+643	            function updateStatus(text, className) {{
+644	                statusText.textContent = text;
+645	                statusText.className = className;
+646	            }}
+647	            
+648	            function updateResources(resources) {{
+649	                // Update CPU
+650	                const cpuPercent = resources.cpu_percent || 0;
+651	                document.getElementById('cpu-value').textContent = cpuPercent.toFixed(1) + '%';
+652	                document.getElementById('cpu-progress').style.width = cpuPercent + '%';
+653	                
+654	                // Update Memory
+655	                const memory = resources.memory || {{}};
+656	                const memPercent = memory.percent || 0;
+657	                const memUsed = memory.used_gb || 0;
+658	                const memTotal = memory.total_gb || 0;
+659	                document.getElementById('memory-value').textContent = memPercent.toFixed(1) + '%';
+660	                document.getElementById('memory-detail').textContent = memUsed.toFixed(1) + ' GB / ' + memTotal.toFixed(1) + ' GB';
+661	                document.getElementById('memory-progress').style.width = memPercent + '%';
+662	                
+663	                // Update GPU
+664	                const gpu = resources.gpu || {{}};
+665	                if (gpu.available && gpu.memory) {{
+666	                    const gpuPercent = gpu.memory.allocated_percent || 0;
+667	                    document.getElementById('gpu-value').textContent = gpuPercent.toFixed(1) + '%';
+668	                    document.getElementById('gpu-detail').textContent = gpu.device_name || 'N/A';
+669	                    document.getElementById('gpu-progress').style.width = gpuPercent + '%';
+670	                }} else {{
+671	                    document.getElementById('gpu-value').textContent = '不可用';
+672	                    document.getElementById('gpu-detail').textContent = '';
+673	                    document.getElementById('gpu-progress').style.width = '0%';
+674	                }}
+675	                
+676	                // Update Storage
+677	                const storage = resources.storage || {{}};
+678	                if (storage.available || storage.total_gb > 0) {{
+679	                    const storagePercent = storage.percent || 0;
+680	                    const storageUsed = storage.used_gb || 0;
+681	                    const storageTotal = storage.total_gb || 0;
+682	                    document.getElementById('storage-value').textContent = storagePercent.toFixed(1) + '%';
+683	                    document.getElementById('storage-detail').textContent = storageUsed.toFixed(1) + ' GB / ' + storageTotal.toFixed(1) + ' GB';
+684	                    document.getElementById('storage-progress').style.width = storagePercent + '%';
+685	                }} else {{
+686	                    document.getElementById('storage-value').textContent = '不可用';
+687	                    document.getElementById('storage-detail').textContent = '';
+688	                    document.getElementById('storage-progress').style.width = '0%';
+689	                }}
+690	            }}
+691	            
+692	            function connect() {{
+693	                if (isReconnecting) {{
+694	                    return;
+695	                }}
+696	                
+697	                try {{
+698	                    updateStatus('连接中...', 'status-connecting');
+699	                    ws = new WebSocket(wsUrl);
+700	                    
+701	                    ws.onopen = function(event) {{
+702	                        updateStatus('已连接', 'status-connected');
+703	                        reconnectDelay = 1000; // Reset reconnect delay on successful connection
+704	                        isReconnecting = false;
+705	                        lastPongTime = Date.now();
+706	                        term.write('\\r\\n\\x1b[32m[WebSocket] 已连接到训练任务流\\x1b[0m\\r\\n');
+707	                    }};
+708	                    
+709	                    ws.onmessage = function(event) {{
+710	                        try {{
+711	                            const message = JSON.parse(event.data);
+712	                            const msgType = message.type;
+713	                            const msgData = message.data;
+714	                            
+715	                            if (msgType === 'log') {{
+716	                                // Write log data directly to terminal (preserves ANSI escape codes)
+717	                                term.write(msgData);
+718	                            }} else if (msgType === 'resources') {{
+719	                                // Update resources display directly
+720	                                updateResources(msgData);
+721	                            }} else if (msgType === 'connected') {{
+722	                                term.write('\\r\\n\\x1b[32m[WebSocket] ' + msgData + '\\x1b[0m\\r\\n');
+723	                            }} else if (msgType === 'ping') {{
+724	                                // Respond to ping
+725	                                ws.send(JSON.stringify({{ type: 'pong', data: 'pong' }}));
+726	                            }} else if (msgType === 'pong') {{
+727	                                lastPongTime = Date.now();
+728	                            }} else if (msgType === 'error') {{
+729	                                term.write('\\r\\n\\x1b[31m[错误] ' + msgData + '\\x1b[0m\\r\\n');
+730	                                updateStatus('错误: ' + msgData, 'status-disconnected');
+731	                            }}
+732	                        }} catch (e) {{
+733	                            console.error('Error processing message:', e);
+734	                            // If not JSON, treat as plain text log
+735	                            term.write(event.data);
+736	                        }}
+737	                    }};
+738	                    
+739	                    ws.onerror = function(error) {{
+740	                        console.error('WebSocket error:', error);
+741	                        updateStatus('连接错误', 'status-disconnected');
+742	                        term.write('\\r\\n\\x1b[31m[WebSocket] 连接错误\\x1b[0m\\r\\n');
+743	                    }};
+744	                    
+745	                    ws.onclose = function(event) {{
+746	                        updateStatus('已断开', 'status-disconnected');
+747	                        term.write('\\r\\n\\x1b[33m[WebSocket] 连接已断开，正在重连...\\x1b[0m\\r\\n');
+748	                        ws = null;
+749	                        
+750	                        // Attempt to reconnect
+751	                        if (!isReconnecting) {{
+752	                            isReconnecting = true;
+753	                            reconnectTimer = setTimeout(function() {{
+754	                                reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
+755	                                connect();
+756	                            }}, reconnectDelay);
+757	                        }}
+758	                    }};
+759	                }} catch (error) {{
+760	                    console.error('Failed to create WebSocket:', error);
+761	                    updateStatus('连接失败', 'status-disconnected');
+762	                    term.write('\\r\\n\\x1b[31m[错误] 无法创建 WebSocket 连接: ' + error.message + '\\x1b[0m\\r\\n');
+763	                    
+764	                    // Retry connection
+765	                    if (!isReconnecting) {{
+766	                        isReconnecting = true;
+767	                        reconnectTimer = setTimeout(function() {{
+768	                            reconnectDelay = Math.min(reconnectDelay * 2, maxReconnectDelay);
+769	                            connect();
+770	                        }}, reconnectDelay);
+771	                    }}
+772	                }}
+773	            }}
+774	            
+775	            // Start connection
+776	            connect();
+777	            
+778	            // Send periodic ping
+779	            setInterval(function() {{
+780	                if (ws && ws.readyState === WebSocket.OPEN) {{
+781	                    const now = Date.now();
+782	                    // Check if we haven't received a pong in too long
+783	                    if (now - lastPongTime > pongTimeout) {{
+784	                        console.warn('Pong timeout, closing connection');
+785	                        ws.close();
+786	                        return;
+787	                    }}
+788	                    // Send ping
+789	                    ws.send(JSON.stringify({{ type: 'ping', data: 'ping' }}));
+790	                }}
+791	            }}, pingInterval);
+792	            
+793	            // Auto-scroll to bottom when new content is written
+794	            const originalWrite = term.write.bind(term);
+795	            term.write = function(data) {{
+796	                originalWrite(data);
+797	                term.scrollToBottom();
+798	            }};
+799	            
+800	            // Handle window resize
+801	            window.addEventListener('resize', function() {{
+802	                fitAddon.fit();
+803	            }});
+804	            
+805	            // Handle terminal input (for future command support)
+806	            term.onData(function(data) {{
+807	                // Echo input to terminal
+808	                term.write(data);
+809	                // Send command to server (if WebSocket is open)
+810	                if (ws && ws.readyState === WebSocket.OPEN) {{
+811	                    // For now, just log it. Future: send commands to server
+812	                    console.log('Terminal input:', data);
+813	                }}
+814	            }});
+815	            
+816	            // Cleanup on page unload
+817	            window.addEventListener('beforeunload', function() {{
+818	                if (reconnectTimer) {{
+819	                    clearTimeout(reconnectTimer);
+820	                }}
+821	                if (ws) {{
+822	                    ws.close();
+823	                }}
+824	            }});
+825	            
+826	            // Scroll to bottom initially
+827	            setTimeout(function() {{
+828	                term.scrollToBottom();
+829	            }}, 100);
+830	        </script>
+831	    </body>
+832	    </html>
+833	    """
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html
+   Location: FLASH_DOCK-main/services\compass_client.py:537:12
+536	                loop.run_until_complete(self._ws.close())
+537	            except Exception:
+538	                pass
+539	        
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html
+   Location: FLASH_DOCK-main/services\compass_client.py:558:20
+557	                        self.on_error(e)
+558	                    except Exception:
+559	                        pass
+560	                
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html
+   Location: FLASH_DOCK-main/services\compass_client.py:625:28
+624	                                self.on_error(e)
+625	                            except Exception:
+626	                                pass
+627	        
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random
+   Location: FLASH_DOCK-main/services\load_balancer.py:79:15
+78	        """Random selection."""
+79	        return random.choice(services)
+80	
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 2535
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 12
+		Medium: 1
+		High: 2
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 1
+		Medium: 0
+		High: 14
+Files skipped (0):

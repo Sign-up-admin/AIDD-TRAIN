@@ -38,6 +38,10 @@ class ProgressAwareLogger(TrainingLogger):
 
     def _update_progress_from_message(self, message: str):
         """Parse message and update progress tracker."""
+        # Check if progress_tracker exists (may be None after unpickling)
+        if not hasattr(self, 'progress_tracker') or self.progress_tracker is None:
+            return
+            
         # Data processing progress
         if "Processing" in message and "items" in message:
             match = re.search(r"Processing (\d+)/(\d+)", message)
@@ -82,18 +86,41 @@ class ProgressAwareLogger(TrainingLogger):
                 message=message,
             )
 
-        # Stage detection
-        if "Step 1:" in message or "Parsing PDBbind" in message:
-            self.progress_tracker.set_stage("data_processing", "Parsing PDBbind index files")
-        elif "Step 2:" in message or "Verifying data" in message:
-            self.progress_tracker.set_stage("data_processing", "Processing dataset")
-        elif "Step 3:" in message or "Splitting data" in message:
-            self.progress_tracker.set_stage("data_processing", "Preparing data loaders")
-        elif "Step 4:" in message or "Setting up model" in message:
-            self.progress_tracker.set_stage("initializing", "Initializing model")
-        elif "Step 5:" in message or "Selecting training recipe" in message:
-            self.progress_tracker.set_stage("initializing", "Setting up training recipe")
-        elif "Step 6:" in message or "Starting training" in message:
-            self.progress_tracker.set_stage("training", "Starting training")
-        elif "Training Finished" in message or "completed" in message.lower():
-            self.progress_tracker.set_completed("Training completed successfully")
+        # Stage detection (only if progress_tracker exists)
+        if hasattr(self, 'progress_tracker') and self.progress_tracker is not None:
+            if "Step 1:" in message or "Parsing PDBbind" in message:
+                self.progress_tracker.set_stage("data_processing", "Parsing PDBbind index files")
+            elif "Step 2:" in message or "Verifying data" in message:
+                self.progress_tracker.set_stage("data_processing", "Processing dataset")
+            elif "Step 3:" in message or "Splitting data" in message:
+                self.progress_tracker.set_stage("data_processing", "Preparing data loaders")
+            elif "Step 4:" in message or "Setting up model" in message:
+                self.progress_tracker.set_stage("initializing", "Initializing model")
+            elif "Step 5:" in message or "Selecting training recipe" in message:
+                self.progress_tracker.set_stage("initializing", "Setting up training recipe")
+            elif "Step 6:" in message or "Starting training" in message:
+                self.progress_tracker.set_stage("training", "Starting training")
+            elif "Training Finished" in message or "completed" in message.lower():
+                self.progress_tracker.set_completed("Training completed successfully")
+
+    def __getstate__(self):
+        """
+        Custom pickle state getter.
+        Excludes progress_tracker which contains threading.Lock that cannot be pickled.
+        """
+        state = self.__dict__.copy()
+        # Remove progress_tracker as it contains threading.Lock
+        # The progress_tracker will be recreated if needed after unpickling
+        state.pop('progress_tracker', None)
+        return state
+
+    def __setstate__(self, state):
+        """
+        Custom pickle state setter.
+        Progress tracker will be None after unpickling - this is acceptable
+        as the logger can function without it for basic logging.
+        """
+        self.__dict__.update(state)
+        # Progress tracker is not restored - this is intentional
+        # as it cannot be pickled and is not needed in subprocesses
+        # Methods that use progress_tracker will check if it exists before using it

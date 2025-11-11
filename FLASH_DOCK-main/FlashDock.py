@@ -66,9 +66,7 @@ from streamlit_molstar.pocket import (
 # docking 模块
 from streamlit_molstar.docking import st_molstar_docking
 
-import os
 import json
-import subprocess
 import tempfile  # 用于创建临时文件
 import re
 import tqdm
@@ -155,6 +153,7 @@ elif page == "准备配体":
     import os
     from rdkit import Chem
     from rdkit.Chem import AllChem, Draw
+    from rdkit.Chem.Draw import rdMolDraw2D
     import py3Dmol
     from stmol import showmol
     from streamlit_ketcher import st_ketcher
@@ -181,7 +180,8 @@ elif page == "准备配体":
 
         # 2D 可视化
         st.subheader("2D 分子结构")
-        st.image(Draw.MolToImage(mol, size=(300, 300)), width="content")
+        svg = rdMolDraw2D.MolToSVG(mol, width=300, height=300)
+        st.markdown(svg, unsafe_allow_html=True)
 
         # 生成 3D 构象并能量优化
         mol_3d = Chem.AddHs(mol)
@@ -352,10 +352,6 @@ elif page == "口袋预测":
 # 分子对接
 # ------------------------------------------------------------------------------
 elif page == "分子对接":
-    import tempfile
-    import os
-    import shutil
-
     st.title("分子对接")
     st.write("请上传蛋白质 (PDB 格式) 和配体 (SDF 格式)，并设置对接参数。")
 
@@ -437,23 +433,26 @@ elif page == "分子对接":
                     result_dir = "./Result/Docking_Result"
                     os.makedirs(result_dir, exist_ok=True)
 
-                    # 构造命令
-                    command = (
-                        f"python ./others/Uni-Mol/unimol_docking_v2/interface/demo.py "
-                        f"--mode single "
-                        f"--conf-size 10 "
-                        f"--cluster "
-                        f"--input-protein {protein_path} "
-                        f"--input-ligand {ligand_path} "
-                        f"--input-docking-grid {docking_grid_path} "
-                        f"--output-ligand-name ligand_predict "
-                        f"--output-ligand-dir {result_dir} "
-                        f"--steric-clash-fix "
-                        f"--model-dir ./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt"
-                    )
+                    # 构造命令（使用列表形式避免shell注入风险）
+                    command = [
+                        "python",
+                        "./others/Uni-Mol/unimol_docking_v2/interface/demo.py",
+                        "--mode", "single",
+                        "--conf-size", "10",
+                        "--cluster",
+                        "--input-protein", str(protein_path),
+                        "--input-ligand", str(ligand_path),
+                        "--input-docking-grid", str(docking_grid_path),
+                        "--output-ligand-name", "ligand_predict",
+                        "--output-ligand-dir", str(result_dir),
+                        "--steric-clash-fix",
+                        "--model-dir", "./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt"
+                    ]
 
-                    # 执行命令
-                    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+                    # 执行命令（使用列表形式，避免shell注入风险）
+                    result = subprocess.run(
+                        command, capture_output=True, text=True, timeout=300
+                    )
 
                     # 根据命令返回值判断是否执行成功
                     if result.returncode == 0:
@@ -480,7 +479,7 @@ elif page == "分子对接":
 
                             # 可视化对接结果
                             st_molstar_docking(protein_path, renamed_path, key="5", height=600)
-                        except Exception as e:
+                        except Exception:
                             st.error("处理结果文件时出错，请检查路径或权限。")
 
                     else:
@@ -645,24 +644,28 @@ elif page == "批量口袋预测与对接":
                                                 f"任务 {i + 1}/{len(tasks_to_run)}: 正在对接 {task['Protein']} 和 {task['Ligand']}..."
                                             )
 
-                                            # 构造对接命令
-                                            command = (
-                                                f"python ./others/Uni-Mol/unimol_docking_v2/interface/demo.py "
-                                                f"--mode single "
-                                                f"--conf-size 10 "
-                                                f"--cluster "
-                                                f"--input-protein {protein_path} "
-                                                f"--input-ligand {ligand_path} "
-                                                f"--input-docking-grid {docking_grid_path} "
-                                                f"--output-ligand-name ligand_predict "
-                                                f"--output-ligand-dir {result_dir} "
-                                                f"--steric-clash-fix "
-                                                f"--model-dir ./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt"
-                                            )
+                                            # 构造对接命令（使用列表形式避免shell注入风险）
+                                            command = [
+                                                "python",
+                                                "./others/Uni-Mol/unimol_docking_v2/interface/demo.py",
+                                                "--mode", "single",
+                                                "--conf-size", "10",
+                                                "--cluster",
+                                                "--input-protein", str(protein_path),
+                                                "--input-ligand", str(ligand_path),
+                                                "--input-docking-grid", str(docking_grid_path),
+                                                "--output-ligand-name", "ligand_predict",
+                                                "--output-ligand-dir", str(result_dir),
+                                                "--steric-clash-fix",
+                                                "--model-dir", "./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt"
+                                            ]
 
-                                            # 执行对接命令
+                                            # 执行对接命令（使用列表形式，避免shell注入风险）
                                             result = subprocess.run(
-                                                command, shell=True, capture_output=True, text=True
+                                                command,
+                                                capture_output=True,
+                                                text=True,
+                                                timeout=300,
                                             )
 
                                             if result.returncode == 0:

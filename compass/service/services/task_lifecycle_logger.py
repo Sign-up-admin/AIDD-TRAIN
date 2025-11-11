@@ -285,3 +285,13 @@ class TaskLifecycleLogger:
             self.logger.error(f"Failed to read lifecycle events: {e}", exc_info=True)
 
         return events
+
+
+
+
+
+
+
+
+
+

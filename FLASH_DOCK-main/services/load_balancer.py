@@ -66,6 +66,11 @@ class LoadBalancer:
         elif self.strategy == LoadBalanceStrategy.LEAST_CONNECTIONS:
             return self._least_connections(healthy_services)
         else:
+            # This branch should not be reached as all enum values are covered above
+            # However, it serves as a defensive fallback in case of unexpected values
+            logger.warning(
+                f"Unexpected load balance strategy: {self.strategy}, using first service"
+            )
             return healthy_services[0]
 
     def _round_robin(self, services: List[ServiceInfo]) -> ServiceInfo:
@@ -75,7 +80,9 @@ class LoadBalancer:
         return service
 
     def _random(self, services: List[ServiceInfo]) -> ServiceInfo:
-        """Random selection."""
+        """Random selection for load balancing (not security-critical)."""
+        # Note: Using random.choice is acceptable for load balancing
+        # as it's not used for security/cryptographic purposes
         return random.choice(services)
 
     def _least_connections(self, services: List[ServiceInfo]) -> ServiceInfo:

@@ -1,9 +1,10 @@
+import gc
+import hashlib
 import os
 import random
-import torch
+
 import numpy as np
-import hashlib
-import gc
+import torch
 
 
 def get_file_hash(filepath):
@@ -43,12 +44,12 @@ def report_gpu_memory(msg="", logger=None):
     reserved = torch.cuda.memory_reserved() / 1024**2
 
     report = (
-        f"=" * 50
+        "=" * 50
         + "\n"
         + (f"GPU Memory Report at: {msg}\n" if msg else "")
         + f"Allocated: {allocated:.2f} MB\n"
         + f"Reserved:  {reserved:.2f} MB\n"
-        + f"=" * 50
+        + "=" * 50
     )
 
     if logger:

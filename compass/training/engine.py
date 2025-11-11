@@ -83,19 +83,29 @@ class Trainer:
 
     def setup_signal_handlers(self):
         """Handles graceful shutdown on SIGTERM or KeyboardInterrupt."""
+        import sys
 
         def graceful_exit_handler(sig, _frame):
             log_msg = "\n\n--- "
             log_msg += "SIGTERM received" if sig == signal.SIGTERM else "SIGINT (Ctrl+C) received"
             log_msg += ". Saving final state... ---"
             self.logger.log_warning(log_msg)
-            self._save_interrupt_checkpoint(
-                self.training_state.get("epoch", 0), self.training_state.get("batch_idx", 0)
-            )
-            sys.exit(0)
 
-        signal.signal(signal.SIGTERM, graceful_exit_handler)
-        signal.signal(signal.SIGINT, graceful_exit_handler)
+            # Check if logger has progress tracker (for service-based training)
+            if hasattr(self.logger, "progress_tracker"):
+                self.logger.progress_tracker.cancel()
+                self.logger.log("Training cancelled via signal handler")
+            else:
+                # For standalone training, save checkpoint and exit
+                self._save_interrupt_checkpoint(
+                    self.training_state.get("epoch", 0), self.training_state.get("batch_idx", 0)
+                )
+                sys.exit(0)
+
+        # Only set signal handlers on non-Windows platforms
+        if sys.platform != "win32":
+            signal.signal(signal.SIGTERM, graceful_exit_handler)
+            signal.signal(signal.SIGINT, graceful_exit_handler)
 
     def resume(self):
         """Resumes training from a checkpoint if one exists."""
@@ -195,9 +205,23 @@ class Trainer:
 
         self.start_batch = 0  # Reset after any potential resume
 
+        # Check for cancellation between training and validation
+        if hasattr(self.logger, "progress_tracker") and self.logger.progress_tracker.is_cancelled():
+            from .exceptions import TrainingCancelled
+
+            self.logger.log("[CANCELLATION] Training cancelled detected between training and validation")
+            raise TrainingCancelled("Training cancelled by user")
+
         val_loss = validate_epoch(
             self.model, self.val_loader, self.device, self.logger, current_stage
         )
+        
+        # Check for cancellation after validation (before checkpoint save)
+        if hasattr(self.logger, "progress_tracker") and self.logger.progress_tracker.is_cancelled():
+            from .exceptions import TrainingCancelled
+
+            self.logger.log("[CANCELLATION] Training cancelled detected after validation")
+            raise TrainingCancelled("Training cancelled by user")
 
         if epoch > self.warmup_epochs:
             self.scheduler.step()

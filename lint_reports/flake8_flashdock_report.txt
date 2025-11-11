@@ -1,0 +1,78 @@
+FLASH_DOCK-main/FlashDock.py:7:1: C901 'If 7' is too complex (15)
+FLASH_DOCK-main/FlashDock.py:69:1: F811 redefinition of unused 'os' from line 3
+FLASH_DOCK-main/FlashDock.py:71:1: F811 redefinition of unused 'subprocess' from line 5
+FLASH_DOCK-main/FlashDock.py:115:1: C901 'If 115' is too complex (119)
+FLASH_DOCK-main/FlashDock.py:357:5: F811 redefinition of unused 'shutil' from line 4
+FLASH_DOCK-main/FlashDock.py:483:25: F841 local variable 'e' is assigned to but never used
+FLASH_DOCK-main/pages\training_management.py:130:32: F541 f-string is missing placeholders
+FLASH_DOCK-main/pages\training_management.py:145:5: C901 'TryExcept 145' is too complex (20)
+FLASH_DOCK-main/pages\training_management.py:272:5: C901 'If 272' is too complex (38)
+FLASH_DOCK-main/pages\training_management.py:396:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:399:28: W291 trailing whitespace
+FLASH_DOCK-main/pages\training_management.py:404:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:407:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:418:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:423:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:425:37: F821 undefined name '_create_terminal_html'
+FLASH_DOCK-main/pages\training_management.py:433:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:436:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:479:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:590:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:623:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:626:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:629:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:639:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:642:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:647:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:653:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:662:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:675:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:691:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:696:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:700:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:708:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:714:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:738:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:744:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:749:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:763:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:774:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:777:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:792:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:799:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:804:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:815:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:825:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:456:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:463:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:469:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:474:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:486:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:497:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:510:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:517:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:522:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:526:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:539:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:542:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:546:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:550:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:560:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:569:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:571:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:572:5: C901 'TaskStreamClient._connect_and_listen' is too complex (28)
+FLASH_DOCK-main/services\compass_client.py:578:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:584:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:589:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:594:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:600:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:606:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:609:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:617:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:618:21: F841 local variable 'e' is assigned to but never used
+FLASH_DOCK-main/services\compass_client.py:627:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:635:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:639:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:646:1: W293 blank line contains whitespace
+FLASH_DOCK-main/services\compass_client.py:649:13: F841 local variable 'message' is assigned to but never used
+FLASH_DOCK-main/services\compass_client.py:655:1: W293 blank line contains whitespace

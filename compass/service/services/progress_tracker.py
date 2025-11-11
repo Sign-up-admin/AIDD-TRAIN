@@ -187,3 +187,22 @@ class ProgressTracker:
                 "elapsed_time": elapsed_time,
                 "last_update": self.last_update_time.isoformat() if self.last_update_time else None,
             }
+
+    def __getstate__(self):
+        """
+        Custom pickle state getter.
+        Excludes threading.Lock object which cannot be pickled.
+        """
+        state = self.__dict__.copy()
+        # Remove lock object as it cannot be pickled
+        state.pop('lock', None)
+        return state
+
+    def __setstate__(self, state):
+        """
+        Custom pickle state setter.
+        Recreates threading.Lock object after unpickling.
+        """
+        self.__dict__.update(state)
+        # Recreate lock object after unpickling
+        self.lock = threading.Lock()

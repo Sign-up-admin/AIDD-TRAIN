@@ -26,56 +26,56 @@ of the find_optimal_configs script.
 #                    without errors. It's the fastest and simplest check.
 # ==============================================================================
 ARCH_DEFINITIONS = {
-    'very_high_vram': {
-        'vram_threshold': 16,
-        'description': "Enhanced architecture for high VRAM GPUs (>=16GB)",
-        'architectures': {
-            'production':  {'layers': [10, 9, 8, 7, 6, 5], 'channels': [320, 256, 192, 128, 96]},
-            'validation':  {'layers': [7, 6, 5, 4], 'channels': [192, 128, 96]},
-            'prototyping': {'layers': [5, 4, 3],   'channels': [96, 64, 48]},
-            'smoke_test':  {'layers': [2, 1],     'channels': [32, 24, 16]}
-        }
+    "very_high_vram": {
+        "vram_threshold": 16,
+        "description": "Enhanced architecture for high VRAM GPUs (>=16GB)",
+        "architectures": {
+            "production": {"layers": [10, 9, 8, 7, 6, 5], "channels": [320, 256, 192, 128, 96]},
+            "validation": {"layers": [7, 6, 5, 4], "channels": [192, 128, 96]},
+            "prototyping": {"layers": [5, 4, 3], "channels": [96, 64, 48]},
+            "smoke_test": {"layers": [2, 1], "channels": [32, 24, 16]},
+        },
     },
-    'high_vram': {
-        'vram_threshold': 12,
-        'description': "Standard architecture for high VRAM GPUs (>12GB)",
-        'architectures': {
-            'production':  {'layers': [8, 7, 6, 5, 4, 3], 'channels': [256, 192, 128, 96, 64]},
-            'validation':  {'layers': [6, 5, 4, 3], 'channels': [128, 96, 64]},
-            'prototyping': {'layers': [4, 3, 2],   'channels': [64, 48, 32]},
-            'smoke_test':  {'layers': [2, 1],     'channels': [32, 24, 16]}
-        }
+    "high_vram": {
+        "vram_threshold": 12,
+        "description": "Standard architecture for high VRAM GPUs (>12GB)",
+        "architectures": {
+            "production": {"layers": [8, 7, 6, 5, 4, 3], "channels": [256, 192, 128, 96, 64]},
+            "validation": {"layers": [6, 5, 4, 3], "channels": [128, 96, 64]},
+            "prototyping": {"layers": [4, 3, 2], "channels": [64, 48, 32]},
+            "smoke_test": {"layers": [2, 1], "channels": [32, 24, 16]},
+        },
     },
-    'medium_vram': {
-        'vram_threshold': 8,
-        'description': "Conservative architecture for medium VRAM GPUs (8-12GB)",
-        'architectures': {
-            'production':  {'layers': [6, 5, 4], 'channels': [96, 64, 48]},
-            'validation':  {'layers': [4, 3, 2], 'channels': [64, 48, 32]},
-            'prototyping': {'layers': [3, 2, 1], 'channels': [32, 24, 16]},
-            'smoke_test':  {'layers': [1],     'channels': [16, 8]}
-        }
+    "medium_vram": {
+        "vram_threshold": 8,
+        "description": "Conservative architecture for medium VRAM GPUs (8-12GB)",
+        "architectures": {
+            "production": {"layers": [6, 5, 4], "channels": [96, 64, 48]},
+            "validation": {"layers": [4, 3, 2], "channels": [64, 48, 32]},
+            "prototyping": {"layers": [3, 2, 1], "channels": [32, 24, 16]},
+            "smoke_test": {"layers": [1], "channels": [16, 8]},
+        },
     },
-    'low_vram': {
-        'vram_threshold': 6,
-        'description': "More conservative architecture for low VRAM GPUs (6-8GB)",
-        'architectures': {
-            'production':  {'layers': [4, 3, 2], 'channels': [48, 32, 24]},
-            'validation':  {'layers': [3, 2],   'channels': [32, 24, 16]},
-            'prototyping': {'layers': [2, 1],   'channels': [16, 8]},
-            'smoke_test':  {'layers': [1],     'channels': [8]}
-        }
+    "low_vram": {
+        "vram_threshold": 6,
+        "description": "More conservative architecture for low VRAM GPUs (6-8GB)",
+        "architectures": {
+            "production": {"layers": [4, 3, 2], "channels": [48, 32, 24]},
+            "validation": {"layers": [3, 2], "channels": [32, 24, 16]},
+            "prototyping": {"layers": [2, 1], "channels": [16, 8]},
+            "smoke_test": {"layers": [1], "channels": [8]},
+        },
     },
-    'ultra_low_vram': {
-        'vram_threshold': 0,
-        'description': "Ultra-conservative architecture for very low VRAM GPUs (<=6GB)",
-        'architectures': {
-            'production':  {'layers': [3, 2], 'channels': [32, 24]},
-            'validation':  {'layers': [2, 1], 'channels': [24, 16]},
-            'prototyping': {'layers': [1],   'channels': [16, 8]},
-            'smoke_test':  {'layers': [1],   'channels': [8]}
-        }
-    }
+    "ultra_low_vram": {
+        "vram_threshold": 0,
+        "description": "Ultra-conservative architecture for very low VRAM GPUs (<=6GB)",
+        "architectures": {
+            "production": {"layers": [3, 2], "channels": [32, 24]},
+            "validation": {"layers": [2, 1], "channels": [24, 16]},
+            "prototyping": {"layers": [1], "channels": [16, 8]},
+            "smoke_test": {"layers": [1], "channels": [8]},
+        },
+    },
 }
 
 # ==============================================================================
@@ -88,9 +88,9 @@ ARCH_DEFINITIONS = {
 # ==============================================================================
 VRAM_SCALING_FACTORS = {
     24: 1.5,
-    16: 1.0,    # Use exact values for the dedicated 16GB tier
+    16: 1.0,  # Use exact values for the dedicated 16GB tier
     12: 1.1,
-    0:  1.0
+    0: 1.0,
 }
 
 # ==============================================================================
@@ -105,10 +105,10 @@ VRAM_SCALING_FACTORS = {
 #             for the time-sensitive 'validation' mode.
 # ==============================================================================
 MODE_PARAMS = {
-    'production':  {'bs': 16, 'stress': 20},
-    'validation':  {'bs': 32, 'stress': 29},
-    'prototyping': {'bs': 64, 'stress': 20},
-    'smoke_test':  {'bs': 128, 'stress': 1}
+    "production": {"bs": 16, "stress": 20},
+    "validation": {"bs": 32, "stress": 29},
+    "prototyping": {"bs": 64, "stress": 20},
+    "smoke_test": {"bs": 128, "stress": 1},
 }
 
 # ==============================================================================
@@ -122,8 +122,8 @@ MODE_PARAMS = {
 # limit, as the priority is finding the absolute best model.
 # ==============================================================================
 TIME_RANGES = {
-    'prototyping': (10, 40),
-    'validation':  (60, 240) # Increased upper bound to find better models
+    "prototyping": (10, 40),
+    "validation": (60, 240),  # Increased upper bound to find better models
 }
 CYCLE_BATCHES = 450
 
@@ -138,16 +138,16 @@ CYCLE_BATCHES = 450
 # trained on. A 4MB model file roughly corresponds to 1 million parameters.
 # ==============================================================================
 PARAMETER_CAPS = {
-    1000: 250_000,          # For tiny datasets, keep models simple (~1MB file).
-    10000: 750_000,        # For small datasets (~3MB file).
-    25000: 1_000_000,       # For medium datasets like ~19.5k, cap at 1M params (~4MB file).
-    float('inf'): 2_000_000 # For large datasets, allow complex models (~8MB file).
+    1000: 250_000,  # For tiny datasets, keep models simple (~1MB file).
+    10000: 750_000,  # For small datasets (~3MB file).
+    25000: 1_000_000,  # For medium datasets like ~19.5k, cap at 1M params (~4MB file).
+    float("inf"): 2_000_000,  # For large datasets, allow complex models (~8MB file).
 }
 
 # ==============================================================================
 # 6. GENERAL EXECUTION SETTINGS
 # ==============================================================================
-OPTIMIZATION_HIERARCHY = ['production', 'validation', 'prototyping', 'smoke_test']
+OPTIMIZATION_HIERARCHY = ["production", "validation", "prototyping", "smoke_test"]
 
 # ==============================================================================
 # 7. TEST SAMPLE CONFIGURATION
@@ -165,9 +165,9 @@ OPTIMIZATION_HIERARCHY = ['production', 'validation', 'prototyping', 'smoke_test
 #   atoms in the sample to ensure it can be processed correctly.
 # ==============================================================================
 TEST_SAMPLE_CONFIG = {
-    'pdb_code': '1jmf',
-    'protein_path': 'compass/optimizer/1jmf/1jmf_pocket.pdb',
-    'ligand_path': 'compass/optimizer/1jmf/1jmf_ligand.sdf',
-    'binding_data': 'Kd=1.0nM',
-    'max_atoms': 10200
+    "pdb_code": "1jmf",
+    "protein_path": "compass/optimizer/1jmf/1jmf_pocket.pdb",
+    "ligand_path": "compass/optimizer/1jmf/1jmf_ligand.sdf",
+    "binding_data": "Kd=1.0nM",
+    "max_atoms": 10200,
 }

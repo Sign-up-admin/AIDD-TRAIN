@@ -20,11 +20,11 @@ def setup_logging(log_level="INFO"):
     progress_logger.propagate = False
     if not logger.handlers:
         # Ensure the main logs directory exists and place the log file inside it.
-        log_dir = 'logs'
+        log_dir = "logs"
         os.makedirs(log_dir, exist_ok=True)
         log_file_path = os.path.join(log_dir, "hardware_optimizer.log")
 
-        file_handler = logging.FileHandler(log_file_path, mode='w')
+        file_handler = logging.FileHandler(log_file_path, mode="w")
         file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
@@ -34,5 +34,5 @@ def setup_logging(log_level="INFO"):
         logger.addHandler(console_handler)
     if not progress_logger.handlers:
         progress_handler = logging.StreamHandler(sys.stdout)
-        progress_handler.setFormatter(logging.Formatter('%(message)s'))
+        progress_handler.setFormatter(logging.Formatter("%(message)s"))
         progress_logger.addHandler(progress_handler)

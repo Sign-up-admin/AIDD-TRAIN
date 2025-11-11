@@ -7,6 +7,8 @@ echo.
 
 cd /d %~dp0
 
+set PYTHONPATH=%~dp0;%PYTHONPATH%
+
 REM Check if Python is available
 python --version >nul 2>&1
 if errorlevel 1 (
@@ -22,5 +24,9 @@ python check_ports.py
 
 echo.
 pause
+
+
+
+
 
 

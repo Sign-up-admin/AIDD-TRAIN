@@ -6,7 +6,7 @@ import os
 import logging
 import argparse
 import atexit
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -104,13 +104,28 @@ app = FastAPI(
     ],
 )
 
-# Enable CORS
+# Enable CORS with restricted origins
+# In production, replace with specific allowed origins
+# For development, allow localhost origins
+cors_origins = os.getenv(
+    "CORS_ORIGINS",
+    "http://localhost:8501,http://127.0.0.1:8501,http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
+cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
+
+# Allow all origins only in development mode (not recommended for production)
+allow_all_origins = os.getenv("CORS_ALLOW_ALL", "false").lower() == "true"
+if allow_all_origins:
+    logger.warning("CORS is configured to allow all origins. This is not recommended for production!")
+    cors_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Add rate limiting middleware
@@ -143,6 +158,16 @@ app.add_middleware(
     default_window=default_window,
     per_endpoint_limits=per_endpoint_limits,
 )
+
+# Add security headers middleware
+from compass.service.middleware.security_headers import SecurityHeadersMiddleware
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Add authentication middleware (optional, enabled via AUTH_ENABLED env var)
+from compass.service.middleware.auth import AuthMiddleware
+
+app.add_middleware(AuthMiddleware)
 
 # Add metrics middleware
 from compass.service.middleware.metrics import MetricsMiddleware, get_metrics_collector
@@ -210,6 +235,41 @@ app.include_router(training.router)
 app.include_router(data.router)
 app.include_router(models.router)
 app.include_router(inference.router)
+
+# Debug: Test if we can access the WebSocket route from training router
+# This is just for debugging - the route should be registered via include_router
+try:
+    # Check if WebSocket route exists in training router
+    training_ws_routes = [r for r in training.router.routes if hasattr(r, 'path') and 'stream' in r.path]
+    if training_ws_routes:
+        logger.info(f"Found {len(training_ws_routes)} WebSocket route(s) in training router")
+        for route in training_ws_routes:
+            logger.info(f"  WebSocket route: {route.path}, type: {type(route).__name__}")
+    else:
+        logger.warning("No WebSocket routes found in training router")
+        # List all routes in training router for debugging
+        all_training_routes = [r for r in training.router.routes if hasattr(r, 'path')]
+        logger.info(f"Training router has {len(all_training_routes)} total routes")
+        for route in all_training_routes[:10]:  # Show first 10
+            logger.info(f"  Route: {route.path}, type: {type(route).__name__}")
+except Exception as e:
+    logger.error(f"Error checking WebSocket routes: {e}", exc_info=True)
+
+# Debug: Log all registered routes including WebSocket
+logger.info(f"Registered routes in app (total: {len(app.routes)}):")
+websocket_found = False
+for route in app.routes:
+    if hasattr(route, 'path'):
+        # Check if it's a WebSocket route
+        route_type = "HTTP"
+        route_class = type(route).__name__
+        if 'WebSocket' in route_class or 'websocket' in route_class.lower():
+            route_type = "WebSocket"
+            websocket_found = True
+        if 'stream' in route.path.lower():
+            logger.info(f"  {route_type} ({route_class}): {route.path}")
+            websocket_found = True
+logger.info(f"WebSocket routes found in app: {websocket_found}")
 
 # Registry client
 registry_client: CompassRegistryClient = None

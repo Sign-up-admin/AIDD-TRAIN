@@ -76,3 +76,13 @@ def test_rate_limit_error():
     assert exc.error_code == ErrorCode.RATE_LIMIT_EXCEEDED
 
 
+
+
+
+
+
+
+
+
+
+

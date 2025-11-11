@@ -1,6 +1,7 @@
 # Flash_Dock 项目依赖文件
 # 核心框架
 streamlit>=1.28.0
+websockets>=12.0  # WebSocket support for Streamlit streaming
 pandas>=1.4.0
 numpy<2.0.0  # RDKit 需要 numpy < 2.0.0
 

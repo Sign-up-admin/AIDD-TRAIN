@@ -1,60 +1,61 @@
 @echo off
-chcp 65001 >nul
+setlocal enabledelayedexpansion
+chcp 65001 >nul 2>&1
+cd /d %~dp0
+
 echo ========================================
-echo 停止 COMPASS 项目所有服务
+echo Stop all COMPASS services
 echo ========================================
 echo.
 
-echo [步骤 1/3] 停止服务注册中心 (端口 8500)...
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8500" ^| findstr "LISTENING"') do (
-    echo 停止进程 %%a
-    taskkill /F /PID %%a >nul 2>&1
-    if !errorlevel! EQU 0 (
-        echo   成功停止进程 %%a
-    ) else (
-        echo   进程 %%a 已停止或不存在
-    )
-)
+echo [Step 1/3] Stopping Service Registry (port 8500)...
+call :stop_port 8500
 
-echo [步骤 2/3] 停止 COMPASS 服务 (端口 8080)...
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8080" ^| findstr "LISTENING"') do (
-    echo 停止进程 %%a
-    taskkill /F /PID %%a >nul 2>&1
-    if !errorlevel! EQU 0 (
-        echo   成功停止进程 %%a
-    ) else (
-        echo   进程 %%a 已停止或不存在
-    )
-)
+echo [Step 2/3] Stopping COMPASS Service (port 8080)...
+call :stop_port 8080
 
-echo [步骤 3/3] 停止 FLASH-DOCK 前端 (端口 8501)...
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":8501" ^| findstr "LISTENING"') do (
-    echo 停止进程 %%a
-    taskkill /F /PID %%a >nul 2>&1
-    if !errorlevel! EQU 0 (
-        echo   成功停止进程 %%a
-    ) else (
-        echo   进程 %%a 已停止或不存在
-    )
-)
+echo [Step 3/3] Stopping FLASH-DOCK Frontend (port 8501)...
+call :stop_port 8501
 
 echo.
-echo 等待所有进程完全停止...
-timeout /t 2 /nobreak >nul
+echo Waiting for all processes to stop...
+timeout /t 2 /nobreak >nul 2>&1
 
 echo.
-echo 检查剩余进程...
-netstat -ano | findstr ":8500 :8080 :8501" | findstr "LISTENING" >nul 2>&1
+echo Checking remaining processes...
+netstat -ano 2>nul | findstr ":8500 :8080 :8501" | findstr "LISTENING" >nul 2>&1
 if errorlevel 1 (
     echo ========================================
-    echo 所有服务已成功停止！
+    echo All services stopped successfully!
     echo ========================================
 ) else (
-    echo 警告：仍有服务在运行，请检查：
-    netstat -ano | findstr ":8500 :8080 :8501" | findstr "LISTENING"
+    echo Warning: Some services may still be running:
+    netstat -ano 2>nul | findstr ":8500 :8080 :8501" | findstr "LISTENING"
 )
 
 echo.
 pause
+goto :eof
 
+:stop_port
+set PORT=%1
+set FOUND=0
 
+for /f "tokens=5" %%p in ('netstat -ano 2^>nul ^| findstr ":%PORT%" ^| findstr "LISTENING"') do (
+    if not "%%p"=="" (
+        echo Stopping process %%p
+        taskkill /F /PID %%p >nul 2>&1
+        if !errorlevel! EQU 0 (
+            echo   Successfully stopped process %%p
+        ) else (
+            echo   Process %%p already stopped or not found
+        )
+        set FOUND=1
+    )
+)
+
+if !FOUND! EQU 0 (
+    echo   No service running on port %PORT%
+)
+
+exit /b 0

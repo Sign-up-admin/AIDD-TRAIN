@@ -1,0 +1,33 @@
+FLASH_DOCK-main/FlashDock.py:7:1: C901 'If 7' is too complex (15)
+FLASH_DOCK-main/FlashDock.py:113:1: C901 'If 113' is too complex (119)
+FLASH_DOCK-main/FlashDock.py:355:5: F811 redefinition of unused 'shutil' from line 4
+FLASH_DOCK-main/FlashDock.py:481:25: F841 local variable 'e' is assigned to but never used
+FLASH_DOCK-main/pages\training_management.py:141:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:174:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:177:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:180:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:190:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:193:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:198:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:204:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:213:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:226:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:242:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:247:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:251:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:259:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:265:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:289:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:295:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:300:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:314:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:325:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:328:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:343:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:350:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:355:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:366:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:376:1: W293 blank line contains whitespace
+FLASH_DOCK-main/pages\training_management.py:508:5: C901 'TryExcept 508' is too complex (20)
+FLASH_DOCK-main/pages\training_management.py:635:5: C901 'If 635' is too complex (38)
+FLASH_DOCK-main/services\compass_client.py:581:5: C901 'TaskStreamClient._connect_and_listen' is too complex (28)

@@ -151,3 +151,13 @@ class ModelService:
         del self.models[model_id]
         logger.info(f"Deleted model: {model_id}")
         return True
+
+
+
+
+
+
+
+
+
+

@@ -39,6 +39,11 @@ warn_unreachable = true
 strict_equality = true
 show_error_codes = true
 
+# Exclude invalid package name directories
+exclude = [
+    "compass/optimizer/1jmf/.*",
+]
+
 # Ignore missing imports for third-party libraries
 [[tool.mypy.overrides]]
 module = [
@@ -51,6 +56,10 @@ module = [
     "biopandas.*",
     "unimol.*",
     "PLANET.*",
+    "fastapi.*",
+    "uvicorn.*",
+    "requests.*",
+    "pydantic.*",
 ]
 ignore_missing_imports = true
 

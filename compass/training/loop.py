@@ -63,10 +63,14 @@ def train_epoch(
         pbar.set_description(f"Resuming Epoch {epoch} (from batch {start_batch})")
 
     for i, batch in pbar:
-        # Check for cancellation
+        # Check for cancellation (check more frequently for responsive cancellation)
         if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
             from .exceptions import TrainingCancelled
 
+            if logger:
+                logger.log(
+                    f"[CANCELLATION] Training cancelled detected at epoch {epoch}, batch {i+1}"
+                )
             raise TrainingCancelled("Training cancelled by user")
 
         if i < start_batch:
@@ -102,12 +106,32 @@ def train_epoch(
             scaler.scale(loss).backward()
 
             if (i + 1) % grad_accum_steps == 0 or (i + 1) == len(loader):
+                # Check for cancellation before optimizer step (critical checkpoint)
+                if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+                    from .exceptions import TrainingCancelled
+
+                    if logger:
+                        logger.log(
+                            f"[CANCELLATION] Training cancelled detected before optimizer step at epoch {epoch}, batch {i+1}"
+                        )
+                    raise TrainingCancelled("Training cancelled by user")
+                
                 scaler.unscale_(optimizer)
                 if gradient_clip_val > 0:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=gradient_clip_val)
                 scaler.step(optimizer)
                 scaler.update()
                 optimizer.zero_grad()
+
+                # Check for cancellation after optimizer step (before checkpoint save)
+                if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+                    from .exceptions import TrainingCancelled
+
+                    if logger:
+                        logger.log(
+                            f"[CANCELLATION] Training cancelled detected after optimizer step at epoch {epoch}, batch {i+1}"
+                        )
+                    raise TrainingCancelled("Training cancelled by user")
 
                 save_every_n_batches = config.get("save_every_n_batches", 0)
                 if save_every_n_batches > 0:
@@ -119,6 +143,16 @@ def train_epoch(
                         and optimizer_step_idx % save_every_n_batches == 0
                         and not is_last_batch_of_epoch
                     ):
+                        # Check for cancellation before checkpoint save (can be slow)
+                        if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+                            from .exceptions import TrainingCancelled
+
+                            if logger:
+                                logger.log(
+                                    f"[CANCELLATION] Training cancelled detected before checkpoint save at epoch {epoch}, batch {i+1}"
+                                )
+                            raise TrainingCancelled("Training cancelled by user")
+                        
                         checkpoint_data = create_checkpoint_data(
                             epoch,
                             i + 1,
@@ -168,6 +202,16 @@ def train_epoch(
             raise e
 
         if trigger_file and checkpoint_dir and os.path.exists(trigger_file):
+            # Check for cancellation before manual checkpoint save
+            if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+                from .exceptions import TrainingCancelled
+
+                if logger:
+                    logger.log(
+                        f"[CANCELLATION] Training cancelled detected before manual checkpoint save at epoch {epoch}, batch {i+1}"
+                    )
+                raise TrainingCancelled("Training cancelled by user")
+            
             checkpoint_data = create_checkpoint_data(
                 epoch,
                 i + 1,
@@ -206,8 +250,27 @@ def validate_epoch(model, loader, device, logger=None, current_stage=0):
     total_loss, processed_graphs = 0, 0
     # For validation, we typically want to evaluate on the original, unmodified data.
     # Therefore, we do not apply diffusion noise here.
+
+    # Check for cancellation before starting validation
+    if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+        from .exceptions import TrainingCancelled
+
+        if logger:
+            logger.log("[CANCELLATION] Training cancelled detected before validation")
+        raise TrainingCancelled("Training cancelled by user")
+
     with torch.no_grad():
-        for batch in tqdm(loader, desc="Validation", leave=False):
+        for batch_idx, batch in enumerate(tqdm(loader, desc="Validation", leave=False)):
+            # Check for cancellation during validation (check every batch for better responsiveness)
+            if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+                from .exceptions import TrainingCancelled
+
+                if logger:
+                    logger.log(
+                        f"[CANCELLATION] Training cancelled detected during validation at batch {batch_idx}"
+                    )
+                raise TrainingCancelled("Training cancelled by user")
+
             if batch is None:
                 continue
             data = batch.to(device)

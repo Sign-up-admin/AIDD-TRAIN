@@ -1,0 +1,39 @@
+Report generated at: 2025-11-07T09:08:29.735794
+Tool: mypy
+Description: Type checking
+Exit Code: 2
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+1jmf is not a valid Python package name
+
+
+================================================================================
+Checking: services
+================================================================================
+services\common\utils.py:17: error: Returning Any from function declared to return "str"  [no-any-return]
+services\registry\storage.py:172: error: Returning Any from function declared to return "bool"  [no-any-return]
+services\registry\storage.py:194: error: Returning Any from function declared to return "bool"  [no-any-return]
+services\registry\storage.py:215: error: Returning Any from function declared to return "bool"  [no-any-return]
+services\registry\storage.py:242: error: Returning Any from function declared to return "int"  [no-any-return]
+services\registry\health_checker.py:6: error: Library stubs not installed for "requests"  [import-untyped]
+services\registry\server.py:19: error: Cannot find implementation or library stub for module named "fastapi"  [import-not-found]
+services\registry\server.py:20: error: Cannot find implementation or library stub for module named "fastapi.middleware.cors"  [import-not-found]
+services\registry\server.py:21: error: Cannot find implementation or library stub for module named "uvicorn"  [import-not-found]
+services\registry\server.py:174: error: Argument "registered_at" to "ServiceRegistrationResponse" has incompatible type "datetime | None"; expected "datetime"  [arg-type]
+services\registry\client.py:6: error: Library stubs not installed for "requests"  [import-untyped]
+services\registry\client.py:6: note: Hint: "python3 -m pip install types-requests"
+services\registry\client.py:6: note: (or run "mypy --install-types" to install all missing stub packages)
+services\registry\client.py:6: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+services\registry\client.py:71: error: Returning Any from function declared to return "str"  [no-any-return]
+services\registry\client.py:213: error: Returning Any from function declared to return "bool"  [no-any-return]
+Found 13 errors in 5 files (checked 10 source files)
+
+================================================================================
+Summary of Issues:
+  - compass: 0 type errors
+  - services: 13 type errors

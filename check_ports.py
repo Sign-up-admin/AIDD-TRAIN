@@ -34,7 +34,8 @@ def check_port(host: str = "localhost", port: int = 8500) -> Tuple[bool, Optiona
         else:
             return True, None
     except Exception as e:
-        return None, f"Error checking port: {e}"
+        # Return False for availability when check fails (port status unknown)
+        return False, f"Error checking port: {e}"
 
 
 def get_process_using_port(port: int) -> Optional[str]:

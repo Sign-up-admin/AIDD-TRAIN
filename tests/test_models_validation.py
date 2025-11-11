@@ -119,3 +119,13 @@ def test_batch_inference_request_too_large():
         BatchInferenceRequest(protein_ligand_pairs=pairs)
 
 
+
+
+
+
+
+
+
+
+
+
