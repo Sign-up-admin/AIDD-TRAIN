@@ -1,13 +1,3 @@
 """
 Common utilities for services.
 """
-
-
-
-
-
-
-
-
-
-

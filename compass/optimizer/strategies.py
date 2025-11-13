@@ -125,7 +125,7 @@ def _optimize_for_efficiency_modes(
             {**base_config, "batch_size": 1}, processed_test_data, stress_iterations=5, prefix="	"
         )
         if not success:
-            logger.warning(f"> SKIPPED: Model architecture too large for bs=1.")
+            logger.warning("> SKIPPED: Model architecture too large for bs=1.")
             return 0.0
 
         found_bs, avg_time_per_iter = find_max_batch_size_by_stressing(

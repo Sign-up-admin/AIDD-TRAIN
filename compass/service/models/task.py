@@ -2,10 +2,11 @@
 Task models for training service.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, Optional, List, Any
 from datetime import datetime
 from enum import Enum
+from compass.service.utils.input_sanitizer import sanitize_description
 
 
 class TaskStatus(str, Enum):
@@ -15,6 +16,7 @@ class TaskStatus(str, Enum):
     INITIALIZING = "initializing"  # Task is initializing (resources, threads, etc.)
     PENDING = "pending"  # Task is created but not started
     RUNNING = "running"  # Task is running
+    CANCELLING = "cancelling"  # Task cancellation has been requested, waiting for graceful shutdown
     PAUSED = "paused"  # Task is paused
     COMPLETED = "completed"  # Task completed successfully
     FAILED = "failed"  # Task failed
@@ -28,8 +30,9 @@ class TrainingTaskCreate(BaseModel):
     dataset_id: Optional[str] = Field(None, description="Dataset ID to use")
     description: Optional[str] = Field(None, description="Task description")
 
-    @validator("config")
-    def validate_config(cls, v):
+    @field_validator("config")
+    @classmethod
+    def validate_config(cls, v: Dict) -> Dict:
         """Validate training configuration parameters."""
         if not isinstance(v, dict):
             raise ValueError("config must be a dictionary")
@@ -64,8 +67,9 @@ class TrainingTaskCreate(BaseModel):
 
         return v
 
-    @validator("dataset_id")
-    def validate_dataset_id(cls, v):
+    @field_validator("dataset_id")
+    @classmethod
+    def validate_dataset_id(cls, v: Optional[str]) -> Optional[str]:
         """Validate dataset ID format."""
         if v is not None and not isinstance(v, str):
             raise ValueError("dataset_id must be a string")
@@ -73,19 +77,15 @@ class TrainingTaskCreate(BaseModel):
             raise ValueError("dataset_id cannot be empty")
         return v
 
-    @validator("description")
-    def validate_description(cls, v):
+    @field_validator("description")
+    @classmethod
+    def validate_description(cls, v: Optional[str]) -> Optional[str]:
         """Validate and sanitize description field."""
         if v is not None:
             if not isinstance(v, str):
                 raise ValueError("description must be a string")
-            # Remove potentially dangerous characters (XSS prevention)
-            # Since this is stored and returned as JSON, HTML/script tags won't execute
-            # But we still sanitize to prevent issues
-            if len(v) > 10000:  # Limit description length
-                raise ValueError("description must be less than 10000 characters")
-            # Remove null bytes and control characters
-            v = v.replace("\x00", "").replace("\r", "")
+            # Use centralized sanitization function for XSS prevention
+            v = sanitize_description(v)
         return v
 
 

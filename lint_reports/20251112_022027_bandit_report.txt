@@ -1,0 +1,794 @@
+Report generated at: 2025-11-12T02:22:50.673224
+Tool: bandit
+Description: Security vulnerability scan
+Exit Code: 1
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+Working... ---------------------------------------- 100% 0:00:01
+
+Run started:2025-11-11 18:22:45.258335
+
+Test results:
+>> Issue: [B614:pytorch_load] Use of unsafe PyTorch load
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b614_pytorch_load.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\compass\data\dataset.py:214:19
+213	                return None
+214	            data = torch.load(path, weights_only=False)
+215	            if data is not None:
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\compass\service\config_manager.py:36:16
+35	    service_id: Optional[str] = None
+36	    host: str = "0.0.0.0"
+37	    port: int = 8080
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:400:19
+399	        host = SERVICE_CONFIG["host"]
+400	        if host == "0.0.0.0":
+401	            host = get_local_ip()
+
+--------------------------------------------------
+>> Issue: [B614:pytorch_load] Use of unsafe PyTorch load
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b614_pytorch_load.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\compass\training\checkpoint.py:96:21
+95	    try:
+96	        checkpoint = torch.load(latest_checkpoint_path, map_location=device)
+97	        if logger:
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 9397
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 3
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 0
+		Medium: 4
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 2
+		High: 2
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7
+[manager]	WARNING	Test in comment: validated is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: above is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: validated is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: above is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: validated is not a test name or id, ignoring
+[manager]	WARNING	Test in comment: above is not a test name or id, ignoring
+
+
+================================================================================
+Checking: services
+================================================================================
+Run started:2025-11-11 18:22:46.094051
+
+Test results:
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\services\registry\server.py:286:42
+285	    parser = argparse.ArgumentParser(description="Service Registry Server")
+286	    parser.add_argument("--host", default="0.0.0.0", help="Host to bind to")
+287	    parser.add_argument("--port", type=int, default=8500, help="Port to bind to")
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 901
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 0
+		Medium: 1
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 1
+		High: 0
+Files skipped (1):
+	E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py (syntax error while parsing AST from file)
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7
+
+
+================================================================================
+Checking: FLASH_DOCK-main/services
+================================================================================
+Run started:2025-11-11 18:22:46.873206
+
+Test results:
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py:830:12
+829	                loop.run_until_complete(self._ws.close())
+830	            except Exception:
+831	                pass
+832	
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py:851:20
+850	                        self.on_error(e)
+851	                    except Exception:
+852	                        pass
+853	
+
+--------------------------------------------------
+>> Issue: [B311:blacklist] Standard pseudo-random generators are not suitable for security/cryptographic purposes.
+   Severity: Low   Confidence: High
+   CWE: CWE-330 (https://cwe.mitre.org/data/definitions/330.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_calls.html#b311-random
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\load_balancer.py:86:15
+85	        # as it's not used for security/cryptographic purposes
+86	        return random.choice(services)
+87	
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 1123
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 3
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 3
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7
+
+
+================================================================================
+Checking: FLASH_DOCK-main/FlashDock.py
+================================================================================
+Run started:2025-11-11 18:22:47.650691
+
+Test results:
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:5:0
+4	import shutil
+5	import subprocess
+6	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:49:27
+48	                if fg:
+49	                    return subprocess.run(cmd_list, cwd=cwd, check=False)
+50	                else:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:51:27
+50	                else:
+51	                    return subprocess.Popen(cmd_list, cwd=cwd)
+52	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:602:29
+601	                    # ִ�����ʹ���б���ʽ������shellע����գ�
+602	                    result = subprocess.run(command, capture_output=True, text=True, timeout=300)
+603	
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:645:4
+644	    import pandas as pd
+645	    import subprocess
+646	    import tempfile
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:819:53
+818	                                            # ִ�жԽ����ʹ���б���ʽ������shellע����գ�
+819	                                            result = subprocess.run(
+820	                                                command,
+821	                                                capture_output=True,
+822	                                                text=True,
+823	                                                timeout=300,
+824	                                            )
+825	
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:875:4
+874	    import tempfile
+875	    import subprocess
+876	    import pandas as pd
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:940:41
+939	
+940	                                result = subprocess.run(cmd, capture_output=True, text=True)
+941	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:1007:49
+1006	
+1007	                                        result = subprocess.run(cmd, capture_output=True, text=True)
+1008	
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 962
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 9
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 9
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7
+
+
+================================================================================
+Checking: scripts
+================================================================================
+Run started:2025-11-11 18:22:48.695926
+
+Test results:
+>> Issue: [B614:pytorch_load] Use of unsafe PyTorch load
+   Severity: Medium   Confidence: High
+   CWE: CWE-502 (https://cwe.mitre.org/data/definitions/502.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b614_pytorch_load.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\analyze_problem_batch.py:109:15
+108	        # Load the data object. It's not a batch, but a single Data object.
+109	        data = torch.load(args.batch_path, weights_only=False)
+110	        logging.info("Data object loaded successfully.")
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\chrome_debugger.py:18:4
+17	    print("Playwright not installed. Installing...")
+18	    import subprocess
+19	
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\chrome_debugger.py:20:4
+19	
+20	    subprocess.check_call([sys.executable, "-m", "pip", "install", "playwright"])
+21	    subprocess.check_call([sys.executable, "-m", "playwright", "install", "chromium"])
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\chrome_debugger.py:21:4
+20	    subprocess.check_call([sys.executable, "-m", "pip", "install", "playwright"])
+21	    subprocess.check_call([sys.executable, "-m", "playwright", "install", "chromium"])
+22	    from playwright.async_api import async_playwright, Browser, Page, BrowserContext
+
+--------------------------------------------------
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:10:0
+9	import sys
+10	import subprocess
+11	import argparse
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:95:21
+94	            module_cmd = [sys.executable, "-m", module_name] + cmd[1:]
+95	            result = subprocess.run(
+96	                module_cmd,
+97	                cwd=cwd or PROJECT_ROOT,
+98	                capture_output=capture_output,
+99	                text=True,
+100	                encoding="utf-8",
+101	                errors="replace",
+102	                timeout=300,  # 5 minute timeout
+103	            )
+104	            return result.returncode, result.stdout, result.stderr
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:107:17
+106	        # For other commands, run directly
+107	        result = subprocess.run(
+108	            cmd,
+109	            cwd=cwd or PROJECT_ROOT,
+110	            capture_output=capture_output,
+111	            text=True,
+112	            encoding="utf-8",
+113	            errors="replace",
+114	            timeout=300,  # 5 minute timeout
+115	        )
+116	        return result.returncode, result.stdout, result.stderr
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:164:17
+163	    try:
+164	        result = subprocess.run(
+165	            ["conda", "info", "--base"], capture_output=True, text=True, timeout=5
+166	        )
+167	        if result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:164:17
+163	    try:
+164	        result = subprocess.run(
+165	            ["conda", "info", "--base"], capture_output=True, text=True, timeout=5
+166	        )
+167	        if result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:222:12
+221	        if tool_name in ["black", "flake8", "pylint", "mypy", "bandit", "pytest"]:
+222	            subprocess.run(
+223	                [sys.executable, "-m", tool_name, "--version"],
+224	                capture_output=True,
+225	                check=True,
+226	                timeout=10,
+227	            )
+228	        else:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:229:12
+228	        else:
+229	            subprocess.run([tool_name, "--version"], capture_output=True, check=True, timeout=10)
+230	        return True
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:651:21
+650	            install_cmd = [sys.executable, "-m", "pip", "install", "-q"] + missing_tools
+651	            result = subprocess.run(install_cmd, check=False)
+652	            if result.returncode != 0:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:661:20
+660	                if response.lower() == "y":
+661	                    subprocess.run(
+662	                        [sys.executable, "-m", "pip", "install", "-q"] + missing_tools, check=False
+663	                    )
+664	            except (EOFError, KeyboardInterrupt):
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:668:16
+667	                )
+668	                subprocess.run(
+669	                    [sys.executable, "-m", "pip", "install", "-q"] + missing_tools, check=False
+670	                )
+671	
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 1966
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 13
+		Medium: 1
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 14
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7
+
+
+================================================================================
+Checking: check_and_start_services.py
+================================================================================
+Run started:2025-11-11 18:22:49.344560
+
+Test results:
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:9:0
+8	import requests
+9	import subprocess
+10	from pathlib import Path
+
+--------------------------------------------------
+>> Issue: [B104:hardcoded_bind_all_interfaces] Possible binding to all interfaces.
+   Severity: Medium   Confidence: Medium
+   CWE: CWE-605 (https://cwe.mitre.org/data/definitions/605.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b104_hardcoded_bind_all_interfaces.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:73:12
+72	            "--host",
+73	            "0.0.0.0",
+74	            "--port",
+75	            "8080",
+76	            "--registry-url",
+77	            "http://localhost:8500",
+78	        ]
+79	
+80	        print(f"����: {' '.join(cmd)}")
+81	        print()
+82	        print("��ʾ: �������´���������")
+83	        print("�����´����еķ���״̬")
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:92:12
+91	            cmd = [str(Path(c).resolve()) if Path(c).exists() else c for c in cmd]
+92	            subprocess.Popen(
+93	                cmd,
+94	                creationflags=subprocess.CREATE_NEW_CONSOLE,
+95	                env=env,
+96	                cwd=str(project_root.resolve()),
+97	            )
+98	            print("���������´���������")
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:110:12
+109	            # Linux/Mac: ֱ������
+110	            subprocess.Popen(cmd, env=env)
+111	            print("�������ں�̨����")
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 96
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 3
+		Medium: 1
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 1
+		High: 3
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7
+
+
+================================================================================
+Checking: check_ports.py
+================================================================================
+Run started:2025-11-11 18:22:50.009666
+
+Test results:
+>> Issue: [B404:blacklist] Consider possible security implications associated with the subprocess module.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/blacklists/blacklist_imports.html#b404-import-subprocess
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:8:0
+7	import sys
+8	import subprocess
+9	import platform
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:56:21
+55	            # Windows: use netstat
+56	            result = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, timeout=5)
+57	            if result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:56:21
+55	            # Windows: use netstat
+56	            result = subprocess.run(["netstat", "-ano"], capture_output=True, text=True, timeout=5)
+57	            if result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:65:50
+64	                            try:
+65	                                tasklist_result = subprocess.run(
+66	                                    ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV"],
+67	                                    capture_output=True,
+68	                                    text=True,
+69	                                    timeout=5,
+70	                                )
+71	                                if tasklist_result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:65:50
+64	                            try:
+65	                                tasklist_result = subprocess.run(
+66	                                    ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV"],
+67	                                    capture_output=True,
+68	                                    text=True,
+69	                                    timeout=5,
+70	                                )
+71	                                if tasklist_result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:76:28
+75	                                        return f"PID {pid}: {process_info}"
+76	                            except Exception:
+77	                                pass
+78	                            return f"PID {pid}"
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:82:25
+81	            try:
+82	                result = subprocess.run(
+83	                    ["lsof", "-i", f":{port}"], capture_output=True, text=True, timeout=5
+84	                )
+85	                if result.returncode == 0 and result.stdout:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:82:25
+81	            try:
+82	                result = subprocess.run(
+83	                    ["lsof", "-i", f":{port}"], capture_output=True, text=True, timeout=5
+84	                )
+85	                if result.returncode == 0 and result.stdout:
+
+--------------------------------------------------
+>> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b607_start_process_with_partial_path.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:94:29
+93	                try:
+94	                    result = subprocess.run(
+95	                        ["netstat", "-tulpn"], capture_output=True, text=True, timeout=5
+96	                    )
+97	                    if result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.
+   Severity: Low   Confidence: High
+   CWE: CWE-78 (https://cwe.mitre.org/data/definitions/78.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b603_subprocess_without_shell_equals_true.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:94:29
+93	                try:
+94	                    result = subprocess.run(
+95	                        ["netstat", "-tulpn"], capture_output=True, text=True, timeout=5
+96	                    )
+97	                    if result.returncode == 0:
+
+--------------------------------------------------
+>> Issue: [B110:try_except_pass] Try, Except, Pass detected.
+   Severity: Low   Confidence: High
+   CWE: CWE-703 (https://cwe.mitre.org/data/definitions/703.html)
+   More Info: https://bandit.readthedocs.io/en/1.8.6/plugins/b110_try_except_pass.html
+   Location: E:\Qinchaojun\AIDD-TRAIN\check_ports.py:101:16
+100	                                return line.strip()
+101	                except Exception:
+102	                    pass
+103	    except Exception as e:
+
+--------------------------------------------------
+
+Code scanned:
+	Total lines of code: 141
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 11
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 11
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7
+
+
+================================================================================
+Checking: check_service_status.py
+================================================================================
+Run started:2025-11-11 18:22:50.626324
+
+Test results:
+	No issues identified.
+
+Code scanned:
+	Total lines of code: 37
+	Total lines skipped (#nosec): 0
+	Total potential issues skipped due to specifically being disabled (e.g., #nosec BXXX): 0
+
+Run metrics:
+	Total issues (by severity):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+	Total issues (by confidence):
+		Undefined: 0
+		Low: 0
+		Medium: 0
+		High: 0
+Files skipped (0):
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[main]	INFO	running on Python 3.12.7

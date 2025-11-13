@@ -35,7 +35,7 @@ from services.common.utils import generate_service_id
 # Configure unified logging
 try:
     from compass.service.logging_config import setup_logging
-    
+
     log_dir = os.getenv("REGISTRY_LOG_DIR", "logs")
     log_level = os.getenv("LOG_LEVEL", "INFO")
     setup_logging(
@@ -76,7 +76,7 @@ health_checker: Optional[HealthChecker] = None
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown events."""
     # Startup
-    global health_checker, services
+    global health_checker
 
     # Load services from database
     services.update(storage.load_all_services())
@@ -222,7 +222,7 @@ async def deregister_service(service_id: str):
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Service {service_id} not found"
         )
 
-    service = services.pop(service_id)
+    services.pop(service_id)
     storage.delete_service(service_id)
     logger.info(f"Deregistered service: {service_id}")
 

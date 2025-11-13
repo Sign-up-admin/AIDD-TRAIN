@@ -1,0 +1,20 @@
+Report generated at: 2025-11-11T11:49:02.976382
+Tool: pytest
+Description: Unit tests and coverage
+Exit Code: 4
+
+================================================================================
+
+
+================================================================================
+Running Pytest Tests
+================================================================================
+ERROR: usage: __main__.py [options] [file_or_dir] [file_or_dir] [...]
+__main__.py: error: unrecognized arguments: --cov=compass --cov-report=term-missing --cov-report=html --cov-report=xml --cov=compass --cov-report=html --cov-report=xml --cov-report=term
+  inifile: E:\Qinchaojun\AIDD-TRAIN\pytest.ini
+  rootdir: E:\Qinchaojun\AIDD-TRAIN
+
+
+================================================================================
+Summary of Issues:
+  - Some tests failed

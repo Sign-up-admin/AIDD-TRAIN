@@ -2,7 +2,7 @@
 Model models for model service.
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import Dict, Optional, List
 from datetime import datetime
 from pathlib import Path
@@ -36,8 +36,9 @@ class InferenceRequest(BaseModel):
     ligand_path: str
     model_id: Optional[str] = None  # If None, use latest model
 
-    @validator("protein_path")
-    def validate_protein_path(cls, v):
+    @field_validator("protein_path")
+    @classmethod
+    def validate_protein_path(cls, v: str) -> str:
         """Validate protein file path."""
         if not isinstance(v, str) or len(v) == 0:
             raise ValueError("protein_path is required and must be a non-empty string")
@@ -47,8 +48,9 @@ class InferenceRequest(BaseModel):
             raise ValueError("protein_path must be a PDB or PDBQT file")
         return v
 
-    @validator("ligand_path")
-    def validate_ligand_path(cls, v):
+    @field_validator("ligand_path")
+    @classmethod
+    def validate_ligand_path(cls, v: str) -> str:
         """Validate ligand file path."""
         if not isinstance(v, str) or len(v) == 0:
             raise ValueError("ligand_path is required and must be a non-empty string")
@@ -58,8 +60,9 @@ class InferenceRequest(BaseModel):
             raise ValueError("ligand_path must be a SDF, MOL2, MOL, or PDB file")
         return v
 
-    @validator("model_id")
-    def validate_model_id(cls, v):
+    @field_validator("model_id")
+    @classmethod
+    def validate_model_id(cls, v: Optional[str]) -> Optional[str]:
         """Validate model ID format."""
         if v is not None and not isinstance(v, str):
             raise ValueError("model_id must be a string")
@@ -83,8 +86,9 @@ class BatchInferenceRequest(BaseModel):
     protein_ligand_pairs: List[Dict[str, str]]  # List of {"protein": path, "ligand": path}
     model_id: Optional[str] = None
 
-    @validator("protein_ligand_pairs")
-    def validate_pairs(cls, v):
+    @field_validator("protein_ligand_pairs")
+    @classmethod
+    def validate_pairs(cls, v: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """Validate protein-ligand pairs."""
         if not isinstance(v, list):
             raise ValueError("protein_ligand_pairs must be a list")
@@ -103,8 +107,9 @@ class BatchInferenceRequest(BaseModel):
 
         return v
 
-    @validator("model_id")
-    def validate_model_id(cls, v):
+    @field_validator("model_id")
+    @classmethod
+    def validate_model_id(cls, v: Optional[str]) -> Optional[str]:
         """Validate model ID format."""
         if v is not None and not isinstance(v, str):
             raise ValueError("model_id must be a string")

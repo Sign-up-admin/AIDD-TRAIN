@@ -30,7 +30,8 @@ def test_upload_queue_manager_submit():
     
     assert task.task_id == "task-1"
     assert task.dataset_id == "dataset-1"
-    assert task.status == UploadStatus.PENDING
+    # Status may be PENDING or PROCESSING depending on timing
+    assert task.status in (UploadStatus.PENDING, UploadStatus.PROCESSING)
     
     # Wait for completion
     time.sleep(0.2)

@@ -1,0 +1,121 @@
+Report generated at: 2025-11-11T11:46:40.780636
+Tool: black
+Description: Code formatting check
+Exit Code: 0
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\models\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\middleware\security_headers.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\registry\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\models\dataset.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\middleware\auth.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\services\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\error_codes.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\models.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\middleware\rate_limit.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\training\exceptions.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\services\model_service.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\services\progress_logger.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\services\progress_tracker.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\monitoring\alert_manager.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\benchmark.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\services\task_lifecycle_logger.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\training\engine.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\training.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py
+
+All done! \u2728 \U0001f370 \u2728
+24 files reformatted, 38 files left unchanged.
+
+
+================================================================================
+Checking: services
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\services\common\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\services\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\services\registry\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\services\registry\models.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\services\registry\server.py
+
+All done! \u2728 \U0001f370 \u2728
+5 files reformatted, 5 files left unchanged.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/services
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\__init__.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py
+
+All done! \u2728 \U0001f370 \u2728
+2 files reformatted, 4 files left unchanged.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/pages
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py
+
+All done! \u2728 \U0001f370 \u2728
+1 file reformatted, 2 files left unchanged.
+
+
+================================================================================
+Checking: FLASH_DOCK-main/FlashDock.py
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py
+
+All done! \u2728 \U0001f370 \u2728
+1 file reformatted.
+
+
+================================================================================
+Checking: scripts
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\scripts\run_debug_tests.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\scripts\analyze_problem_batch.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\scripts\generate_reports.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\scripts\report_generator.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\scripts\vulnerability_scanner.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\scripts\chrome_debugger.py
+reformatted E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py
+
+All done! \u2728 \U0001f370 \u2728
+7 files reformatted.
+
+
+================================================================================
+Checking: check_and_start_services.py
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py
+
+All done! \u2728 \U0001f370 \u2728
+1 file reformatted.
+
+
+================================================================================
+Checking: check_ports.py
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\check_ports.py
+
+All done! \u2728 \U0001f370 \u2728
+1 file reformatted.
+
+
+================================================================================
+Checking: check_service_status.py
+================================================================================
+reformatted E:\Qinchaojun\AIDD-TRAIN\check_service_status.py
+
+All done! \u2728 \U0001f370 \u2728
+1 file reformatted.

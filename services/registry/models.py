@@ -38,13 +38,3 @@ class HealthCheckResponse(BaseModel):
     status: str
     message: str
     timestamp: datetime = Field(default_factory=datetime.now)
-
-
-
-
-
-
-
-
-
-

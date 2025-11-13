@@ -9,6 +9,7 @@ from typing import List, Dict, Optional, Callable
 from dataclasses import dataclass, asdict
 from datetime import datetime
 import json
+from compass.service.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +64,22 @@ class BenchmarkRunner:
         for _ in range(warmup):
             try:
                 func(*args, **kwargs)
-            except Exception:
-                pass
+            except (ValueError, TypeError, AttributeError, KeyError) as e:
+                # Expected errors during warmup - log but continue
+                logger.debug(f"Warmup iteration failed (expected): {e}")
+            except (RuntimeError, MemoryError, OSError) as e:
+                # Runtime/system errors that should be logged but may be expected in some contexts
+                logger.warning(f"Runtime error during warmup: {e}")
+            except (KeyboardInterrupt, SystemExit):
+                # Allow these to propagate
+                raise
+            except Exception as e:
+                # Unexpected errors during warmup - log with full context
+                logger.warning(
+                    f"Unexpected error during warmup: {e}",
+                    exc_info=True,
+                    extra={"error_type": type(e).__name__, "benchmark_name": name},
+                )
 
         # Run benchmark
         times = []
@@ -79,11 +94,33 @@ class BenchmarkRunner:
                 elapsed = time.time() - start_time
                 times.append(elapsed)
                 success_count += 1
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError, KeyError) as e:
+                # Expected errors - log and continue
                 error_count += 1
-                errors.append(str(e))
+                errors.append(f"{type(e).__name__}: {str(e)}")
                 elapsed = time.time() - start_time
                 times.append(elapsed)  # Include failed attempts in timing
+            except (RuntimeError, MemoryError, OSError) as e:
+                # Runtime/system errors - log with context
+                error_count += 1
+                errors.append(f"{type(e).__name__}: {str(e)}")
+                elapsed = time.time() - start_time
+                times.append(elapsed)
+                logger.warning(f"Runtime error during benchmark iteration {i}: {e}")
+            except (KeyboardInterrupt, SystemExit):
+                # Allow these to propagate
+                raise
+            except Exception as e:
+                # Unexpected errors - log with full context
+                error_count += 1
+                errors.append(f"{type(e).__name__}: {str(e)}")
+                elapsed = time.time() - start_time
+                times.append(elapsed)
+                logger.warning(
+                    f"Unexpected error during benchmark iteration {i}: {e}",
+                    exc_info=True,
+                    extra={"error_type": type(e).__name__, "benchmark_name": name, "iteration": i},
+                )
 
         # Calculate statistics
         if not times:
@@ -190,18 +227,25 @@ def benchmark_inference_service(
         request = InferenceRequest(protein_path=protein_path, ligand_path=ligand_path)
         try:
             inference_service.predict(request)
-        except Exception:
-            # Expected to fail if files don't exist, but we're benchmarking the code path
-            pass
+        except (FileNotFoundError, ValueError, ValidationError) as e:
+            # Expected to fail if files don't exist or invalid input, but we're benchmarking the code path
+            logger.debug(f"Inference benchmark expected error: {e}")
+        except (RuntimeError, MemoryError, OSError, PermissionError) as e:
+            # Runtime/system errors that may occur during benchmarking
+            logger.warning(f"Runtime error in inference benchmark: {e}")
+        except (KeyboardInterrupt, SystemExit):
+            # Allow these to propagate
+            raise
+        except Exception as e:
+            # Unexpected errors - log with full context
+            logger.warning(
+                f"Unexpected error in inference benchmark: {e}",
+                exc_info=True,
+                extra={
+                    "error_type": type(e).__name__,
+                    "protein_path": protein_path,
+                    "ligand_path": ligand_path,
+                },
+            )
 
     return runner.run_benchmark("Inference Service", inference_func, iterations=num_iterations)
-
-
-
-
-
-
-
-
-
-

@@ -30,6 +30,9 @@ def mock_service_config(monkeypatch):
     monkeypatch.setenv('COMPASS_CHECKPOINT_DIR', './test_checkpoints')
     monkeypatch.setenv('COMPASS_LOG_DIR', './test_logs')
     monkeypatch.setenv('REGISTRY_URL', 'http://localhost:8500')
+    # Disable authentication for tests
+    monkeypatch.setenv('AUTH_ENABLED', 'false')
+    monkeypatch.setenv('FORCE_AUTH_CRITICAL', 'false')
 
 
 @pytest.fixture

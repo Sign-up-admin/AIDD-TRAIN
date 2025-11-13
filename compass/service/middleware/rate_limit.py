@@ -13,6 +13,14 @@ from compass.service.error_codes import ErrorCode
 
 logger = logging.getLogger(__name__)
 
+# Rate limit statistics for monitoring
+_rate_limit_stats = {
+    "total_requests": 0,
+    "rate_limited_requests": 0,
+    "by_endpoint": defaultdict(int),
+    "by_ip": defaultdict(int),
+}
+
 
 class RateLimiter:
     """Simple in-memory rate limiter using sliding window."""
@@ -87,6 +95,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         per_endpoint_limits: Optional[Dict[str, Dict[str, int]]] = None,
         identifier_func: Optional[callable] = None,
     ):
+        global _middleware_instance
+        _middleware_instance = self
         """
         Initialize rate limit middleware.
 
@@ -136,8 +146,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next):
         """Process request with rate limiting."""
-        # Skip rate limiting for health checks
-        if request.url.path in ["/health", "/health/ready", "/docs", "/openapi.json", "/redoc"]:
+        # Skip rate limiting for health checks and public endpoints
+        skip_paths = ["/health", "/health/ready", "/docs", "/openapi.json", "/redoc", "/"]
+        if request.url.path in skip_paths:
             return await call_next(request)
 
         # Get identifier
@@ -150,43 +161,89 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 limiter = endpoint_limiter
                 break
 
+        # Update statistics
+        _rate_limit_stats["total_requests"] += 1
+        _rate_limit_stats["by_endpoint"][request.url.path] += 1
+        _rate_limit_stats["by_ip"][identifier] += 1
+
         # Check rate limit
         is_allowed, remaining = limiter.is_allowed(identifier)
 
         if not is_allowed:
+            # Update rate limit statistics
+            _rate_limit_stats["rate_limited_requests"] += 1
+
             logger.warning(
-                f"Rate limit exceeded for {identifier} on {request.url.path}",
-                extra={"ip": identifier, "path": request.url.path},
+                f"Rate limit exceeded for {identifier} on {request.url.path} "
+                f"(limit: {limiter.max_requests}/{limiter.window_seconds}s)",
+                extra={
+                    "ip": identifier,
+                    "path": request.url.path,
+                    "method": request.method,
+                    "limit": limiter.max_requests,
+                    "window": limiter.window_seconds,
+                    "user_agent": request.headers.get("User-Agent", "unknown"),
+                },
             )
+            reset_time = int(time.time()) + limiter.window_seconds
             return JSONResponse(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
                 content={
                     "error": "Rate limit exceeded",
                     "error_code": ErrorCode.RATE_LIMIT_EXCEEDED.value,
                     "status_code": 429,
-                    "detail": f"Too many requests. Please try again later.",
+                    "detail": f"Too many requests. Limit: {limiter.max_requests} per {limiter.window_seconds}s. Please try again later.",
                 },
                 headers={
                     "X-RateLimit-Limit": str(limiter.max_requests),
                     "X-RateLimit-Remaining": "0",
-                    "X-RateLimit-Reset": str(int(time.time()) + limiter.window_seconds),
+                    "X-RateLimit-Reset": str(reset_time),
+                    "Retry-After": str(limiter.window_seconds),
                 },
             )
 
         # Add rate limit headers
         response = await call_next(request)
+        reset_time = int(time.time()) + limiter.window_seconds
         response.headers["X-RateLimit-Limit"] = str(limiter.max_requests)
         response.headers["X-RateLimit-Remaining"] = str(remaining)
-        response.headers["X-RateLimit-Reset"] = str(int(time.time()) + limiter.window_seconds)
+        response.headers["X-RateLimit-Reset"] = str(reset_time)
 
         return response
 
 
+def get_rate_limit_stats() -> Dict:
+    """Get rate limit statistics for monitoring."""
+    return {
+        "total_requests": _rate_limit_stats["total_requests"],
+        "rate_limited_requests": _rate_limit_stats["rate_limited_requests"],
+        "rate_limit_percentage": (
+            (_rate_limit_stats["rate_limited_requests"] / _rate_limit_stats["total_requests"] * 100)
+            if _rate_limit_stats["total_requests"] > 0
+            else 0.0
+        ),
+        "top_endpoints": dict(
+            sorted(_rate_limit_stats["by_endpoint"].items(), key=lambda x: x[1], reverse=True)[:10]
+        ),
+        "top_ips": dict(
+            sorted(_rate_limit_stats["by_ip"].items(), key=lambda x: x[1], reverse=True)[:10]
+        ),
+    }
 
 
+# Global reference to middleware instance for testing
+_middleware_instance = None
 
 
-
-
-
-
+def reset_rate_limit_stats():
+    """Reset rate limit statistics."""
+    global _middleware_instance  # noqa: F824
+    _rate_limit_stats["total_requests"] = 0
+    _rate_limit_stats["rate_limited_requests"] = 0
+    _rate_limit_stats["by_endpoint"].clear()
+    _rate_limit_stats["by_ip"].clear()
+    # Also reset rate limiters if middleware instance is available
+    if _middleware_instance:
+        _middleware_instance.default_limiter.reset()
+        for limiter in _middleware_instance.endpoint_limiters.values():
+            limiter.reset()

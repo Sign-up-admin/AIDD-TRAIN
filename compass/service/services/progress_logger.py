@@ -39,9 +39,9 @@ class ProgressAwareLogger(TrainingLogger):
     def _update_progress_from_message(self, message: str):
         """Parse message and update progress tracker."""
         # Check if progress_tracker exists (may be None after unpickling)
-        if not hasattr(self, 'progress_tracker') or self.progress_tracker is None:
+        if not hasattr(self, "progress_tracker") or self.progress_tracker is None:
             return
-            
+
         # Data processing progress
         if "Processing" in message and "items" in message:
             match = re.search(r"Processing (\d+)/(\d+)", message)
@@ -87,7 +87,7 @@ class ProgressAwareLogger(TrainingLogger):
             )
 
         # Stage detection (only if progress_tracker exists)
-        if hasattr(self, 'progress_tracker') and self.progress_tracker is not None:
+        if hasattr(self, "progress_tracker") and self.progress_tracker is not None:
             if "Step 1:" in message or "Parsing PDBbind" in message:
                 self.progress_tracker.set_stage("data_processing", "Parsing PDBbind index files")
             elif "Step 2:" in message or "Verifying data" in message:
@@ -111,7 +111,7 @@ class ProgressAwareLogger(TrainingLogger):
         state = self.__dict__.copy()
         # Remove progress_tracker as it contains threading.Lock
         # The progress_tracker will be recreated if needed after unpickling
-        state.pop('progress_tracker', None)
+        state.pop("progress_tracker", None)
         return state
 
     def __setstate__(self, state):

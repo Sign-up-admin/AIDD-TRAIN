@@ -54,6 +54,7 @@ if sys.platform == "win32":
     sys.modules["sh"] = ShWrapper()
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 from streamlit_molstar import st_molstar, st_molstar_rcsb, st_molstar_remote
 
@@ -156,15 +157,132 @@ elif page == "准备配体":
     from rdkit.Chem.Draw import rdMolDraw2D
     import py3Dmol
     from stmol import showmol
-    from streamlit_ketcher import st_ketcher
+
+    # 尝试导入 streamlit_ketcher
+    ketcher_available = False
+    st_ketcher = None
+    try:
+        from streamlit_ketcher import st_ketcher
+
+        ketcher_available = True
+    except ImportError:
+        # 导入失败，库未安装
+        ketcher_available = False
+        st_ketcher = None
+    except Exception:
+        # 其他导入错误
+        ketcher_available = False
+        st_ketcher = None
 
     # 1. 允许用户上传一个 SDF 文件
     st.info("请上传一个 SDF 文件，或在画布中绘制分子结构/粘贴SMILES")
     st.markdown("**上传**分子文件（SDF 格式）：")
-    sdf_file = st.file_uploader("", type=["sdf"])
+    sdf_file = st.file_uploader("上传 SDF 文件", type=["sdf"], label_visibility="hidden")
+
     # 2. 允许用户使用 Ketcher 绘制或输入 SMILES
     st.markdown("**或者** 在下方绘制分子结构/粘贴SMILES：")
-    smiles_input = st_ketcher()
+    smiles_input = None
+
+    if ketcher_available and st_ketcher is not None:
+        # 注入 JavaScript 补丁来修复 eventBus 初始化问题
+        # 这个补丁会在组件加载前确保 eventBus 正确初始化
+        ketcher_fix_script = """
+        <script>
+        (function() {
+            // 修复 streamlit_ketcher 的 eventBus 初始化问题
+            // 在组件初始化前，确保全局 eventBus 对象存在
+            if (typeof window !== 'undefined') {
+                // 等待 DOM 加载完成
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initKetcherFix);
+                } else {
+                    initKetcherFix();
+                }
+                
+                function initKetcherFix() {
+                    // 创建一个简单的事件总线实现
+                    if (!window.__ketcher_eventBus) {
+                        window.__ketcher_eventBus = {
+                            listeners: {},
+                            on: function(event, callback) {
+                                if (!this.listeners[event]) {
+                                    this.listeners[event] = [];
+                                }
+                                this.listeners[event].push(callback);
+                            },
+                            emit: function(event, data) {
+                                if (this.listeners[event]) {
+                                    this.listeners[event].forEach(callback => {
+                                        try {
+                                            callback(data);
+                                        } catch (e) {
+                                            console.error('EventBus callback error:', e);
+                                        }
+                                    });
+                                }
+                            },
+                            off: function(event, callback) {
+                                if (this.listeners[event]) {
+                                    this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+                                }
+                            }
+                        };
+                    }
+                    
+                    // 尝试修复组件内部的 eventBus 引用
+                    // 使用 MutationObserver 监听组件加载
+                    const observer = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            mutation.addedNodes.forEach(function(node) {
+                                if (node.nodeType === 1) { // Element node
+                                    // 查找所有 iframe（streamlit 组件通常在 iframe 中）
+                                    const iframes = node.querySelectorAll ? node.querySelectorAll('iframe') : [];
+                                    iframes.forEach(function(iframe) {
+                                        try {
+                                            // 尝试访问 iframe 内容并修复 eventBus
+                                            if (iframe.contentWindow && iframe.contentWindow.__ketcher_eventBus === undefined) {
+                                                iframe.contentWindow.__ketcher_eventBus = window.__ketcher_eventBus;
+                                            }
+                                        } catch (e) {
+                                            // 跨域限制，无法访问 iframe 内容
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                    });
+                    
+                    observer.observe(document.body, {
+                        childList: true,
+                        subtree: true
+                    });
+                }
+            }
+        })();
+        </script>
+        """
+
+        # 注入修复脚本
+        components.html(ketcher_fix_script, height=0)
+
+        try:
+            # 尝试使用 Ketcher 组件
+            smiles_input = st_ketcher()
+        except Exception as e:
+            # 如果仍然失败，显示错误信息
+            st.error(
+                f"⚠️ **分子编辑器组件初始化失败**: {str(e)}\n\n"
+                "请尝试刷新页面，或使用下方的文本输入框输入 SMILES 字符串。"
+            )
+            smiles_input = None
+
+    # 如果 Ketcher 不可用或失败，提供文本输入作为备选方案
+    if not smiles_input:
+        smiles_input = st.text_input(
+            "输入 SMILES 字符串（如果上方编辑器不可用）",
+            placeholder="例如: CCO (乙醇), CC(=O)O (乙酸) 等",
+            help="请输入有效的 SMILES 字符串。SMILES 是一种用文本表示分子结构的化学标记法。",
+        )
 
     def process_and_show_mol(
         mol: Chem.Mol, uploaded_sdf_name: str = None, user_defined_filename: str = None
@@ -223,11 +341,35 @@ elif page == "准备配体":
     mol_from_sdf = None
     uploaded_sdf_name = None
 
+    def fix_mol_dimension(mol):
+        """修复分子的维度标记，避免 RDKit 警告"""
+        if mol is None:
+            return mol
+        # 检查分子是否有 3D 坐标（非零 Z 坐标）
+        conf = mol.GetConformer()
+        if conf is not None:
+            has_3d = False
+            for i in range(mol.GetNumAtoms()):
+                pos = conf.GetAtomPosition(i)
+                if abs(pos.z) > 0.001:  # 如果 Z 坐标不为零
+                    has_3d = True
+                    break
+            # 如果有 3D 坐标，确保分子被标记为 3D
+            if has_3d:
+                conf.Set3D(True)
+        return mol
+
     if sdf_file is not None:
         uploaded_sdf_name = sdf_file.name  # 记录用户上传的文件名
         try:
-            sdf_supplier = Chem.ForwardSDMolSupplier(sdf_file)
-            mols = [m for m in sdf_supplier if m is not None]
+            # 使用 removeHs=False 和 sanitize=True 来正确读取 SDF 文件
+            sdf_supplier = Chem.ForwardSDMolSupplier(sdf_file, removeHs=False, sanitize=True)
+            mols = []
+            for mol in sdf_supplier:
+                if mol is not None:
+                    # 立即修复维度标记，避免警告
+                    mol = fix_mol_dimension(mol)
+                    mols.append(mol)
             if len(mols) > 0:
                 mol_from_sdf = mols[0]
             else:
@@ -437,22 +579,28 @@ elif page == "分子对接":
                     command = [
                         "python",
                         "./others/Uni-Mol/unimol_docking_v2/interface/demo.py",
-                        "--mode", "single",
-                        "--conf-size", "10",
+                        "--mode",
+                        "single",
+                        "--conf-size",
+                        "10",
                         "--cluster",
-                        "--input-protein", str(protein_path),
-                        "--input-ligand", str(ligand_path),
-                        "--input-docking-grid", str(docking_grid_path),
-                        "--output-ligand-name", "ligand_predict",
-                        "--output-ligand-dir", str(result_dir),
+                        "--input-protein",
+                        str(protein_path),
+                        "--input-ligand",
+                        str(ligand_path),
+                        "--input-docking-grid",
+                        str(docking_grid_path),
+                        "--output-ligand-name",
+                        "ligand_predict",
+                        "--output-ligand-dir",
+                        str(result_dir),
                         "--steric-clash-fix",
-                        "--model-dir", "./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt"
+                        "--model-dir",
+                        "./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt",
                     ]
 
                     # 执行命令（使用列表形式，避免shell注入风险）
-                    result = subprocess.run(
-                        command, capture_output=True, text=True, timeout=300
-                    )
+                    result = subprocess.run(command, capture_output=True, text=True, timeout=300)
 
                     # 根据命令返回值判断是否执行成功
                     if result.returncode == 0:
@@ -648,16 +796,24 @@ elif page == "批量口袋预测与对接":
                                             command = [
                                                 "python",
                                                 "./others/Uni-Mol/unimol_docking_v2/interface/demo.py",
-                                                "--mode", "single",
-                                                "--conf-size", "10",
+                                                "--mode",
+                                                "single",
+                                                "--conf-size",
+                                                "10",
                                                 "--cluster",
-                                                "--input-protein", str(protein_path),
-                                                "--input-ligand", str(ligand_path),
-                                                "--input-docking-grid", str(docking_grid_path),
-                                                "--output-ligand-name", "ligand_predict",
-                                                "--output-ligand-dir", str(result_dir),
+                                                "--input-protein",
+                                                str(protein_path),
+                                                "--input-ligand",
+                                                str(ligand_path),
+                                                "--input-docking-grid",
+                                                str(docking_grid_path),
+                                                "--output-ligand-name",
+                                                "ligand_predict",
+                                                "--output-ligand-dir",
+                                                str(result_dir),
                                                 "--steric-clash-fix",
-                                                "--model-dir", "./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt"
+                                                "--model-dir",
+                                                "./others/Uni-Mol/unimol_docking_v2/unimol_docking_v2_240517.pt",
                                             ]
 
                                             # 执行对接命令（使用列表形式，避免shell注入风险）

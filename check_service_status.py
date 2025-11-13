@@ -1,11 +1,13 @@
 """检查服务状态"""
+
 import sys
 import io
 import requests
 
 # 设置UTF-8编码
-if sys.platform == 'win32':
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+
 
 def check_service(url, name):
     """检查服务是否运行"""
@@ -14,6 +16,7 @@ def check_service(url, name):
         return r.status_code == 200
     except:
         return False
+
 
 print("=" * 60)
 print("服务状态检查")
@@ -42,15 +45,3 @@ else:
     if not compass_ok:
         print("  - COMPASS服务未运行")
     sys.exit(1)
-
-
-
-
-
-
-
-
-
-
-
-

@@ -32,34 +32,34 @@ app = FastAPI(
     title="COMPASS Service",
     description="""
     COMPASS (Computational Protein-Ligand Affinity Service) - Training and Inference Service
-    
+
     ## Features
-    
+
     * **Training Management**: Create, start, pause, stop, and monitor training tasks
     * **Model Inference**: Perform single and batch predictions for protein-ligand binding affinity
     * **Dataset Management**: Upload and manage training datasets
     * **Model Management**: List and manage trained models
-    
+
     ## API Versions
-    
+
     Current API version: **v1**
-    
+
     ## Authentication
-    
+
     Currently, the API does not require authentication. In production, consider implementing:
     - API key authentication
     - OAuth2/JWT tokens
     - Role-based access control
-    
+
     ## Rate Limiting
-    
+
     Default rate limits (configurable):
     - General endpoints: 100 requests/minute
     - Upload endpoints: 10 requests/minute
     - Training endpoints: 5 requests/minute
-    
+
     ## Error Codes
-    
+
     * `400`: Bad Request - Invalid input parameters
     * `404`: Not Found - Resource not found
     * `409`: Conflict - Resource conflict
@@ -67,9 +67,9 @@ app = FastAPI(
     * `429`: Too Many Requests - Rate limit exceeded
     * `500`: Internal Server Error - Server error
     * `503`: Service Unavailable - Service temporarily unavailable
-    
+
     ## Support
-    
+
     For issues and questions, please contact the development team.
     """,
     version="1.0.0",
@@ -105,19 +105,90 @@ app = FastAPI(
 )
 
 # Enable CORS with restricted origins
-# In production, replace with specific allowed origins
-# For development, allow localhost origins
-cors_origins = os.getenv(
-    "CORS_ORIGINS",
+# Default to localhost only for security
+# In production, set CORS_ORIGINS environment variable with specific allowed origins
+default_origins = (
     "http://localhost:8501,http://127.0.0.1:8501,http://localhost:3000,http://127.0.0.1:3000"
-).split(",")
-cors_origins = [origin.strip() for origin in cors_origins if origin.strip()]
+)
+cors_origins_str = os.getenv("CORS_ORIGINS", default_origins)
+cors_origins = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
 
-# Allow all origins only in development mode (not recommended for production)
+# Security: Never allow all origins, even in development
+# If CORS_ALLOW_ALL is set, log a warning and use default origins instead
 allow_all_origins = os.getenv("CORS_ALLOW_ALL", "false").lower() == "true"
+is_production = os.getenv("ENVIRONMENT", "development").lower() == "production"
+
+
+# Validate CORS origins for security
+def validate_cors_origins(origins: list, is_prod: bool) -> list:
+    """
+    Validate and sanitize CORS origins.
+
+    Args:
+        origins: List of origin strings
+        is_prod: Whether in production environment
+
+    Returns:
+        Validated list of origins
+    """
+    validated = []
+    for origin in origins:
+        origin = origin.strip()
+        if not origin:
+            continue
+
+        # Reject wildcard origins in all environments
+        if origin == "*" or origin == "null":
+            logger.error(f"SECURITY ERROR: Rejected wildcard/null origin: {origin}")
+            continue
+
+        # Validate origin format (basic check)
+        if not (origin.startswith("http://") or origin.startswith("https://")):
+            logger.warning(f"Invalid origin format (must start with http:// or https://): {origin}")
+            continue
+
+        # In production, require HTTPS
+        if (
+            is_prod
+            and origin.startswith("http://")
+            and "localhost" not in origin
+            and "127.0.0.1" not in origin
+        ):
+            logger.warning(
+                f"SECURITY WARNING: HTTP origin in production (should use HTTPS): {origin}"
+            )
+            # Still allow but log warning
+
+        validated.append(origin)
+
+    # Production environment must have explicit origins (not just defaults)
+    if is_prod and cors_origins_str == default_origins:
+        logger.warning(
+            "SECURITY WARNING: Production environment using default CORS origins. "
+            "Set CORS_ORIGINS environment variable with specific allowed origins."
+        )
+
+    return validated
+
+
 if allow_all_origins:
-    logger.warning("CORS is configured to allow all origins. This is not recommended for production!")
-    cors_origins = ["*"]
+    logger.error(
+        "SECURITY WARNING: CORS_ALLOW_ALL is enabled! "
+        "This is a critical security risk. Using default origins instead."
+    )
+    cors_origins = [origin.strip() for origin in default_origins.split(",") if origin.strip()]
+
+# Validate CORS origins
+cors_origins = validate_cors_origins(cors_origins, is_production)
+
+if not cors_origins:
+    logger.error(
+        "SECURITY ERROR: No valid CORS origins configured! "
+        "Using minimal default origins for localhost only."
+    )
+    cors_origins = ["http://localhost:8501", "http://127.0.0.1:8501"]
+
+logger.info(f"CORS configured with {len(cors_origins)} allowed origin(s): {cors_origins}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -137,17 +208,18 @@ default_limit = int(os.getenv("RATE_LIMIT_DEFAULT", "100"))
 default_window = int(os.getenv("RATE_LIMIT_WINDOW", "60"))
 
 # Per-endpoint rate limits
+# More restrictive limits for resource-intensive endpoints to prevent abuse
 per_endpoint_limits = {
     "/api/v1/training/tasks": {
-        "limit": int(os.getenv("RATE_LIMIT_TRAINING", "30")),  # 从5增加到30，允许更频繁的请求
+        "limit": int(os.getenv("RATE_LIMIT_TRAINING", "10")),  # Reduced to 10 requests per minute
         "window": int(os.getenv("RATE_LIMIT_TRAINING_WINDOW", "60")),
     },
     "/api/v1/data/upload": {
-        "limit": int(os.getenv("RATE_LIMIT_UPLOAD", "10")),
+        "limit": int(os.getenv("RATE_LIMIT_UPLOAD", "3")),  # Reduced to 3 uploads per minute
         "window": int(os.getenv("RATE_LIMIT_UPLOAD_WINDOW", "60")),
     },
     "/api/v1/inference": {
-        "limit": int(os.getenv("RATE_LIMIT_INFERENCE", "50")),
+        "limit": int(os.getenv("RATE_LIMIT_INFERENCE", "20")),  # Reduced to 20 requests per minute
         "window": int(os.getenv("RATE_LIMIT_INFERENCE_WINDOW", "60")),
     },
 }
@@ -204,12 +276,34 @@ async def service_exception_handler(request: Request, exc: ServiceException):
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors."""
-    logger.warning(f"Validation error: {exc.errors()}", extra={"path": str(request.url)})
+    # Convert errors to JSON-serializable format
+    errors = exc.errors()
+    # Ensure all error details are JSON-serializable
+    serializable_errors = []
+    for error in errors:
+        serializable_error = {
+            "type": str(error.get("type", "")),
+            "loc": list(error.get("loc", [])),
+            "msg": str(error.get("msg", "")),
+        }
+        # Handle ctx if present (may contain non-serializable objects)
+        if "ctx" in error:
+            ctx = error["ctx"]
+            serializable_ctx = {}
+            for key, value in ctx.items():
+                if isinstance(value, (str, int, float, bool, type(None))):
+                    serializable_ctx[key] = value
+                else:
+                    serializable_ctx[key] = str(value)
+            serializable_error["ctx"] = serializable_ctx
+        serializable_errors.append(serializable_error)
+
+    logger.warning(f"Validation error: {serializable_errors}", extra={"path": str(request.url)})
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={
             "error": "Validation error",
-            "detail": exc.errors(),
+            "detail": serializable_errors,
             "path": str(request.url.path),
         },
     )
@@ -240,7 +334,9 @@ app.include_router(inference.router)
 # This is just for debugging - the route should be registered via include_router
 try:
     # Check if WebSocket route exists in training router
-    training_ws_routes = [r for r in training.router.routes if hasattr(r, 'path') and 'stream' in r.path]
+    training_ws_routes = [
+        r for r in training.router.routes if hasattr(r, "path") and "stream" in r.path
+    ]
     if training_ws_routes:
         logger.info(f"Found {len(training_ws_routes)} WebSocket route(s) in training router")
         for route in training_ws_routes:
@@ -248,7 +344,7 @@ try:
     else:
         logger.warning("No WebSocket routes found in training router")
         # List all routes in training router for debugging
-        all_training_routes = [r for r in training.router.routes if hasattr(r, 'path')]
+        all_training_routes = [r for r in training.router.routes if hasattr(r, "path")]
         logger.info(f"Training router has {len(all_training_routes)} total routes")
         for route in all_training_routes[:10]:  # Show first 10
             logger.info(f"  Route: {route.path}, type: {type(route).__name__}")
@@ -259,14 +355,14 @@ except Exception as e:
 logger.info(f"Registered routes in app (total: {len(app.routes)}):")
 websocket_found = False
 for route in app.routes:
-    if hasattr(route, 'path'):
+    if hasattr(route, "path"):
         # Check if it's a WebSocket route
         route_type = "HTTP"
         route_class = type(route).__name__
-        if 'WebSocket' in route_class or 'websocket' in route_class.lower():
+        if "WebSocket" in route_class or "websocket" in route_class.lower():
             route_type = "WebSocket"
             websocket_found = True
-        if 'stream' in route.path.lower():
+        if "stream" in route.path.lower():
             logger.info(f"  {route_type} ({route_class}): {route.path}")
             websocket_found = True
 logger.info(f"WebSocket routes found in app: {websocket_found}")
@@ -305,6 +401,7 @@ async def startup_event():
             host = get_local_ip()
         port = SERVICE_CONFIG["port"]
 
+        global registry_client
         registry_client = CompassRegistryClient()
 
         # Register with retry mechanism
@@ -344,7 +441,7 @@ async def shutdown_event():
 
 def cleanup():
     """Cleanup function for service deregistration."""
-    global registry_client
+    global registry_client  # noqa: F824
     if registry_client:
         try:
             # Ensure heartbeat thread is stopped

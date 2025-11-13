@@ -1,0 +1,156 @@
+Report generated at: 2025-11-12T02:25:05.558211
+Tool: flake8
+Description: Code style and complexity check
+Exit Code: 1
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\compass\main.py:29:1: C901 'discover_and_select_recipe' is too complex (16)
+E:\Qinchaojun\AIDD-TRAIN\compass\main.py:108:1: C901 'main' is too complex (29)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\__main__.py:29:1: C901 'find_optimal_configs' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\hardware_utils.py:6:1: C901 'get_hardware_recommendations' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\search_space\builder.py:92:96: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:44:33: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:52:60: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:52:84: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:61:52: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:75:1: C901 '_optimize_for_efficiency_modes' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:120:59: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:230:42: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:230:90: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\data.py:39:1: C901 'upload_dataset' is too complex (14)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\training.py:448:1: C901 'stream_task_logs' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\data_service.py:88:5: C901 'DataService.upload_dataset' is too complex (11)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\progress_logger.py:39:5: C901 'ProgressAwareLogger._update_progress_from_message' is too complex (16)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:407:5: C901 'TrainingService._check_resources' is too complex (15)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:631:5: C901 'TrainingService.start_task' is too complex (24)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:684:36: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:689:35: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:804:5: C901 'TrainingService._run_training' is too complex (15)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:822:35: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:825:34: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:851:53: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:853:53: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:902:55: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:986:5: C901 'TrainingService.stop_task' is too complex (30)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1048:36: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1057:35: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1354:5: C901 'TrainingService._health_monitor_loop' is too complex (20)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1439:5: C901 'TrainingService.shutdown' is too complex (21)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py:167:5: C901 'BackupManager._cleanup_old_backups' is too complex (11)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py:196:5: C901 'BackupManager.list_backups' is too complex (11)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\benchmark.py:44:5: C901 'BenchmarkRunner.run_benchmark' is too complex (14)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\training_helpers.py:50:5: C901 'TeeOutput.write' is too complex (11)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\websocket_manager.py:191:1: C901 'receive_client_messages' is too complex (19)
+E:\Qinchaojun\AIDD-TRAIN\compass\training\checkpoint.py:54:1: C901 'load_latest_checkpoint_file' is too complex (15)
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:33:1: C901 'train_epoch' is too complex (35)
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:72:92: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:92:85: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:107:112: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:122:115: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:135:122: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:152:121: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:175:131: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:208:89: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:234:126: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:260:47: E226 missing whitespace around arithmetic operator
+
+
+================================================================================
+Checking: services
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:68:5: C901 'ServiceRegistryStorage._get_connection' is too complex (18)
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:71:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:82:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:85:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:88:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:93:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:96:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:100:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:144:5: C901 'ServiceRegistryStorage.load_all_services' is too complex (13)
+
+
+================================================================================
+Checking: FLASH_DOCK-main/services
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py:146:5: C901 'CompassClient._make_request' is too complex (20)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py:910:5: C901 'TaskStreamClient._connect_and_listen' is too complex (11)
+
+
+================================================================================
+Checking: FLASH_DOCK-main/pages
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\data_management.py:79:57: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\service_monitor.py:94:57: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:50:1: C901 '_handle_stop_task' is too complex (40)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:1043:5: C901 'TryExcept 1043' is too complex (35)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:1274:5: C901 'If 1274' is too complex (58)
+
+
+================================================================================
+Checking: FLASH_DOCK-main/FlashDock.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:7:1: C901 'If 7' is too complex (15)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:114:1: C901 'If 114' is too complex (134)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:201:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:231:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:254:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:1146:61: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:1264:61: E226 missing whitespace around arithmetic operator
+
+
+================================================================================
+Checking: scripts
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\scripts\report_generator.py:49:5: C901 'ReportGenerator.generate_frontend_error_report' is too complex (12)
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:254:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:256:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:294:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:296:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:329:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:331:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:376:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:378:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:429:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:431:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:463:22: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:465:21: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:502:1: C901 'generate_summary_report' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:575:1: C901 'main' is too complex (26)
+E:\Qinchaojun\AIDD-TRAIN\scripts\vulnerability_scanner.py:252:5: C901 'VulnerabilityScanner.scan_performance_issues' is too complex (13)
+
+
+================================================================================
+Checking: check_and_start_services.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:18:5: E722 do not use bare 'except'
+E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:126:5: F811 redefinition of unused 'os' from line 6
+
+
+================================================================================
+Checking: check_ports.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\check_ports.py:42:1: C901 'get_process_using_port' is too complex (22)
+E:\Qinchaojun\AIDD-TRAIN\check_ports.py:155:19: F541 f-string is missing placeholders
+
+
+================================================================================
+Checking: check_service_status.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\check_service_status.py:17:5: E722 do not use bare 'except'
+
+================================================================================
+Summary of Issues:
+  - compass: 49 style issues
+  - services: 9 style issues
+  - FLASH_DOCK-main/services: 2 style issues
+  - FLASH_DOCK-main/pages: 5 style issues
+  - FLASH_DOCK-main/FlashDock.py: 7 style issues
+  - scripts: 16 style issues
+  - check_and_start_services.py: 2 style issues
+  - check_ports.py: 2 style issues
+  - check_service_status.py: 1 style issues

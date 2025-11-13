@@ -80,12 +80,12 @@ def load_latest_checkpoint_file(directory, device, logger=None):
         latest_checkpoint_path = max(checkpoint_files, key=os.path.getmtime)
     except FileNotFoundError:
         if logger:
-            logger.log(f"=> Checkpoint file not found, it may have been deleted.")
+            logger.log("=> Checkpoint file not found, it may have been deleted.")
         return None
 
     if not latest_checkpoint_path:
         if logger:
-            logger.log(f"=> No valid checkpoints found.")
+            logger.log("=> No valid checkpoints found.")
         return None
 
     if logger:

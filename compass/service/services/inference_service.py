@@ -62,12 +62,11 @@ class LRUModelCache:
                 if len(self.cache) >= self.max_size:
                     # Remove least recently used
                     lru_key = next(iter(self.cache))
-                    lru_model = self.cache.pop(lru_key)
+                    self.cache.pop(lru_key)
                     del self.access_times[lru_key]
 
                     # Clear GPU memory if on CUDA
                     if torch.cuda.is_available():
-                        del lru_model
                         torch.cuda.empty_cache()
 
                     logger.info(f"Evicted model {lru_key} from cache (LRU)")
@@ -81,12 +80,11 @@ class LRUModelCache:
         """Remove model from cache."""
         with self.lock:
             if key in self.cache:
-                model = self.cache.pop(key)
+                self.cache.pop(key)
                 del self.access_times[key]
 
                 # Clear GPU memory
                 if torch.cuda.is_available():
-                    del model
                     torch.cuda.empty_cache()
 
                 logger.info(f"Removed model {key} from cache")

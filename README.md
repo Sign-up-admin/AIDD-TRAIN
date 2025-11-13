@@ -137,6 +137,295 @@ This journey underscores the COMPASS philosophy: true progress in scientific mac
 
 ---
 
+## Security Configuration
+
+### Production Deployment Security
+
+For production deployments, the following security measures should be configured:
+
+#### 1. CORS Configuration
+
+Set the `CORS_ORIGINS` environment variable to specify allowed origins:
+
+```bash
+# Production example
+export CORS_ORIGINS="https://yourdomain.com,https://api.yourdomain.com"
+
+# Development (default)
+# Uses: http://localhost:8501,http://127.0.0.1:8501,http://localhost:3000,http://127.0.0.1:3000
+```
+
+**Important**: Never use wildcard (`*`) origins in production. The system will reject wildcard origins for security.
+
+#### 2. Authentication
+
+Enable API key authentication for production:
+
+```bash
+# Enable authentication
+export AUTH_ENABLED="true"
+
+# Set API key (single key)
+export API_KEY="your-secure-api-key-here"
+
+# Or set multiple API keys (comma-separated) for key rotation
+export API_KEYS="key1,key2,key3"
+
+# Force authentication for critical endpoints in production
+export FORCE_AUTH_CRITICAL="true"
+```
+
+**Critical endpoints** that require authentication in production:
+- `/api/v1/training/tasks` - Training task management
+- `/api/v1/data/upload` - Dataset uploads
+- `/api/v1/data/datasets` - Dataset management
+- `/api/v1/inference` - Model inference
+- `/api/v1/models` - Model management
+
+#### 3. Rate Limiting
+
+Configure rate limits to prevent abuse:
+
+```bash
+# Default rate limit (requests per minute)
+export RATE_LIMIT_DEFAULT="100"
+
+# Training endpoints (more restrictive)
+export RATE_LIMIT_TRAINING="10"
+export RATE_LIMIT_TRAINING_WINDOW="60"
+
+# Upload endpoints (very restrictive)
+export RATE_LIMIT_UPLOAD="3"
+export RATE_LIMIT_UPLOAD_WINDOW="60"
+
+# Inference endpoints
+export RATE_LIMIT_INFERENCE="20"
+export RATE_LIMIT_INFERENCE_WINDOW="60"
+```
+
+#### 4. Environment Configuration
+
+Set the environment to production:
+
+```bash
+export ENVIRONMENT="production"
+```
+
+This enables:
+- Stricter security checks
+- Enhanced error message sanitization
+- Production-optimized logging
+- Required authentication for critical endpoints
+
+#### 5. Database Security
+
+Configure database connection timeouts:
+
+```bash
+# Database connection timeout (seconds)
+export DB_CONNECTION_TIMEOUT="10.0"
+
+# Database busy timeout (milliseconds)
+export DB_BUSY_TIMEOUT="5000"
+
+# Database cache size (negative = KB)
+export DB_CACHE_SIZE="-2000"
+```
+
+### Security Headers
+
+The service automatically adds security headers to all responses:
+- Content-Security-Policy (CSP) - Strict policy for API endpoints
+- X-Frame-Options: DENY
+- X-Content-Type-Options: nosniff
+- X-XSS-Protection: 1; mode=block
+- Referrer-Policy: strict-origin-when-cross-origin
+
+### Input Validation
+
+All user inputs are automatically sanitized to prevent:
+- XSS (Cross-Site Scripting) attacks
+- SQL injection (via parameterized queries)
+- Path traversal attacks
+- Command injection
+
+### File Upload Security
+
+File uploads are protected by:
+- File type validation (only `.zip`, `.tar`, `.tar.gz` allowed)
+- File size limits (configurable via `COMPASS_UPLOAD_MAX_SIZE`)
+- Zip bomb detection
+- Upload queue management (prevents resource exhaustion)
+
+---
+
+## Deployment Guide
+
+### Production Deployment
+
+#### 1. Prerequisites
+
+- Python 3.12+
+- CUDA-capable GPU (recommended)
+- Sufficient disk space for datasets and checkpoints
+- Network access for service registry (if using)
+
+#### 2. Environment Setup
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements_service.txt
+
+# Install PyTorch with CUDA support
+# See: https://pytorch.org/get-started/locally/
+```
+
+#### 3. Configuration
+
+Create a `.env` file or set environment variables:
+
+```bash
+# Service configuration
+export ENVIRONMENT="production"
+export COMPASS_HOST="0.0.0.0"
+export COMPASS_PORT="8080"
+
+# Security
+export AUTH_ENABLED="true"
+export API_KEY="your-secure-api-key"
+export CORS_ORIGINS="https://yourdomain.com"
+
+# Resource limits
+export COMPASS_MAX_WORKERS="4"
+export MAX_CONCURRENT_UPLOADS="2"
+export MAX_CONCURRENT_TASKS="4"
+
+# Database
+export REGISTRY_DB_PATH="./registry.db"
+export DB_CONNECTION_TIMEOUT="10.0"
+
+# Logging
+export LOG_LEVEL="INFO"
+export COMPASS_LOG_DIR="./logs"
+```
+
+#### 4. Start Services
+
+```bash
+# Start COMPASS service
+python -m compass.service
+
+# Or use the service startup script
+python compass/service_main.py
+```
+
+#### 5. Health Checks
+
+Monitor service health:
+
+```bash
+# Basic health check
+curl http://localhost:8080/health
+
+# Readiness check
+curl http://localhost:8080/health/ready
+
+# Metrics endpoint
+curl http://localhost:8080/metrics
+```
+
+#### 6. Using with Reverse Proxy (Nginx)
+
+Example Nginx configuration:
+
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+#### 7. Process Management
+
+For production, use a process manager like `systemd` or `supervisord`:
+
+**systemd example** (`/etc/systemd/system/compass.service`):
+
+```ini
+[Unit]
+Description=COMPASS Service
+After=network.target
+
+[Service]
+Type=simple
+User=compass
+WorkingDirectory=/path/to/AIDD-TRAIN
+Environment="PATH=/path/to/venv/bin"
+ExecStart=/path/to/venv/bin/python -m compass.service
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **Service won't start**
+   - Check port availability: `netstat -an | grep 8080`
+   - Verify environment variables are set correctly
+   - Check logs in `logs/` directory
+
+2. **Authentication failures**
+   - Verify `AUTH_ENABLED` and `API_KEY` are set
+   - Check API key format in request headers: `X-API-Key: your-key` or `Authorization: Bearer your-key`
+
+3. **Rate limiting issues**
+   - Check rate limit statistics: `curl http://localhost:8080/metrics`
+   - Adjust rate limits via environment variables if needed
+
+4. **Database connection errors**
+   - Verify database file permissions
+   - Check `DB_CONNECTION_TIMEOUT` setting
+   - Ensure sufficient disk space
+
+5. **File upload failures**
+   - Check file size limits
+   - Verify file type is allowed
+   - Check upload queue capacity
+
+#### Monitoring
+
+Monitor service health and performance:
+
+```bash
+# Get metrics
+curl http://localhost:8080/metrics
+
+# Check rate limiting stats
+curl http://localhost:8080/metrics | jq '.rate_limiting'
+
+# View authentication failures (check logs)
+tail -f logs/compass-service.log | grep "Authentication failed"
+```
+
+---
+
 ## Code Quality
 
 This project maintains high code quality standards using automated tools:

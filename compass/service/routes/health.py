@@ -66,23 +66,49 @@ async def ready() -> Dict[str, str]:
 
 
 @router.get("/metrics")
-async def metrics():
+async def metrics(
+    format_type: Optional[str] = Query("json", description="Output format: json or prometheus")
+):
     """
     Get performance metrics.
 
+    Args:
+        format_type: Output format - 'json' (default) or 'prometheus'
+
     Returns:
-        Dict containing performance metrics including:
+        JSON dict or Prometheus format metrics including:
         - total_requests: Total number of requests
         - total_errors: Total number of errors
         - error_rate: Error rate (0-1)
         - response_time: Statistics (avg, min, max, p50, p95, p99)
         - status_codes: Count by status code
         - endpoints: Per-endpoint statistics
+        - rate_limiting: Rate limiting statistics
     """
-    from compass.service.middleware.metrics import get_metrics_collector
+    from fastapi.responses import Response
+    from compass.service.middleware.metrics import get_metrics_collector, PROMETHEUS_AVAILABLE
+    from compass.service.middleware.rate_limit import get_rate_limit_stats
 
+    # Check if Prometheus format is requested
+    if format_type == "prometheus" and PROMETHEUS_AVAILABLE:
+        try:
+            from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+
+            prometheus_data = generate_latest()
+            return Response(content=prometheus_data, media_type=CONTENT_TYPE_LATEST)
+        except Exception as e:
+            logger.error(f"Failed to generate Prometheus metrics: {e}")
+            # Fall back to JSON format
+            pass
+
+    # Return JSON format
     collector = get_metrics_collector()
-    return collector.get_metrics()
+    metrics_data = collector.get_metrics()
+
+    # Add rate limiting statistics
+    metrics_data["rate_limiting"] = get_rate_limit_stats()
+
+    return metrics_data
 
 
 @router.get("/backups", summary="List Backups", description="List all available backups")

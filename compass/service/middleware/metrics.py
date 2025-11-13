@@ -10,7 +10,17 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+try:
+    from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+
+    PROMETHEUS_AVAILABLE = True
+except ImportError:
+    PROMETHEUS_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
+
+if not PROMETHEUS_AVAILABLE:
+    logger.warning("prometheus_client not available. Install with: pip install prometheus-client")
 
 
 class MetricsCollector:
@@ -41,6 +51,29 @@ class MetricsCollector:
 
         # Response size metrics (approximate)
         self.response_sizes: deque = deque(maxlen=window_size)
+
+        # Prometheus metrics (if available)
+        if PROMETHEUS_AVAILABLE:
+            self.http_requests_total = Counter(
+                "compass_http_requests_total",
+                "Total HTTP requests",
+                ["method", "endpoint", "status_code"],
+            )
+            self.http_request_duration_seconds = Histogram(
+                "compass_http_request_duration_seconds",
+                "HTTP request duration in seconds",
+                ["method", "endpoint"],
+                buckets=(0.1, 0.5, 1.0, 2.5, 5.0, 10.0, 30.0, 60.0),
+            )
+            self.http_errors_total = Counter(
+                "compass_http_errors_total",
+                "Total HTTP errors",
+                ["method", "endpoint", "status_code"],
+            )
+            self.active_requests = Gauge(
+                "compass_active_requests",
+                "Number of active requests",
+            )
 
     def record_request(
         self,
@@ -215,6 +248,21 @@ class MetricsMiddleware(BaseHTTPMiddleware):
             status_code=response.status_code,
             response_size=response_size,
         )
+
+        # Record Prometheus metrics (if available)
+        if PROMETHEUS_AVAILABLE and hasattr(self.metrics, "http_requests_total"):
+            self.metrics.http_requests_total.labels(
+                method=request.method, endpoint=request.url.path, status_code=response.status_code
+            ).inc()
+            self.metrics.http_request_duration_seconds.labels(
+                method=request.method, endpoint=request.url.path
+            ).observe(duration)
+            if response.status_code >= 400:
+                self.metrics.http_errors_total.labels(
+                    method=request.method,
+                    endpoint=request.url.path,
+                    status_code=response.status_code,
+                ).inc()
 
         # Check alerts
         try:

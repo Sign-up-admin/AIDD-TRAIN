@@ -83,7 +83,6 @@ class Trainer:
 
     def setup_signal_handlers(self):
         """Handles graceful shutdown on SIGTERM or KeyboardInterrupt."""
-        import sys
 
         def graceful_exit_handler(sig, _frame):
             log_msg = "\n\n--- "
@@ -209,13 +208,15 @@ class Trainer:
         if hasattr(self.logger, "progress_tracker") and self.logger.progress_tracker.is_cancelled():
             from .exceptions import TrainingCancelled
 
-            self.logger.log("[CANCELLATION] Training cancelled detected between training and validation")
+            self.logger.log(
+                "[CANCELLATION] Training cancelled detected between training and validation"
+            )
             raise TrainingCancelled("Training cancelled by user")
 
         val_loss = validate_epoch(
             self.model, self.val_loader, self.device, self.logger, current_stage
         )
-        
+
         # Check for cancellation after validation (before checkpoint save)
         if hasattr(self.logger, "progress_tracker") and self.logger.progress_tracker.is_cancelled():
             from .exceptions import TrainingCancelled

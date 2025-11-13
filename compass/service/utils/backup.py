@@ -223,16 +223,50 @@ class BackupManager:
                         try:
                             with open(metadata_file, "r") as f:
                                 backup_info["metadata"] = json.load(f)
-                        except Exception:
-                            pass
+                        except (
+                            json.JSONDecodeError,
+                            IOError,
+                            OSError,
+                            UnicodeDecodeError,
+                            PermissionError,
+                        ) as e:
+                            # Expected errors when reading metadata - log but don't fail
+                            logger.debug(f"Failed to load metadata from {metadata_file}: {e}")
+                        except (ValueError, TypeError) as e:
+                            # Data format errors - log with context but don't fail
+                            logger.warning(
+                                f"Data format error loading metadata from {metadata_file}: {e}",
+                                extra={
+                                    "metadata_file": str(metadata_file),
+                                    "error_type": type(e).__name__,
+                                },
+                            )
+                        except Exception as e:
+                            # Unexpected errors - log with full context but don't fail
+                            logger.warning(
+                                f"Unexpected error loading metadata from {metadata_file}: {e}",
+                                exc_info=True,
+                                extra={
+                                    "metadata_file": str(metadata_file),
+                                    "error_type": type(e).__name__,
+                                },
+                            )
 
                 backups.append(backup_info)
 
             # Sort by creation time (newest first)
             backups.sort(key=lambda x: x["created_at"], reverse=True)
 
+        except (OSError, IOError, PermissionError) as e:
+            # File system errors
+            logger.error(f"Failed to list backups due to file system error: {e}", exc_info=True)
         except Exception as e:
-            logger.error(f"Failed to list backups: {e}", exc_info=True)
+            # Unexpected errors
+            logger.error(
+                f"Failed to list backups due to unexpected error: {e}",
+                exc_info=True,
+                extra={"error_type": type(e).__name__},
+            )
 
         return backups
 
@@ -258,15 +292,22 @@ class BackupManager:
             if backup_path.suffix == ".gz" or backup_path.suffix == ".tar":
                 extract_dir = self.backup_dir / backup_path.stem
                 with tarfile.open(backup_path, "r:gz") as tar:
-                    tar.extractall(extract_dir)
+                    # Validate tar members to prevent path traversal attacks
+                    for member in tar.getmembers():
+                        # Check for path traversal attempts
+                        if ".." in member.name or member.name.startswith("/"):
+                            raise ValueError(f"Invalid tar member path: {member.name}")
+                        # Check for absolute paths
+                        if os.path.isabs(member.name):
+                            raise ValueError(f"Absolute path not allowed: {member.name}")
+                    tar.extractall(extract_dir)  # nosec B202 - validated above
                 backup_path = extract_dir / backup_path.stem.rstrip(".tar.gz")
 
             # Load metadata
             metadata_file = backup_path / "backup_metadata.json"
-            metadata = {}
             if metadata_file.exists():
                 with open(metadata_file, "r") as f:
-                    metadata = json.load(f)
+                    json.load(f)  # Load metadata for future use
 
             # Restore components
             if target_dir:
@@ -277,7 +318,13 @@ class BackupManager:
             else:
                 # Restore to original locations (if metadata available)
                 logger.warning("Restoring to original locations requires metadata")
-                # TODO: Implement restoration to original locations
+                # Note: Restoration to original locations requires backup metadata
+                # containing original paths. This feature is planned for future implementation.
+                # For now, users should specify a target directory for restoration.
+                raise ValueError(
+                    "Restoration to original locations is not yet implemented. "
+                    "Please specify a target directory using target_dir parameter."
+                )
 
             return True
 
@@ -288,10 +335,9 @@ class BackupManager:
 
 def get_backup_manager() -> Optional[BackupManager]:
     """Get backup manager instance."""
-    import os
     from compass.service.config_manager import get_config_manager
 
-    manager = get_config_manager()
+    get_config_manager()  # Ensure config manager is initialized
     backup_config = BackupConfig(
         enabled=os.getenv("BACKUP_ENABLED", "true").lower() == "true",
         backup_dir=os.getenv("BACKUP_DIR", "./backups"),
@@ -306,13 +352,3 @@ def get_backup_manager() -> Optional[BackupManager]:
     )
 
     return BackupManager(backup_config) if backup_config.enabled else None
-
-
-
-
-
-
-
-
-
-

@@ -31,10 +31,29 @@ async def predict(request: InferenceRequest):
         return result
     except ValueError as e:
         raise ValidationError(sanitize_error_message(e))
-    except Exception as e:
-        logger.error(f"Prediction failed: {e}", exc_info=True)
+    except (FileNotFoundError, OSError, IOError) as e:
+        # File-related errors
+        error_message = sanitize_error_message(e, include_details=False)
+        logger.error(f"File error during prediction: {e}", exc_info=True)
         raise ServiceException(
-            "Prediction failed", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            f"Prediction failed: {error_message}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    except (RuntimeError, MemoryError) as e:
+        # Runtime or memory errors
+        error_message = sanitize_error_message(e, include_details=False)
+        logger.error(f"Runtime error during prediction: {e}", exc_info=True)
+        raise ServiceException(
+            f"Prediction failed: {error_message}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    except Exception as e:
+        # Unexpected errors
+        error_message = sanitize_error_message(e, include_details=False)
+        logger.error(f"Unexpected error during prediction: {e}", exc_info=True)
+        raise ServiceException(
+            f"Prediction failed: {error_message}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 
@@ -57,10 +76,29 @@ async def batch_predict(request: BatchInferenceRequest):
         return result
     except ValueError as e:
         raise ValidationError(sanitize_error_message(e))
-    except Exception as e:
-        logger.error(f"Batch prediction failed: {e}", exc_info=True)
+    except (FileNotFoundError, OSError, IOError) as e:
+        # File-related errors
+        error_message = sanitize_error_message(e, include_details=False)
+        logger.error(f"File error during batch prediction: {e}", exc_info=True)
         raise ServiceException(
-            "Batch prediction failed", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+            f"Batch prediction failed: {error_message}",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+    except (RuntimeError, MemoryError) as e:
+        # Runtime or memory errors
+        error_message = sanitize_error_message(e, include_details=False)
+        logger.error(f"Runtime error during batch prediction: {e}", exc_info=True)
+        raise ServiceException(
+            f"Batch prediction failed: {error_message}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    except Exception as e:
+        # Unexpected errors
+        error_message = sanitize_error_message(e, include_details=False)
+        logger.error(f"Unexpected error during batch prediction: {e}", exc_info=True)
+        raise ServiceException(
+            f"Batch prediction failed: {error_message}",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
 

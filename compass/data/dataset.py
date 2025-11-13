@@ -13,9 +13,23 @@ from ..config import CONFIG  # Directly import the configuration
 
 def _process_and_save_helper(args):
     """Helper function for parallel processing to be used by the Pool."""
-    item_info, dest_path, pre_transform = args
+    item_info, dest_path, pre_transform, cancellation_flag = args
+    # Check for cancellation before processing
+    if cancellation_flag is not None:
+        with cancellation_flag.get_lock():
+            if cancellation_flag.value == 1:
+                # Cancellation requested, return early
+                return 0, "Processing cancelled by user"
+    
     try:
         data = process_item(item_info)
+        
+        # Check for cancellation after processing
+        if cancellation_flag is not None:
+            with cancellation_flag.get_lock():
+                if cancellation_flag.value == 1:
+                    return 0, "Processing cancelled by user"
+        
         if data is not None:
             if pre_transform: 
                 data = pre_transform(data)
@@ -103,12 +117,23 @@ class PDBBindDataset(Dataset):
 
         print(f"Processing {len(tasks)} items...")
         success_count = 0
+        
+        # Get cancellation flag for multiprocessing if available
+        cancellation_flag = None
+        if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
+            cancellation_flag = self._logger.progress_tracker.get_mp_cancellation_flag()
+        
         if self.num_workers > 1:
             print(f"Processing data in parallel with {self.num_workers} cores...")
+            # Add cancellation flag to each task
+            tasks_with_flag = [(item, dest_path, pre_transform, cancellation_flag) 
+                              for item, dest_path, pre_transform in tasks]
+            
             with Pool(processes=self.num_workers) as pool:
-                pbar = tqdm(pool.imap_unordered(_process_and_save_helper, tasks), total=len(tasks), desc="Processing Raw Data")
+                pbar = tqdm(pool.imap_unordered(_process_and_save_helper, tasks_with_flag), 
+                           total=len(tasks), desc="Processing Raw Data")
                 for idx, (result, error_msg) in enumerate(pbar):
-                    # Check for cancellation during data processing
+                    # Check for cancellation during data processing (main process check)
                     if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
                         if self._logger.progress_tracker.is_cancelled():
                             print("\n--- Data processing cancelled by user ---")
@@ -117,8 +142,16 @@ class PDBBindDataset(Dataset):
                             pool.join()
                             raise RuntimeError("Data processing cancelled by user")
                     
+                    # Check if worker returned cancellation message
+                    if error_msg and "cancelled" in error_msg.lower():
+                        print(f"\n--- {error_msg} ---")
+                        pbar.close()
+                        pool.terminate()
+                        pool.join()
+                        raise RuntimeError("Data processing cancelled by user")
+                    
                     success_count += result
-                    if error_msg:
+                    if error_msg and "cancelled" not in error_msg.lower():
                         logging.warning(error_msg)
                     # Update progress if logger has progress tracker
                     if hasattr(self, '_logger') and hasattr(self._logger, 'progress_tracker'):
@@ -136,7 +169,15 @@ class PDBBindDataset(Dataset):
                         print("\n--- Data processing cancelled by user ---")
                         raise RuntimeError("Data processing cancelled by user")
                 
-                result, error_msg = _process_and_save_helper(task)
+                # Add cancellation flag to task for sequential processing
+                task_with_flag = (*task, cancellation_flag)
+                result, error_msg = _process_and_save_helper(task_with_flag)
+                
+                # Check if cancellation was detected
+                if error_msg and "cancelled" in error_msg.lower():
+                    print(f"\n--- {error_msg} ---")
+                    raise RuntimeError("Data processing cancelled by user")
+                
                 success_count += result
                 if error_msg:
                     logging.warning(error_msg)

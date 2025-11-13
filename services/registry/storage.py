@@ -53,31 +53,94 @@ class ServiceRegistryStorage:
             # Create index for faster queries
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_service_name 
+                CREATE INDEX IF NOT EXISTS idx_service_name
                 ON services(service_name)
             """
             )
             conn.execute(
                 """
-                CREATE INDEX IF NOT EXISTS idx_status 
+                CREATE INDEX IF NOT EXISTS idx_status
                 ON services(status)
             """
             )
 
     @contextmanager
     def _get_connection(self):
-        """Get database connection with proper transaction handling."""
-        conn = sqlite3.connect(self.db_path, timeout=10.0)
-        conn.row_factory = sqlite3.Row
+        """
+        Get database connection with proper transaction handling.
+
+        Uses connection timeout and ensures proper cleanup.
+        Optimized for concurrent access with WAL mode and connection pooling settings.
+        """
+        conn = None
         try:
+            # Connect with timeout (default 10 seconds, configurable via env)
+            import os
+
+            timeout = float(os.getenv("DB_CONNECTION_TIMEOUT", "10.0"))
+            # Ensure timeout is reasonable (between 1 and 60 seconds)
+            timeout = max(1.0, min(60.0, timeout))
+
+            conn = sqlite3.connect(self.db_path, timeout=timeout)
+            conn.row_factory = sqlite3.Row
+
+            # Enable WAL mode for better concurrency
+            conn.execute("PRAGMA journal_mode=WAL")
+
+            # Optimize for concurrent reads
+            # Set busy timeout (milliseconds) - allows retries on locked database
+            busy_timeout = int(os.getenv("DB_BUSY_TIMEOUT", "5000"))  # 5 seconds default
+            conn.execute(f"PRAGMA busy_timeout = {busy_timeout}")
+
+            # Set synchronous mode for better performance (NORMAL is safe with WAL)
+            conn.execute("PRAGMA synchronous = NORMAL")
+
+            # Set cache size (in pages, default 2000 pages = ~8MB)
+            cache_size = int(os.getenv("DB_CACHE_SIZE", "-2000"))  # Negative = KB
+            conn.execute(f"PRAGMA cache_size = {cache_size}")
+
             yield conn
             conn.commit()
-        except Exception as e:
-            conn.rollback()
+        except sqlite3.OperationalError as e:
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+            logger.error(f"Database operational error: {e}", exc_info=True)
+            raise
+        except sqlite3.DatabaseError as e:
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
             logger.error(f"Database error: {e}", exc_info=True)
             raise
+        except sqlite3.IntegrityError as e:
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+            logger.error(f"Database integrity error: {e}", exc_info=True)
+            raise
+        except Exception as e:
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+            logger.error(f"Unexpected database error: {e}", exc_info=True)
+            raise
         finally:
-            conn.close()
+            if conn:
+                try:
+                    conn.close()
+                except sqlite3.Error as e:
+                    logger.warning(f"Error closing database connection: {e}")
+                except Exception as e:
+                    logger.warning(f"Unexpected error closing database connection: {e}")
 
     def load_all_services(self) -> Dict[str, ServiceInfo]:
         """
@@ -147,8 +210,8 @@ class ServiceRegistryStorage:
             with self._get_connection() as conn:
                 conn.execute(
                     """
-                    INSERT OR REPLACE INTO services 
-                    (service_id, service_name, host, port, base_url, status, 
+                    INSERT OR REPLACE INTO services
+                    (service_id, service_name, host, port, base_url, status,
                      metadata, version, registered_at, last_heartbeat)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,

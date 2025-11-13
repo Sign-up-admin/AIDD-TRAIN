@@ -18,12 +18,12 @@ def parse_report_file(report_file: Path) -> Dict:
     """Parse a report file and extract key information."""
     if not report_file.exists():
         return None
-    
+
     content = report_file.read_text(encoding="utf-8", errors="replace")
-    
+
     # Extract tool name from filename
     tool_name = report_file.stem.split("_")[-1].replace("_report", "")
-    
+
     # Try to extract exit code
     exit_code = 0
     if "Exit Code:" in content:
@@ -32,13 +32,15 @@ def parse_report_file(report_file: Path) -> Dict:
             exit_code = int(exit_code_line.split(":")[-1].strip())
         except (ValueError, IndexError):
             pass
-    
+
     # Count issues
     issue_count = 0
     if "Summary of Issues:" in content:
         issue_section = content.split("Summary of Issues:")[1]
-        issue_count = len([line for line in issue_section.split("\n") if line.strip().startswith("-")])
-    
+        issue_count = len(
+            [line for line in issue_section.split("\n") if line.strip().startswith("-")]
+        )
+
     return {
         "tool": tool_name,
         "file": report_file.name,
@@ -160,7 +162,7 @@ def generate_html_report(reports: List[Dict], output_file: Path):
     <div class="container">
         <h1>Code Quality Report</h1>
         <p><strong>Generated:</strong> {timestamp}</p>
-        
+
         <div class="summary">
             <div class="summary-card total">
                 <h3>{total_tools}</h3>
@@ -175,7 +177,7 @@ def generate_html_report(reports: List[Dict], output_file: Path):
                 <p>Failed</p>
             </div>
         </div>
-        
+
         <h2>Tool Status</h2>
         <table>
             <thead>
@@ -190,21 +192,21 @@ def generate_html_report(reports: List[Dict], output_file: Path):
                 {tool_rows}
             </tbody>
         </table>
-        
+
         <h2>Detailed Reports</h2>
         {report_sections}
     </div>
 </body>
 </html>"""
-    
+
     total_tools = len(reports)
-    passed_tools = sum(1 for r in reports if r['exit_code'] == 0)
+    passed_tools = sum(1 for r in reports if r["exit_code"] == 0)
     failed_tools = total_tools - passed_tools
-    
+
     tool_rows = ""
     for report in reports:
-        status_class = "status-pass" if report['exit_code'] == 0 else "status-fail"
-        status_text = "PASS" if report['exit_code'] == 0 else "FAIL"
+        status_class = "status-pass" if report["exit_code"] == 0 else "status-fail"
+        status_text = "PASS" if report["exit_code"] == 0 else "FAIL"
         tool_rows += f"""
                 <tr>
                     <td><strong>{report['tool'].upper()}</strong></td>
@@ -212,17 +214,19 @@ def generate_html_report(reports: List[Dict], output_file: Path):
                     <td>{report['issue_count']}</td>
                     <td>{report['file']}</td>
                 </tr>"""
-    
+
     report_sections = ""
     for report in reports:
         # Truncate content for display
-        content = report['content'][:5000] + "..." if len(report['content']) > 5000 else report['content']
+        content = (
+            report["content"][:5000] + "..." if len(report["content"]) > 5000 else report["content"]
+        )
         report_sections += f"""
         <div class="report-section">
             <h3>{report['tool'].upper()}</h3>
             <div class="report-content">{content}</div>
         </div>"""
-    
+
     html_content = html.format(
         timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         total_tools=total_tools,
@@ -231,7 +235,7 @@ def generate_html_report(reports: List[Dict], output_file: Path):
         tool_rows=tool_rows,
         report_sections=report_sections,
     )
-    
+
     output_file.write_text(html_content, encoding="utf-8")
 
 
@@ -239,11 +243,11 @@ def main():
     """Generate unified reports."""
     # Find all report files
     report_files = list(LINT_REPORTS_DIR.glob("*_report.txt"))
-    
+
     if not report_files:
         print("No report files found in lint_reports/")
         return
-    
+
     # Parse all reports
     reports = []
     for report_file in sorted(report_files, key=lambda x: x.stat().st_mtime, reverse=True):
@@ -251,20 +255,19 @@ def main():
         report = parse_report_file(report_file)
         if report:
             reports.append(report)
-    
+
     if not reports:
         print("No valid reports found")
         return
-    
+
     # Generate HTML report
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     html_file = LINT_REPORTS_DIR / f"{timestamp}_unified_report.html"
     generate_html_report(reports, html_file)
-    
+
     print(f"[OK] Generated unified HTML report: {html_file}")
     print(f"   Open in browser to view: file:///{html_file.absolute()}")
 
 
 if __name__ == "__main__":
     main()
-

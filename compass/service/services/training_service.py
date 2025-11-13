@@ -37,6 +37,16 @@ from compass.service.services.progress_logger import ProgressAwareLogger
 from compass.service.services.task_lifecycle_logger import TaskLifecycleLogger
 from compass.service.exceptions import ServiceException, ValidationError
 from compass.service.error_codes import ErrorCode
+from compass.service.utils.training_helpers import (
+    OutputRedirector,
+    ResourceMonitor,
+    prepare_training_config,
+)
+from compass.service.utils.task_stop_helpers import (
+    validate_task_can_be_stopped,
+    set_cancellation_flag,
+    wait_for_task_completion,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -282,6 +292,41 @@ class StreamManager:
             self.log_queues.pop(task_id, None)
             self.resource_queues.pop(task_id, None)
 
+    def shutdown(self):
+        """Shutdown stream manager and clean up resources."""
+        with self.lock:
+            # Clear all queues first
+            self.log_queues.clear()
+            self.resource_queues.clear()
+
+            # Stop event loop gracefully
+            if self._loop and not self._loop.is_closed():
+                try:
+                    # Schedule loop stop
+                    self._loop.call_soon_threadsafe(self._loop.stop)
+                    # Wait a bit for loop to stop
+                    if self._loop_thread and self._loop_thread.is_alive():
+                        self._loop_thread.join(timeout=2.0)
+                        if self._loop_thread.is_alive():
+                            logger.warning(
+                                "StreamManager event loop thread did not stop within timeout"
+                            )
+                            # Force close the loop if thread is still alive
+                            try:
+                                if self._loop and not self._loop.is_closed():
+                                    self._loop.close()
+                            except Exception as close_error:
+                                logger.warning(f"Error force-closing event loop: {close_error}")
+                except (RuntimeError, AttributeError) as e:
+                    # Loop may already be closed or in invalid state
+                    logger.debug(f"Event loop already closed or invalid: {e}")
+                except Exception as e:
+                    logger.warning(f"Error stopping StreamManager event loop: {e}", exc_info=True)
+                finally:
+                    # Always clear references
+                    self._loop = None
+                    self._loop_thread = None
+
     def __getstate__(self):
         """
         Custom pickle state getter.
@@ -289,13 +334,13 @@ class StreamManager:
         """
         state = self.__dict__.copy()
         # Remove objects that cannot be pickled
-        state.pop('lock', None)
-        state.pop('_loop', None)
-        state.pop('_loop_thread', None)
+        state.pop("lock", None)
+        state.pop("_loop", None)
+        state.pop("_loop_thread", None)
         # Note: log_queues and resource_queues contain asyncio.Queue objects
         # which cannot be pickled, so we clear them
-        state['log_queues'] = {}
-        state['resource_queues'] = {}
+        state["log_queues"] = {}
+        state["resource_queues"] = {}
         return state
 
     def __setstate__(self, state):
@@ -310,6 +355,26 @@ class StreamManager:
         self._loop = None
         self._loop_thread = None
         self._start_loop()
+
+    def cleanup(self):
+        """Cleanup resources: stop event loop and close all queues."""
+        if self._loop and not self._loop.is_closed():
+            try:
+                # Stop the event loop
+                self._loop.call_soon_threadsafe(self._loop.stop)
+                # Wait for loop thread to finish (with timeout)
+                if self._loop_thread and self._loop_thread.is_alive():
+                    self._loop_thread.join(timeout=2.0)
+                # Close the loop
+                if not self._loop.is_closed():
+                    self._loop.close()
+            except Exception as e:
+                logger.warning(f"Error cleaning up StreamManager event loop: {e}")
+
+        # Clear queues
+        with self.lock:
+            self.log_queues.clear()
+            self.resource_queues.clear()
 
 
 class TrainingService:
@@ -351,12 +416,12 @@ class TrainingService:
         enable_check = SERVICE_CONFIG.get("enable_resource_check", True)
         test_mode = SERVICE_CONFIG.get("test_mode", False)
         resource_check_relaxed = SERVICE_CONFIG.get("resource_check_relaxed", False)
-        
+
         # In test mode, disable resource check
         if test_mode:
             logger.info("Test mode enabled - resource check disabled")
             return result
-            
+
         if not enable_check:
             return result
 
@@ -372,7 +437,7 @@ class TrainingService:
             if cpu_samples:
                 resources["cpu_percent"] = sum(cpu_samples) / len(cpu_samples)
                 logger.debug(f"CPU usage (averaged): {resources['cpu_percent']:.1f}%")
-        
+
         result["resources"] = resources
 
         # Check concurrent tasks limit
@@ -389,7 +454,7 @@ class TrainingService:
             if resource_check_relaxed:
                 max_cpu = min(max_cpu * 1.1, 98.0)  # Allow 10% more or up to 98%
                 logger.debug(f"Relaxed mode: CPU limit adjusted to {max_cpu:.1f}%")
-            
+
             cpu_percent = resources.get("cpu_percent", 0)
             if cpu_percent > max_cpu:
                 result["available"] = False
@@ -404,7 +469,7 @@ class TrainingService:
             if resource_check_relaxed:
                 min_memory_gb = min_memory_gb * 0.5
                 logger.debug(f"Relaxed mode: Memory requirement reduced to {min_memory_gb:.2f} GB")
-            
+
             mem_info = resources.get("memory", {})
             available_gb = mem_info.get("total_gb", 0) - mem_info.get("used_gb", 0)
             if available_gb < min_memory_gb:
@@ -421,7 +486,9 @@ class TrainingService:
             gpu_threshold = 99.0 if resource_check_relaxed else 95.0
             if allocated_percent > gpu_threshold:
                 result["available"] = False
-                result["issues"].append(f"GPU memory usage ({allocated_percent:.1f}%) too high (limit: {gpu_threshold}%)")
+                result["issues"].append(
+                    f"GPU memory usage ({allocated_percent:.1f}%) too high (limit: {gpu_threshold}%)"
+                )
 
         return result
 
@@ -615,7 +682,7 @@ class TrainingService:
 
             # Send initialization message to WebSocket stream
             init_message = f"\n{'='*70}\n"
-            init_message += f"Training Task Initialization Started\n"
+            init_message += "Training Task Initialization Started\n"
             init_message += f"Task ID: {task_id}\n"
             init_message += f"Status: {task.status.value}\n"
             init_message += f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
@@ -624,7 +691,7 @@ class TrainingService:
 
             # Send task configuration
             task_config = task.config
-            config_message = f"\n[Configuration]\n"
+            config_message = "\n[Configuration]\n"
             config_message += f"Execution Mode: {task_config.get('execution_mode', 'N/A')}\n"
             config_message += f"Epochs: {task_config.get('epochs', 'N/A')}\n"
             config_message += f"Batch Size: {task_config.get('batch_size', 'N/A')}\n"
@@ -632,19 +699,15 @@ class TrainingService:
             config_message += f"Optimizer: {task_config.get('optimizer', 'N/A')}\n"
             if task.description:
                 config_message += f"Description: {task.description}\n"
-            config_message += f"\n"
+            config_message += "\n"
             self.stream_manager.push_log(task_id, config_message)
 
         # Start training in background thread
         init_start_time = datetime.now()
 
         def run_training():
-            # Store reference to training thread for signal handling
-            training_thread = threading.current_thread()
-
             # Set up signal handlers in this thread context
             import signal
-            import sys
 
             def signal_handler(sig, frame):
                 """Handle stop signals (SIGINT, SIGTERM) for graceful shutdown."""
@@ -655,7 +718,7 @@ class TrainingService:
                     logger.info(f"Set cancellation flag for task {task_id} via signal")
                 # Send message to stream
                 signal_message = f"\n[Signal] Received stop signal {sig}\n"
-                signal_message += f"Training will stop gracefully...\n\n"
+                signal_message += "Training will stop gracefully...\n\n"
                 self.stream_manager.push_log(task_id, signal_message)
 
             # Register signal handlers for this thread (Python signal handlers work in main thread,
@@ -688,9 +751,9 @@ class TrainingService:
                             lifecycle_logger.log_start()
 
                         # Send status update to WebSocket stream
-                        status_message = f"\n[Status Update] Task is now RUNNING\n"
+                        status_message = "\n[Status Update] Task is now RUNNING\n"
                         status_message += f"Started at: {self.tasks[task_id].started_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
-                        status_message += f"Preparing training environment...\n\n"
+                        status_message += "Preparing training environment...\n\n"
                         self.stream_manager.push_log(task_id, status_message)
 
                 self._run_training(task_id)
@@ -708,11 +771,11 @@ class TrainingService:
                 # Clean up thread references when task completes
                 with self.lock:
                     if task_id in self.task_threads:
-                        thread = self.task_threads.pop(task_id)
+                        self.task_threads.pop(task_id)
                         logger.debug(f"Cleaned up thread for task {task_id}")
                     # Clean up resource monitor thread
                     if task_id in self.resource_monitor_threads:
-                        monitor_thread = self.resource_monitor_threads.pop(task_id)
+                        self.resource_monitor_threads.pop(task_id)
                         logger.debug(f"Cleaned up resource monitor thread for task {task_id}")
                     # Note: Keep progress tracker for querying completed tasks
                     # Only remove if task is deleted
@@ -757,8 +820,8 @@ class TrainingService:
 
         # Send welcome message to WebSocket stream BEFORE setting up logger
         welcome_message = f"\n{'='*70}\n"
-        welcome_message += f"Training Environment Setup Started\n"
-        welcome_message += f"Preparing log directories and logger...\n"
+        welcome_message += "Training Environment Setup Started\n"
+        welcome_message += "Preparing log directories and logger...\n"
         welcome_message += f"{'='*70}\n\n"
         self.stream_manager.push_log(task_id, welcome_message)
 
@@ -773,179 +836,54 @@ class TrainingService:
         logger_instance = ProgressAwareLogger(log_dir=log_dir, progress_tracker=progress_tracker)
 
         # Send logger setup confirmation
-        self.stream_manager.push_log(task_id, f"[Setup] Logger initialized\n")
-        self.stream_manager.push_log(task_id, f"[Setup] Starting training main function...\n\n")
+        self.stream_manager.push_log(task_id, "[Setup] Logger initialized\n")
+        self.stream_manager.push_log(task_id, "[Setup] Starting training main function...\n\n")
 
-        # Capture stdout/stderr for console output
-        stdout_capture = io.StringIO()
-        stderr_capture = io.StringIO()
-        old_stdout = sys.stdout
-        old_stderr = sys.stderr
-
-        # Create a custom stdout that writes to both console and capture
-        class TeeOutput:
-            def __init__(self, stream, task_id, original_stream, log_func, stream_manager):
-                self.stream = stream
-                self.task_id = task_id
-                self.original_stream = original_stream
-                self.log_func = log_func
-                self.stream_manager = stream_manager
-                self.buffer = ""
-                self._isatty = getattr(original_stream, 'isatty', lambda: False)()
-
-            def write(self, text):
-                if not text:  # Skip empty writes
-                    return
-                    
-                # Write to original stream immediately (for console output)
-                try:
-                    self.original_stream.write(text)
-                    self.original_stream.flush()
-                except (OSError, ValueError):
-                    # Ignore errors writing to original stream (e.g., if it's closed)
-                    pass
-
-                # Push raw text to WebSocket stream immediately (preserves ANSI escape codes for tqdm, colors, etc.)
-                if self.stream_manager:
-                    try:
-                        self.stream_manager.push_log(self.task_id, text)
-                    except Exception as e:
-                        # Log error but don't fail - output redirection should be resilient
-                        logger.warning(f"Failed to push log to stream for task {self.task_id}: {e}")
-
-                # Buffer the text for line-based logging
-                self.buffer += text
-
-                # Process complete lines for structured logging
-                while "\n" in self.buffer:
-                    line, self.buffer = self.buffer.split("\n", 1)
-                    if line.strip():  # Only log non-empty lines
-                        try:
-                            self.log_func(self.task_id, line.strip())
-                        except Exception as e:
-                            logger.warning(f"Failed to log line for task {self.task_id}: {e}")
-
-            def flush(self):
-                try:
-                    self.original_stream.flush()
-                except (OSError, ValueError):
-                    pass
-                    
-                # Flush any remaining buffer as a line
-                if self.buffer.strip():
-                    try:
-                        self.log_func(self.task_id, self.buffer.strip())
-                        self.buffer = ""
-                    except Exception as e:
-                        logger.warning(f"Failed to flush log for task {self.task_id}: {e}")
-
-            def isatty(self):
-                """Return True if this is a TTY, needed for tqdm and other libraries."""
-                return self._isatty
-
-            def fileno(self):
-                """Return file descriptor if available."""
-                if hasattr(self.original_stream, 'fileno'):
-                    try:
-                        return self.original_stream.fileno()
-                    except (OSError, ValueError):
-                        pass
-                return -1
-
-            def __getattr__(self, name):
-                """Delegate other attributes to original stream."""
-                return getattr(self.original_stream, name)
-
-        # Send message before setting up TeeOutput to ensure it's captured
-        self.stream_manager.push_log(task_id, f"[Setup] Setting up stdout/stderr redirection...\n")
-
-        # Replace stdout and stderr
-        sys.stdout = TeeOutput(stdout_capture, task_id, old_stdout, self._log, self.stream_manager)
-        sys.stderr = TeeOutput(stderr_capture, task_id, old_stderr, self._log, self.stream_manager)
+        # Set up output redirection
+        output_redirector = OutputRedirector(task_id, self._log, self.stream_manager)
+        self.stream_manager.push_log(task_id, "[Setup] Setting up stdout/stderr redirection...\n")
+        output_redirector.setup()
 
         # Send confirmation that redirection is set up
         self.stream_manager.push_log(
-            task_id, f"[Setup] Output redirection active. All training logs will appear below.\n"
+            task_id, "[Setup] Output redirection active. All training logs will appear below.\n"
         )
         self.stream_manager.push_log(task_id, f"{'='*70}\n")
-        self.stream_manager.push_log(task_id, f"COMPASS Training Main Function Starting\n")
+        self.stream_manager.push_log(task_id, "COMPASS Training Main Function Starting\n")
         self.stream_manager.push_log(task_id, f"{'='*70}\n\n")
 
-        # Start resource monitoring thread
+        # Start resource monitoring
         lifecycle_logger = self.task_lifecycle_loggers.get(task_id)
-
-        def monitor_resources():
-            """Monitor resource usage periodically."""
-            last_resource_push = 0
-            resource_push_interval = 2  # Push resources every 2 seconds via WebSocket
-            while task_id in self.tasks and self.tasks[task_id].status == TaskStatus.RUNNING:
-                try:
-                    resources = get_resource_usage()
-                    with self.lock:
-                        if task_id in self.task_resources:
-                            self.task_resources[task_id] = resources
-
-                    # Push resources to stream queue for WebSocket clients
-                    current_time = time.time()
-                    if current_time - last_resource_push >= resource_push_interval:
-                        self.stream_manager.push_resources(task_id, resources)
-                        last_resource_push = current_time
-
-                    # Log resource usage periodically (every 30 seconds)
-                    if lifecycle_logger and int(time.time()) % 30 == 0:
-                        lifecycle_logger.log_resource_usage(resources)
-                except Exception as e:
-                    logger.warning(f"Failed to get resources for task {task_id}: {e}")
-                time.sleep(1)  # Update every 1 second for more responsive monitoring
-
-        resource_monitor_thread = threading.Thread(
-            target=monitor_resources, daemon=True, name=f"ResourceMonitor-{task_id}"
+        resource_monitor = ResourceMonitor(
+            task_id,
+            self.tasks,
+            self.task_resources,
+            self.stream_manager,
+            lifecycle_logger,
+            self.lock,
+            get_resource_usage,
         )
-        resource_monitor_thread.start()
+        resource_monitor.start()
         with self.lock:
-            self.resource_monitor_threads[task_id] = resource_monitor_thread
+            self.resource_monitor_threads[task_id] = resource_monitor.thread
 
-        # Update config with task-specific settings
-        training_config = get_config(config.get("execution_mode", "validation_tuned"))
-        training_config.update(config)
-        training_config["log_dir"] = log_dir
-        training_config["checkpoint_dir"] = os.path.join(
-            SERVICE_CONFIG["checkpoint_dir"], f"task_{task_id}"
-        )
+        # Prepare training configuration
+        checkpoint_dir = os.path.join(SERVICE_CONFIG["checkpoint_dir"], f"task_{task_id}")
+        training_config = prepare_training_config(config, log_dir, checkpoint_dir)
 
-        # Use default dataset if no dataset_id provided
-        # The default paths are already set in get_config(), but we can override if needed
         if not config.get("dataset_id"):
-            # Check if default paths exist (relative to project root)
-            project_root = os.path.dirname(
-                os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            logger_instance.log(
+                f"Using default PDBbind dataset: {training_config.get('dataset_path')}"
             )
-            default_index = os.path.join(project_root, "index", "INDEX_general_PL.2020R1.lst")
-            default_dataset = os.path.join(project_root, "PDBbind-2025.8.4", "P-L")
-
-            # Use relative paths (as in config.py) if they exist, otherwise try absolute paths
-            if not os.path.exists(default_index):
-                default_index = training_config.get(
-                    "index_file", "index/INDEX_general_PL.2020R1.lst"
-                )
-            else:
-                training_config["index_file"] = default_index
-
-            if not os.path.exists(default_dataset):
-                default_dataset = training_config.get("dataset_path", "PDBbind-2025.8.4/P-L/")
-            else:
-                training_config["dataset_path"] = default_dataset
-
-            logger_instance.log(f"Using default PDBbind dataset: {default_dataset}")
-            logger_instance.log(f"Using index file: {default_index}")
+            logger_instance.log(f"Using index file: {training_config.get('index_file')}")
 
         self._log(task_id, f"Starting training with config: {config}")
 
         # Send pre-training message
         self.stream_manager.push_log(
-            task_id, f"\n[Training] About to start main training function...\n"
+            task_id, "\n[Training] About to start main training function...\n"
         )
-        self.stream_manager.push_log(task_id, f"[Training] Training configuration:\n")
+        self.stream_manager.push_log(task_id, "[Training] Training configuration:\n")
         self.stream_manager.push_log(
             task_id, f"  - Execution Mode: {training_config.get('execution_mode', 'N/A')}\n"
         )
@@ -975,7 +913,7 @@ class TrainingService:
                 lifecycle_logger.log_running("training", progress_tracker.get_progress())
 
             # Send message right before calling main
-            self.stream_manager.push_log(task_id, f"[Training] Calling main() function now...\n\n")
+            self.stream_manager.push_log(task_id, "[Training] Calling main() function now...\n\n")
 
             main(training_config, logger_instance)
 
@@ -1004,7 +942,7 @@ class TrainingService:
 
             # Check if cancellation was requested (even if exception is not TrainingCancelled)
             is_cancelled = isinstance(e, TrainingCancelled) or progress_tracker.is_cancelled()
-            
+
             if is_cancelled:
                 with self.lock:
                     if task_id in self.tasks:
@@ -1014,12 +952,14 @@ class TrainingService:
                             cancel_reason = f"Training cancelled: {str(e)}"
                         else:
                             # Cancellation was requested but got a different exception (e.g., file cleanup error)
-                            cancel_reason = f"Training cancelled (encountered error during cleanup: {str(e)})"
+                            cancel_reason = (
+                                f"Training cancelled (encountered error during cleanup: {str(e)})"
+                            )
                         progress_tracker.set_stage("cancelled", cancel_reason)
                         self.tasks[task_id].progress = progress_tracker.get_progress()
                         self._log(task_id, cancel_reason)
                         # Send cancellation message to WebSocket stream
-                        cancel_message = f"\n[CANCELLATION] Training cancelled successfully\n"
+                        cancel_message = "\n[CANCELLATION] Training cancelled successfully\n"
                         cancel_message += f"Reason: {cancel_reason}\n"
                         cancel_message += (
                             f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n"
@@ -1041,8 +981,7 @@ class TrainingService:
                 raise
         finally:
             # Restore stdout/stderr
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
+            output_redirector.restore()
 
     def stop_task(self, task_id: str) -> tuple[bool, str | None]:
         """
@@ -1056,8 +995,11 @@ class TrainingService:
                 - success: True if stopped successfully
                 - error_message: None if successful, error message if failed
         """
-        logger.info(f"[STOP] Stop request received for task {task_id} at {datetime.now().isoformat()}")
-        
+        stop_request_time = datetime.now()
+        logger.info(
+            f"[STOP] Stop request received for task {task_id} at {stop_request_time.isoformat()}"
+        )
+
         with self.lock:
             if task_id not in self.tasks:
                 logger.warning(f"[STOP] Task {task_id} not found in tasks dictionary")
@@ -1065,67 +1007,53 @@ class TrainingService:
 
             task = self.tasks[task_id]
             logger.info(f"[STOP] Task {task_id} current status: {task.status.value}")
-            
-            if task.status != TaskStatus.RUNNING and task.status != TaskStatus.INITIALIZING:
-                error_msg = f"Task is in '{task.status.value}' status. Only running or initializing tasks can be stopped."
+
+            # Validate task can be stopped
+            can_stop, error_msg = validate_task_can_be_stopped(task.status)
+            if not can_stop:
                 logger.warning(f"[STOP] Cannot stop task {task_id}: {error_msg}")
                 return False, error_msg
 
-            # Set cancellation flag in progress tracker (don't change status yet)
-            if task_id in self.progress_trackers:
-                progress_tracker = self.progress_trackers[task_id]
-                # Log state before cancellation
-                progress_before = progress_tracker.get_progress()
-                logger.info(
-                    f"[STOP] Before cancellation - Task {task_id} stage: {progress_before.get('stage')}, "
-                    f"epoch: {progress_before.get('current_epoch')}, "
-                    f"batch: {progress_before.get('current_batch')}, "
-                    f"cancelled: {progress_before.get('cancelled')}"
-                )
-                
-                # Set cancellation flag
-                progress_tracker.cancel()
-                logger.info(
-                    f"[STOP] Cancellation flag set for task {task_id} at {datetime.now().isoformat()}"
-                )
-                
-                # Verify cancellation flag was set
-                progress_after = progress_tracker.get_progress()
-                if not progress_after.get('cancelled', False):
-                    logger.error(f"[STOP] ERROR: Cancellation flag not set correctly for task {task_id}!")
-                else:
-                    logger.info(
-                        f"[STOP] Verified cancellation flag set - Task {task_id} cancelled: {progress_after.get('cancelled')}"
-                    )
-                
-                # Log thread status
-                thread = self.task_threads.get(task_id)
-                if thread:
-                    logger.info(
-                        f"[STOP] Training thread for task {task_id} is {'alive' if thread.is_alive() else 'not alive'}"
-                    )
-                else:
-                    logger.warning(f"[STOP] No training thread found for task {task_id}")
-            else:
+            # Immediately update status to CANCELLING for better user feedback
+            task.status = TaskStatus.CANCELLING
+            task.updated_at = datetime.now()
+            logger.info(
+                f"[STOP] Task {task_id} status updated to CANCELLING at {task.updated_at.isoformat()}"
+            )
+
+            # Set cancellation flag in progress tracker
+            progress_tracker = self.progress_trackers.get(task_id)
+            if not progress_tracker:
                 logger.warning(f"[STOP] No progress tracker found for task {task_id}")
                 # Try to create one if task exists
                 if task_id in self.tasks:
                     logger.info(f"[STOP] Creating progress tracker for task {task_id}")
                     progress_tracker = ProgressTracker(task_id)
-                    progress_tracker.cancel()
                     self.progress_trackers[task_id] = progress_tracker
-                    logger.info(f"[STOP] Created and set cancellation flag for task {task_id}")
+
+            cancellation_flag_set_time = set_cancellation_flag(
+                progress_tracker, task_id, stop_request_time
+            )
+
+            # Log thread status
+            thread = self.task_threads.get(task_id)
+            if thread:
+                logger.info(
+                    f"[STOP] Training thread for task {task_id} is {'alive' if thread.is_alive() else 'not alive'}"
+                )
+            else:
+                logger.warning(f"[STOP] No training thread found for task {task_id}")
 
             # Send stop message to WebSocket stream
             stop_message = f"\n{'='*70}\n"
-            stop_message += f"Training Task Stop Requested\n"
+            stop_message += "Training Task Stop Requested\n"
             stop_message += f"Task ID: {task_id}\n"
             stop_message += f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
             stop_message += f"Current Status: {task.status.value}\n"
             if task_id in self.progress_trackers:
                 progress = self.progress_trackers[task_id].get_progress()
                 stop_message += f"Current Stage: {progress.get('stage', 'unknown')}\n"
-            stop_message += f"Waiting for training to respond to cancellation...\n"
+                stop_message += "Waiting for training to respond to cancellation...\n"
             stop_message += f"{'='*70}\n\n"
             self.stream_manager.push_log(task_id, stop_message)
 
@@ -1134,13 +1062,15 @@ class TrainingService:
             f"[STOP] Stop requested for training task: {task_id} (waiting for graceful shutdown)"
         )
         logger.info(f"[STOP] Current task status: {task.status.value}")
-        
+
         # Quick check: if task is already in final state, return immediately
         with self.lock:
             if task_id in self.tasks:
                 task = self.tasks[task_id]
                 if task.status in [TaskStatus.CANCELLED, TaskStatus.FAILED, TaskStatus.COMPLETED]:
-                    logger.info(f"[STOP] Task {task_id} already in final state: {task.status.value}")
+                    logger.info(
+                        f"[STOP] Task {task_id} already in final state: {task.status.value}"
+                    )
                     return True, None
 
         # Do a quick wait (2 seconds) to see if training responds quickly
@@ -1171,33 +1101,37 @@ class TrainingService:
                     if progress.get("cancelled", False):
                         thread = self.task_threads.get(task_id)
                         if thread is None or not thread.is_alive():
-                            if task.status in [TaskStatus.RUNNING, TaskStatus.INITIALIZING]:
+                            if task.status == TaskStatus.CANCELLING:
                                 task.status = TaskStatus.CANCELLED
                                 task.updated_at = datetime.now()
                                 self._log(task_id, "Training task cancelled successfully")
+                                response_time = (datetime.now() - stop_request_time).total_seconds()
                                 logger.info(
-                                    f"[STOP] Task {task_id} cancelled quickly (thread finished, waited: {quick_waited:.1f}s)"
+                                    f"[STOP] Task {task_id} cancelled quickly (thread finished, waited: {quick_waited:.1f}s, "
+                                    f"total response time: {response_time:.1f}s)"
                                 )
                                 return True, None
                         else:
                             # Thread still alive but cancellation flag is set
-                            # Update status immediately to provide faster response to user
-                            if task.status in [TaskStatus.RUNNING, TaskStatus.INITIALIZING]:
-                                task.status = TaskStatus.CANCELLED
-                                task.updated_at = datetime.now()
-                                self._log(task_id, "Training task cancellation acknowledged (thread still processing)")
-                                logger.info(
-                                    f"[STOP] Task {task_id} cancellation acknowledged quickly (waited: {quick_waited:.1f}s, stage: {progress.get('stage')}, thread still processing)"
-                                )
-                                # Continue to background monitoring for thread cleanup
+                            # Status should already be CANCELLING, continue to background monitoring
+                            logger.info(
+                                f"[STOP] Task {task_id} cancellation acknowledged quickly (waited: {quick_waited:.1f}s, "
+                                f"stage: {progress.get('stage')}, thread still processing, status: {task.status.value})"
+                            )
+                            # Continue to background monitoring for thread cleanup
 
         # If task hasn't responded quickly, start background thread to monitor
         # and return immediately so API doesn't block
         def _wait_for_cancellation_background():
             """Background thread to wait for training to respond to cancellation"""
-            max_wait_time = 30  # seconds
-            wait_interval = 0.5  # seconds
+            max_wait_time = 30  # seconds - timeout for graceful cancellation
+            wait_interval = 0.2  # seconds - reduced interval for faster response
             waited = quick_waited  # Start from where quick wait left off
+            last_log_time = 0
+
+            logger.info(
+                f"[STOP] Background monitoring started for task {task_id}, max wait: {max_wait_time}s"
+            )
 
             while waited < max_wait_time:
                 time.sleep(wait_interval)
@@ -1209,10 +1143,23 @@ class TrainingService:
                         return
                     task = self.tasks[task_id]
                     # Check if task has responded to cancellation
-                    if task.status in [TaskStatus.CANCELLED, TaskStatus.FAILED, TaskStatus.COMPLETED]:
+                    if task.status in [
+                        TaskStatus.CANCELLED,
+                        TaskStatus.FAILED,
+                        TaskStatus.COMPLETED,
+                    ]:
+                        response_time = (datetime.now() - stop_request_time).total_seconds()
                         logger.info(
-                            f"[STOP] Task {task_id} responded to stop request (status: {task.status.value}, waited: {waited:.1f}s)"
+                            f"[STOP] Task {task_id} responded to stop request (status: {task.status.value}, "
+                            f"waited: {waited:.1f}s, total response time: {response_time:.1f}s)"
                         )
+                        if cancellation_flag_set_time:
+                            flag_to_response_time = (
+                                datetime.now() - cancellation_flag_set_time
+                            ).total_seconds()
+                            logger.info(
+                                f"[STOP] Time from flag set to response: {flag_to_response_time:.3f}s"
+                            )
                         return
 
                     # Check if progress tracker shows cancelled
@@ -1223,41 +1170,46 @@ class TrainingService:
                             thread = self.task_threads.get(task_id)
                             if thread is None or not thread.is_alive():
                                 # Thread has finished, update status
-                                if task.status in [TaskStatus.RUNNING, TaskStatus.INITIALIZING]:
+                                if task.status == TaskStatus.CANCELLING:
                                     task.status = TaskStatus.CANCELLED
                                     task.updated_at = datetime.now()
                                     self._log(task_id, "Training task cancelled successfully")
+                                    response_time = (
+                                        datetime.now() - stop_request_time
+                                    ).total_seconds()
                                     logger.info(
-                                        f"[STOP] Task {task_id} cancelled (thread finished, waited: {waited:.1f}s)"
+                                        f"[STOP] Task {task_id} cancelled (thread finished, waited: {waited:.1f}s, "
+                                        f"total response time: {response_time:.1f}s)"
                                     )
                                     return
                             else:
                                 # Thread still alive but cancellation flag is set
-                                # Update status immediately to provide faster response to user
-                                # The training thread will detect cancellation and exit gracefully
-                                if task.status in [TaskStatus.RUNNING, TaskStatus.INITIALIZING]:
-                                    task.status = TaskStatus.CANCELLED
-                                    task.updated_at = datetime.now()
-                                    self._log(task_id, "Training task cancellation acknowledged (thread still processing)")
+                                # Status should already be CANCELLING, just log progress
+                                if waited - last_log_time >= 2.0:  # Log every 2 seconds
                                     logger.info(
-                                        f"[STOP] Task {task_id} cancellation acknowledged (waited: {waited:.1f}s, stage: {progress.get('stage')}, thread still processing)"
+                                        f"[STOP] Task {task_id} cancellation in progress (waited: {waited:.1f}s, "
+                                        f"stage: {progress.get('stage')}, thread still processing)"
                                     )
-                                    # Don't return here - continue monitoring until thread finishes or timeout
-                                elif waited % 5 == 0:  # Log every 5 seconds if status already updated
-                                    logger.info(
-                                        f"[STOP] Task {task_id} cancellation acknowledged, waiting for thread to finish (waited: {waited:.1f}s, stage: {progress.get('stage')})"
-                                    )
+                                    last_log_time = waited
 
-            # Timeout reached - task didn't respond
+            # Timeout reached - task didn't respond gracefully
+            timeout_time = datetime.now()
+            total_wait_time = (timeout_time - stop_request_time).total_seconds()
+            logger.warning(
+                f"[STOP] Timeout reached for task {task_id} after {max_wait_time}s "
+                f"(total wait: {total_wait_time:.1f}s)"
+            )
+
             with self.lock:
                 if task_id in self.tasks:
                     task = self.tasks[task_id]
-                    # Force status to CANCELLED if still running or initializing
-                    if task.status in [TaskStatus.RUNNING, TaskStatus.INITIALIZING]:
+                    # Force status to CANCELLED if still cancelling
+                    if task.status == TaskStatus.CANCELLING:
                         task.status = TaskStatus.CANCELLED
                         task.updated_at = datetime.now()
                         self._log(
-                            task_id, f"Training task force-cancelled after {max_wait_time}s timeout"
+                            task_id,
+                            f"Training task force-cancelled after {max_wait_time}s timeout",
                         )
                         logger.warning(
                             f"[STOP] Task {task_id} force-cancelled after {max_wait_time}s timeout"
@@ -1266,23 +1218,26 @@ class TrainingService:
                         if task_id in self.progress_trackers:
                             progress = self.progress_trackers[task_id].get_progress()
                             logger.warning(
-                                f"[STOP] Final progress: stage={progress.get('stage')}, cancelled={progress.get('cancelled')}"
+                                f"[STOP] Final progress: stage={progress.get('stage')}, "
+                                f"cancelled={progress.get('cancelled')}"
                             )
 
-                        # Note: We can't send signals to threads directly in Python
-                        # But we've already set the cancellation flag, which should be checked
+                        # Check thread status
                         thread = self.task_threads.get(task_id)
                         if thread and thread.is_alive():
                             logger.warning(
-                                f"Task {task_id} thread still alive after timeout - may need manual cleanup"
+                                f"[STOP] Task {task_id} thread still alive after timeout - "
+                                f"may need manual cleanup. Thread name: {thread.name}"
                             )
+                            # Note: Python doesn't support forcefully killing threads
+                            # The thread should eventually detect cancellation and exit
                             logger.info(
                                 f"Task {task_id}: Cancellation flag set, waiting for thread to respond"
                             )
 
                     # Send timeout message to stream
                     timeout_message = f"\n[Warning] Stop request timeout after {max_wait_time}s\n"
-                    timeout_message += f"Task status forced to CANCELLED\n\n"
+                    timeout_message += "Task status forced to CANCELLED\n\n"
                     self.stream_manager.push_log(task_id, timeout_message)
 
         # Start background thread to monitor cancellation
@@ -1291,7 +1246,9 @@ class TrainingService:
         )
         cancellation_thread.start()
         logger.info(f"[STOP] Started background thread to monitor cancellation for task {task_id}")
-        logger.info(f"[STOP] Cancellation request accepted for task {task_id}, monitoring in background")
+        logger.info(
+            f"[STOP] Cancellation request accepted for task {task_id}, monitoring in background"
+        )
 
         # Return immediately - cancellation is in progress
         # Frontend should poll task status to check if it's cancelled
@@ -1484,12 +1441,74 @@ class TrainingService:
         logger.info("Shutting down training service...")
         self._shutdown_flag.set()
 
+        # Stop all running tasks gracefully
+        with self.lock:
+            running_task_ids = [
+                task_id for task_id, task in self.tasks.items() if task.status == TaskStatus.RUNNING
+            ]
+
+        for task_id in running_task_ids:
+            try:
+                logger.info(f"Stopping task {task_id} during shutdown...")
+                self.stop_task(task_id)
+            except Exception as e:
+                logger.warning(f"Error stopping task {task_id} during shutdown: {e}", exc_info=True)
+
+        # Wait for all task threads to complete (with timeout)
+        with self.lock:
+            task_threads = list(self.task_threads.values())
+            resource_threads = list(self.resource_monitor_threads.values())
+
+        for thread in task_threads:
+            if thread.is_alive():
+                thread.join(timeout=3.0)
+                if thread.is_alive():
+                    logger.warning(f"Task thread {thread.name} did not stop within timeout")
+
+        for thread in resource_threads:
+            if thread.is_alive():
+                thread.join(timeout=2.0)
+                if thread.is_alive():
+                    logger.warning(
+                        f"Resource monitor thread {thread.name} did not stop within timeout"
+                    )
+
+        # Shutdown stream manager
+        if hasattr(self, "stream_manager") and self.stream_manager:
+            try:
+                self.stream_manager.shutdown()
+            except (RuntimeError, AttributeError) as e:
+                logger.debug(f"Stream manager already closed or invalid: {e}")
+            except Exception as e:
+                logger.warning(f"Error shutting down stream manager: {e}", exc_info=True)
+
         # Wait for health monitor thread
-        if self.health_monitor_thread.is_alive():
-            self.health_monitor_thread.join(timeout=5)
+        if hasattr(self, "health_monitor_thread") and self.health_monitor_thread.is_alive():
+            self.health_monitor_thread.join(timeout=5.0)
+            if self.health_monitor_thread.is_alive():
+                logger.warning("Health monitor thread did not stop within timeout")
 
         # Clean up executor
-        self.executor.shutdown(wait=True)
+        try:
+            # ThreadPoolExecutor.shutdown(wait=True) blocks until all tasks complete
+            # For timeout control, we use wait=False and manually wait with timeout
+            self.executor.shutdown(wait=False)
+            # Give threads time to finish (max 10 seconds)
+            import time
+
+            start_time = time.time()
+            while time.time() - start_time < 10.0:
+                if all(
+                    not thread.is_alive()
+                    for thread in self.executor._threads
+                    if hasattr(self.executor, "_threads")
+                ):
+                    break
+                time.sleep(0.1)
+        except (RuntimeError, AttributeError) as e:
+            logger.debug(f"Executor already shut down or invalid: {e}")
+        except Exception as e:
+            logger.warning(f"Unexpected error shutting down executor: {e}", exc_info=True)
 
         logger.info("Training service shutdown complete")
 

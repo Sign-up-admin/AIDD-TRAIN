@@ -1,0 +1,258 @@
+Report generated at: 2025-11-11T11:46:50.127865
+Tool: flake8
+Description: Code style and complexity check
+Exit Code: 1
+
+================================================================================
+
+
+================================================================================
+Checking: compass
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\compass\main.py:29:1: C901 'discover_and_select_recipe' is too complex (16)
+E:\Qinchaojun\AIDD-TRAIN\compass\main.py:108:1: C901 'main' is too complex (29)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\__main__.py:29:1: C901 'find_optimal_configs' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\hardware_utils.py:6:1: C901 'get_hardware_recommendations' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\search_space\builder.py:59:16: E741 ambiguous variable name 'l'
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\search_space\builder.py:59:47: E741 ambiguous variable name 'l'
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\search_space\builder.py:87:96: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:44:33: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:52:60: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:52:84: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:61:52: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:75:1: C901 '_optimize_for_efficiency_modes' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:120:59: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:128:28: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:230:42: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\optimizer\strategies.py:230:90: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\middleware\rate_limit.py:167:31: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\data.py:88:1: C901 'upload_dataset' is too complex (22)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\data.py:131:25: F823 local variable 'status' defined in enclosing scope on line 5 referenced before assignment
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\data.py:160:9: F841 local variable 'queue_size' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\data.py:193:9: F841 local variable 'upload_task' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\training.py:347:1: C901 'stream_task_logs' is too complex (57)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\training.py:481:21: F841 local variable 'log_data' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\routes\training.py:582:9: F824 `nonlocal last_ping_time` is unused: name is never assigned in scope
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:35:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:37:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:42:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:44:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:46:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:48:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:53:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:55:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:60:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:62:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:70:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:72:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\compass\service\server.py:351:5: F824 `global registry_client` is unused: name is never assigned in scope
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\inference_service.py:65:21: F841 local variable 'lru_model' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\inference_service.py:84:17: F841 local variable 'model' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\progress_logger.py:39:5: C901 'ProgressAwareLogger._update_progress_from_message' is too complex (16)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:342:5: C901 'TrainingService._check_resources' is too complex (15)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:566:5: C901 'TrainingService.start_task' is too complex (24)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:619:36: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:620:29: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:624:35: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:629:30: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:637:31: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:645:13: F841 local variable 'training_thread' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:660:35: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:693:42: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:695:43: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:713:25: F841 local variable 'thread' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:717:25: F841 local variable 'monitor_thread' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:743:5: C901 'TrainingService._run_training' is too complex (48)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:761:35: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:762:28: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:763:28: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:764:34: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:778:47: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:779:47: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:862:47: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:870:22: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:872:53: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:873:47: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:874:53: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:948:22: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:950:47: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:966:55: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:980:51: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1026:42: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1051:5: C901 'TrainingService.stop_task' is too complex (32)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1128:36: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1129:29: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1136:29: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1137:35: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1307:40: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\service\services\training_service.py:1421:5: C901 'TrainingService._health_monitor_loop' is too complex (20)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py:167:5: C901 'BackupManager._cleanup_old_backups' is too complex (11)
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py:269:21: F841 local variable 'metadata' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py:291:5: F811 redefinition of unused 'os' from line 5
+E:\Qinchaojun\AIDD-TRAIN\compass\service\utils\backup.py:294:5: F841 local variable 'manager' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\compass\training\checkpoint.py:54:1: C901 'load_latest_checkpoint_file' is too complex (15)
+E:\Qinchaojun\AIDD-TRAIN\compass\training\checkpoint.py:83:24: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\training\checkpoint.py:88:24: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\compass\training\engine.py:86:9: F811 redefinition of unused 'sys' from line 2
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:33:1: C901 'train_epoch' is too complex (31)
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:72:92: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:92:85: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:115:122: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:132:121: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:155:131: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:188:89: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:214:126: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\compass\training\loop.py:240:47: E226 missing whitespace around arithmetic operator
+
+
+================================================================================
+Checking: services
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\services\registry\server.py:79:5: F824 `global services` is unused: name is never assigned in scope
+E:\Qinchaojun\AIDD-TRAIN\services\registry\server.py:225:5: F841 local variable 'service' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:56:60: W291 trailing whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:62:54: W291 trailing whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:82:5: C901 'ServiceRegistryStorage.load_all_services' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:150:52: W291 trailing whitespace
+E:\Qinchaojun\AIDD-TRAIN\services\registry\storage.py:151:77: W291 trailing whitespace
+
+
+================================================================================
+Checking: FLASH_DOCK-main/services
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py:146:5: C901 'CompassClient._make_request' is too complex (20)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py:242:9: F841 local variable 'e' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\services\compass_client.py:910:5: C901 'TaskStreamClient._connect_and_listen' is too complex (11)
+
+
+================================================================================
+Checking: FLASH_DOCK-main/pages
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\data_management.py:79:57: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\service_monitor.py:94:57: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:50:1: C901 '_handle_stop_task' is too complex (35)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:81:17: E722 do not use bare 'except'
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:116:17: F841 local variable 'status_check_e' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:211:17: E722 do not use bare 'except'
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:236:13: F841 local variable 'status_e' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:271:5: F841 local variable 'error_key' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:383:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:416:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:419:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:422:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:434:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:437:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:458:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:463:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:469:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:478:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:491:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:507:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:512:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:516:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:525:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:542:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:553:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:559:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:588:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:602:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:605:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:613:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:616:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:622:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:632:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:634:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:644:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:648:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:677:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:686:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:708:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:720:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:741:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:748:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:755:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:770:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:781:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:801:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:810:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:1014:5: C901 'TryExcept 1014' is too complex (35)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:1245:5: C901 'If 1245' is too complex (58)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:1330:25: E722 do not use bare 'except'
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:1414:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\pages\training_management.py:1419:1: W293 blank line contains whitespace
+
+
+================================================================================
+Checking: FLASH_DOCK-main/FlashDock.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:7:1: C901 'If 7' is too complex (15)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:113:1: C901 'If 113' is too complex (119)
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:1004:61: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\FLASH_DOCK-main\FlashDock.py:1122:61: E226 missing whitespace around arithmetic operator
+
+
+================================================================================
+Checking: scripts
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\scripts\analyze_problem_batch.py:42:22: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\scripts\chrome_debugger.py:186:13: F841 local variable 'page_content' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\scripts\chrome_debugger.py:189:13: F841 local variable 'previous_error_count' is assigned to but never used
+E:\Qinchaojun\AIDD-TRAIN\scripts\chrome_debugger.py:278:13: E722 do not use bare 'except'
+E:\Qinchaojun\AIDD-TRAIN\scripts\generate_reports.py:165:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\scripts\generate_reports.py:180:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\scripts\generate_reports.py:195:1: W293 blank line contains whitespace
+E:\Qinchaojun\AIDD-TRAIN\scripts\report_generator.py:49:5: C901 'ReportGenerator.generate_frontend_error_report' is too complex (12)
+E:\Qinchaojun\AIDD-TRAIN\scripts\report_generator.py:65:23: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\scripts\report_generator.py:122:23: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\scripts\report_generator.py:169:23: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\scripts\report_generator.py:207:23: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:208:19: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:254:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:256:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:294:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:296:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:329:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:331:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:376:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:378:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:429:30: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:431:29: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:463:22: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:465:21: E226 missing whitespace around arithmetic operator
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:502:1: C901 'generate_summary_report' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:575:1: C901 'main' is too complex (26)
+E:\Qinchaojun\AIDD-TRAIN\scripts\run_all_checks.py:653:23: F541 f-string is missing placeholders
+E:\Qinchaojun\AIDD-TRAIN\scripts\vulnerability_scanner.py:252:5: C901 'VulnerabilityScanner.scan_performance_issues' is too complex (13)
+E:\Qinchaojun\AIDD-TRAIN\scripts\vulnerability_scanner.py:281:29: F841 local variable 'response' is assigned to but never used
+
+
+================================================================================
+Checking: check_and_start_services.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:18:5: E722 do not use bare 'except'
+E:\Qinchaojun\AIDD-TRAIN\check_and_start_services.py:126:5: F811 redefinition of unused 'os' from line 6
+
+
+================================================================================
+Checking: check_ports.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\check_ports.py:42:1: C901 'get_process_using_port' is too complex (22)
+E:\Qinchaojun\AIDD-TRAIN\check_ports.py:155:19: F541 f-string is missing placeholders
+
+
+================================================================================
+Checking: check_service_status.py
+================================================================================
+E:\Qinchaojun\AIDD-TRAIN\check_service_status.py:17:5: E722 do not use bare 'except'
+
+================================================================================
+Summary of Issues:
+  - compass: 94 style issues
+  - services: 7 style issues
+  - FLASH_DOCK-main/services: 3 style issues
+  - FLASH_DOCK-main/pages: 52 style issues
+  - FLASH_DOCK-main/FlashDock.py: 4 style issues
+  - scripts: 30 style issues
+  - check_and_start_services.py: 2 style issues
+  - check_ports.py: 2 style issues
+  - check_service_status.py: 1 style issues

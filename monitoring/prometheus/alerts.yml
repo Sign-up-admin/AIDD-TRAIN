@@ -1,0 +1,32 @@
+groups:
+  - name: compass_alerts
+    interval: 30s
+    rules:
+      - alert: HighErrorRate
+        expr: rate(compass_http_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second"
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, compass_http_request_duration_seconds_bucket) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }} seconds"
+
+      - alert: ServiceDown
+        expr: up{job="compass-service"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "COMPASS service is down"
+          description: "COMPASS service has been down for more than 1 minute"
+
+

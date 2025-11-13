@@ -239,7 +239,7 @@ class CompassClient:
         except (CompassError, ConnectionError):
             # Don't retry CompassError or ConnectionError
             raise
-        except requests.exceptions.RequestException as e:
+        except requests.exceptions.RequestException:
             # Try refreshing services and retry once for other request errors
             logger.warning(f"Retrying request after refreshing services: {url}")
             self._refresh_services()
@@ -620,7 +620,9 @@ class CompassClient:
         # Use shorter timeout since backend now returns immediately (within 2 seconds for quick response)
         # The backend monitors cancellation in background, so we don't need to wait 30+ seconds
         request_timeout = timeout if timeout is not None else 10.0
-        response = self._make_request("POST", f"/api/v1/training/tasks/{task_id}/stop", timeout=request_timeout)
+        response = self._make_request(
+            "POST", f"/api/v1/training/tasks/{task_id}/stop", timeout=request_timeout
+        )
         result: Dict[str, Any] = response.json()
         if not isinstance(result, dict):
             raise CompassError(

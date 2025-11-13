@@ -113,10 +113,23 @@ class DataService:
             # Extract if archive
             if file_path.endswith(".zip"):
                 with zipfile.ZipFile(file_path, "r") as zip_ref:
-                    zip_ref.extractall(dataset_dir)
+                    # Validate zip members to prevent path traversal attacks
+                    for member in zip_ref.namelist():
+                        # Check for path traversal attempts
+                        if ".." in member or member.startswith("/"):
+                            raise ValueError(f"Invalid zip member path: {member}")
+                    zip_ref.extractall(dataset_dir)  # nosec B202 - validated above
             elif file_path.endswith(".tar.gz") or file_path.endswith(".tar"):
                 with tarfile.open(file_path, "r:*") as tar_ref:
-                    tar_ref.extractall(dataset_dir)
+                    # Validate tar members to prevent path traversal attacks
+                    for member in tar_ref.getmembers():
+                        # Check for path traversal attempts
+                        if ".." in member.name or member.name.startswith("/"):
+                            raise ValueError(f"Invalid tar member path: {member.name}")
+                        # Check for absolute paths
+                        if os.path.isabs(member.name):
+                            raise ValueError(f"Absolute path not allowed: {member.name}")
+                    tar_ref.extractall(dataset_dir)  # nosec B202 - validated above
             else:
                 # Copy file
                 shutil.copy2(file_path, dataset_dir)

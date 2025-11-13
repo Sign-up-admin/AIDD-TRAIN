@@ -4,6 +4,7 @@ Progress tracker for training tasks.
 
 import threading
 import time
+import multiprocessing
 from typing import Dict, Optional
 from datetime import datetime
 
@@ -20,13 +21,21 @@ class ProgressTracker:
         """
         self.task_id = task_id
         self.lock = threading.Lock()
+        # Use Event for cancellation flag to avoid lock contention
+        # Event is thread-safe and allows lock-free reads
+        self._cancellation_event = threading.Event()
+        # Use multiprocessing.Value for cross-process cancellation flag
+        # This allows worker processes in multiprocessing.Pool to check cancellation
+        self._mp_cancellation_flag = multiprocessing.Value(
+            "i", 0
+        )  # 0 = not cancelled, 1 = cancelled
         self.current_stage = (
             "initializing"  # initializing, data_processing, training, validation, completed
         )
         self.stage_progress = 0.0  # 0.0 to 1.0
         self.stage_message = ""
 
-        # Cancellation flag
+        # Cancellation flag (kept for backward compatibility, but use _cancellation_event for checks)
         self.cancelled = False
 
         # Data processing progress
@@ -136,13 +145,41 @@ class ProgressTracker:
         """Mark task as cancelled."""
         with self.lock:
             self.cancelled = True
+            self._cancellation_event.set()  # Set event (thread-safe, no lock needed for readers)
+            # Set multiprocessing flag for cross-process cancellation
+            with self._mp_cancellation_flag.get_lock():
+                self._mp_cancellation_flag.value = 1
             self.stage_message = "Training cancelled by user"
             self.last_update_time = datetime.now()
 
     def is_cancelled(self) -> bool:
-        """Check if task is cancelled."""
-        with self.lock:
-            return self.cancelled
+        """
+        Check if task is cancelled.
+
+        Uses threading.Event for lock-free reads, improving performance
+        when called frequently from training loops.
+        """
+        # Lock-free read using Event.is_set() - much faster than acquiring lock
+        return self._cancellation_event.is_set()
+
+    def is_cancelled_mp(self) -> bool:
+        """
+        Check if task is cancelled (multiprocessing-safe version).
+
+        This method can be called from worker processes in multiprocessing.Pool.
+        Returns True if cancellation has been requested.
+        """
+        with self._mp_cancellation_flag.get_lock():
+            return self._mp_cancellation_flag.value == 1
+
+    def get_mp_cancellation_flag(self):
+        """
+        Get the multiprocessing cancellation flag for passing to worker processes.
+
+        Returns:
+            multiprocessing.Value: The shared cancellation flag
+        """
+        return self._mp_cancellation_flag
 
     def get_progress(self) -> Dict:
         """
@@ -157,11 +194,13 @@ class ProgressTracker:
                 elapsed = datetime.now() - self.start_time
                 elapsed_time = elapsed.total_seconds()
 
+            # Use event state for cancelled flag (more reliable)
+            cancelled = self._cancellation_event.is_set()
             return {
                 "stage": self.current_stage,
                 "progress": self.stage_progress,
                 "message": self.stage_message,
-                "cancelled": self.cancelled,
+                "cancelled": cancelled,
                 "data_processing": {
                     "completed": self.data_processing_completed,
                     "total": self.data_processing_total,
@@ -191,18 +230,27 @@ class ProgressTracker:
     def __getstate__(self):
         """
         Custom pickle state getter.
-        Excludes threading.Lock object which cannot be pickled.
+        Excludes threading.Lock, threading.Event, and multiprocessing.Value objects which cannot be pickled.
         """
         state = self.__dict__.copy()
-        # Remove lock object as it cannot be pickled
-        state.pop('lock', None)
+        # Remove lock, event, and multiprocessing objects as they cannot be pickled
+        state.pop("lock", None)
+        state.pop("_cancellation_event", None)
+        state.pop("_mp_cancellation_flag", None)
         return state
 
     def __setstate__(self, state):
         """
         Custom pickle state setter.
-        Recreates threading.Lock object after unpickling.
+        Recreates threading.Lock, threading.Event, and multiprocessing.Value objects after unpickling.
         """
         self.__dict__.update(state)
-        # Recreate lock object after unpickling
+        # Recreate lock, event, and multiprocessing objects after unpickling
         self.lock = threading.Lock()
+        self._cancellation_event = threading.Event()
+        self._mp_cancellation_flag = multiprocessing.Value("i", 0)
+        # Restore cancellation state if it was set
+        if state.get("cancelled", False):
+            self._cancellation_event.set()
+            with self._mp_cancellation_flag.get_lock():
+                self._mp_cancellation_flag.value = 1

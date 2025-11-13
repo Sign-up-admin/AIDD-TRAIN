@@ -16,6 +16,7 @@ try:
 except ImportError:
     print("Playwright not installed. Installing...")
     import subprocess
+
     subprocess.check_call([sys.executable, "-m", "pip", "install", "playwright"])
     subprocess.check_call([sys.executable, "-m", "playwright", "install", "chromium"])
     from playwright.async_api import async_playwright, Browser, Page, BrowserContext
@@ -167,7 +168,11 @@ class ChromeDebugger:
 
         try:
             # Navigate to frontend
-            await self.page.goto(FRONTEND_URL, wait_until="domcontentloaded", timeout=TIMEOUT_CONFIG["page_load"] * 1000)
+            await self.page.goto(
+                FRONTEND_URL,
+                wait_until="domcontentloaded",
+                timeout=TIMEOUT_CONFIG["page_load"] * 1000,
+            )
 
             # Wait for Streamlit to load
             await asyncio.sleep(3)
@@ -175,13 +180,12 @@ class ChromeDebugger:
             # For Streamlit, we can't directly navigate to pages via URL
             # Instead, we check if the main page loads and look for errors
             # In a real scenario, we would click the sidebar buttons to switch pages
-            
+
             # Check if page loaded successfully
             page_title = await self.page.title()
-            page_content = await self.page.content()
 
             # Clear previous errors for this page test
-            previous_error_count = len(self.errors)
+            len(self.errors)  # Track error count
 
             # Take screenshot
             if BROWSER_CONFIG["screenshot"]:
@@ -200,8 +204,10 @@ class ChromeDebugger:
             # Check for network errors (filter by recent and frontend URL)
             recent_errors = self.errors[-20:]  # Last 20 errors
             page_network_errors = [
-                err for err in recent_errors 
-                if err.get("url", "").startswith(FRONTEND_URL) or err.get("type") in ["network_error", "request_failed"]
+                err
+                for err in recent_errors
+                if err.get("url", "").startswith(FRONTEND_URL)
+                or err.get("type") in ["network_error", "request_failed"]
             ]
 
             # Combine errors
@@ -217,7 +223,9 @@ class ChromeDebugger:
                 "timestamp": datetime.now().isoformat(),
             }
 
-            logger.info(f"Page {page_name} test completed: {result['status']} ({len(all_errors)} errors)")
+            logger.info(
+                f"Page {page_name} test completed: {result['status']} ({len(all_errors)} errors)"
+            )
             return result
 
         except Exception as e:
@@ -266,7 +274,7 @@ class ChromeDebugger:
             # Get response body
             try:
                 response_body = await response.json()
-            except:
+            except Exception:
                 response_body = await response.text()
 
             result = {
@@ -404,4 +412,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-

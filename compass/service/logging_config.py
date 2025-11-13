@@ -6,7 +6,7 @@ import logging
 import logging.handlers
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 
 def setup_logging(
@@ -15,8 +15,8 @@ def setup_logging(
     service_name: str = "compass",
     enable_file: bool = True,
     enable_console: bool = True,
-    max_bytes: int = None,
-    backup_count: int = None,
+    max_bytes: Optional[int] = None,
+    backup_count: Optional[int] = None,
     rotation_strategy: str = "size",
 ) -> logging.Logger:
     """
@@ -74,7 +74,9 @@ def setup_logging(
 
         if rotation_strategy == "time":
             # Time-based rotation (daily at midnight)
-            file_handler = logging.handlers.TimedRotatingFileHandler(
+            file_handler: Union[
+                logging.handlers.TimedRotatingFileHandler, logging.handlers.RotatingFileHandler
+            ] = logging.handlers.TimedRotatingFileHandler(
                 log_file,
                 when="midnight",
                 interval=1,
@@ -96,7 +98,9 @@ def setup_logging(
         error_log_file = log_path / f"{service_name}_errors.log"
 
         if rotation_strategy == "time":
-            error_handler = logging.handlers.TimedRotatingFileHandler(
+            error_handler: Union[
+                logging.handlers.TimedRotatingFileHandler, logging.handlers.RotatingFileHandler
+            ] = logging.handlers.TimedRotatingFileHandler(
                 error_log_file,
                 when="midnight",
                 interval=1,

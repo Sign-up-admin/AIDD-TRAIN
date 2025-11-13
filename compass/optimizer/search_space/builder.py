@@ -56,7 +56,12 @@ def get_search_space(vram_gb, mode_to_optimize):
         reverse=True,
     )
     num_layers_list = sorted(
-        [l for l in {int(l * vram_factor) for l in arch_def["layers"]} if l > 0], reverse=True
+        [
+            layer
+            for layer in {int(layer * vram_factor) for layer in arch_def["layers"]}
+            if layer > 0
+        ],
+        reverse=True,
     )
     start_batch_size = int(MODE_PARAMS[mode_to_optimize]["bs"] * vram_factor)
     stress_iterations = MODE_PARAMS[mode_to_optimize]["stress"]

@@ -3,7 +3,8 @@ import argparse
 import logging
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 
 def analyze_tensor(tensor_name, tensor):
     """Analyzes a single tensor for NaNs, Infs, and other stats."""
@@ -27,7 +28,7 @@ def analyze_tensor(tensor_name, tensor):
     if tensor.numel() == 0:
         logging.info("Tensor is empty.")
         return
-        
+
     if tensor.dtype in [torch.long, torch.int, torch.short, torch.bool]:
         logging.info("Skipping stats for integer/boolean tensor.")
         return
@@ -38,14 +39,19 @@ def analyze_tensor(tensor_name, tensor):
     if tensor.numel() > 1:
         logging.info(f"Std value: {torch.std(tensor.float())}")
     else:
-        logging.info(f"Std value: 0.0 (single element)")
+        logging.info("Std value: 0.0 (single element)")
     logging.info("-" * (20 + len(tensor_name)))
+
 
 def check_for_duplicate_positions(pos_tensor):
     """Checks for duplicate coordinates by rounding to a set precision."""
-    if not isinstance(pos_tensor, torch.Tensor) or pos_tensor.dim() != 2 or pos_tensor.shape[1] != 3:
+    if (
+        not isinstance(pos_tensor, torch.Tensor)
+        or pos_tensor.dim() != 2
+        or pos_tensor.shape[1] != 3
+    ):
         return
-    
+
     logging.info("--- Checking for Duplicate Atom Positions ---")
     seen_positions = {}
     duplicates_found = False
@@ -61,30 +67,36 @@ def check_for_duplicate_positions(pos_tensor):
         logging.warning("!!! Duplicate atom positions found! This is a likely cause of NaNs. !!!")
         for pos_tuple, indices in seen_positions.items():
             if len(indices) > 1:
-                logging.warning(f"  - Position {list(pos_tuple)} appears {len(indices)} times at indices: {indices}")
+                logging.warning(
+                    f"  - Position {list(pos_tuple)} appears {len(indices)} times at indices: {indices}"
+                )
     else:
         logging.info("No duplicate atom positions found.")
     logging.info("---------------------------------------------")
+
 
 def check_for_unknown_atoms(x_tensor, pos_tensor):
     """Checks for atoms classified as UNK and prints their info."""
     if not isinstance(x_tensor, torch.Tensor) or x_tensor.dim() != 2:
         return
-    
+
     logging.info("--- Checking for Unknown (UNK) Atoms ---")
-    
+
     # The last column in the one-hot encoding corresponds to UNK.
     # Find indices where the last column is 1.
     unknown_atom_indices = (x_tensor[:, -1] == 1).nonzero(as_tuple=True)[0]
-    
+
     if unknown_atom_indices.numel() > 0:
-        logging.warning(f"!!! {unknown_atom_indices.numel()} Unknown (UNK) atoms found! This is a likely cause of NaNs. !!!")
+        logging.warning(
+            f"!!! {unknown_atom_indices.numel()} Unknown (UNK) atoms found! This is a likely cause of NaNs. !!!"
+        )
         for idx in unknown_atom_indices:
             atom_pos = pos_tensor[idx].tolist()
             logging.warning(f"  - Atom at index {idx.item()} with position {atom_pos} is UNK.")
     else:
         logging.info("No unknown (UNK) atoms found.")
     logging.info("----------------------------------------")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Analyze a saved PyTorch Geometric data batch.")
@@ -101,14 +113,14 @@ def main():
         return
 
     logging.info(f"Data type: {type(data)}")
-    if hasattr(data, 'pdb_code'):
+    if hasattr(data, "pdb_code"):
         logging.info(f"PDB code: {data.pdb_code}")
 
     # --- Detailed Analysis ---
-    if hasattr(data, 'pos'):
+    if hasattr(data, "pos"):
         check_for_duplicate_positions(data.pos)
 
-    if hasattr(data, 'x') and hasattr(data, 'pos'):
+    if hasattr(data, "x") and hasattr(data, "pos"):
         check_for_unknown_atoms(data.x, data.pos)
 
     for key in data.keys():
@@ -116,6 +128,7 @@ def main():
         analyze_tensor(key, tensor)
 
     logging.info("Analysis complete.")
+
 
 if __name__ == "__main__":
     main()

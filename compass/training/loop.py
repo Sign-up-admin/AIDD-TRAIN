@@ -98,10 +98,30 @@ def train_epoch(
 
         _apply_diffusion_noise(data, config, current_stage)
 
+        # Check for cancellation before model forward pass (can be time-consuming)
+        if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+            from .exceptions import TrainingCancelled
+
+            if logger:
+                logger.log(
+                    f"[CANCELLATION] Training cancelled detected before forward pass at epoch {epoch}, batch {i+1}"
+                )
+            raise TrainingCancelled("Training cancelled by user")
+
         try:
             with autocast(device_type=device.type, dtype=torch.float16):
                 output = model(data)
                 loss = torch.nn.functional.huber_loss(output, data.y.view(-1, 1)) / grad_accum_steps
+
+            # Check for cancellation after forward pass (before backward)
+            if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+                from .exceptions import TrainingCancelled
+
+                if logger:
+                    logger.log(
+                        f"[CANCELLATION] Training cancelled detected after forward pass at epoch {epoch}, batch {i+1}"
+                    )
+                raise TrainingCancelled("Training cancelled by user")
 
             scaler.scale(loss).backward()
 
@@ -115,7 +135,7 @@ def train_epoch(
                             f"[CANCELLATION] Training cancelled detected before optimizer step at epoch {epoch}, batch {i+1}"
                         )
                     raise TrainingCancelled("Training cancelled by user")
-                
+
                 scaler.unscale_(optimizer)
                 if gradient_clip_val > 0:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=gradient_clip_val)
@@ -144,7 +164,10 @@ def train_epoch(
                         and not is_last_batch_of_epoch
                     ):
                         # Check for cancellation before checkpoint save (can be slow)
-                        if hasattr(logger, "progress_tracker") and logger.progress_tracker.is_cancelled():
+                        if (
+                            hasattr(logger, "progress_tracker")
+                            and logger.progress_tracker.is_cancelled()
+                        ):
                             from .exceptions import TrainingCancelled
 
                             if logger:
@@ -152,7 +175,7 @@ def train_epoch(
                                     f"[CANCELLATION] Training cancelled detected before checkpoint save at epoch {epoch}, batch {i+1}"
                                 )
                             raise TrainingCancelled("Training cancelled by user")
-                        
+
                         checkpoint_data = create_checkpoint_data(
                             epoch,
                             i + 1,
@@ -211,7 +234,7 @@ def train_epoch(
                         f"[CANCELLATION] Training cancelled detected before manual checkpoint save at epoch {epoch}, batch {i+1}"
                     )
                 raise TrainingCancelled("Training cancelled by user")
-            
+
             checkpoint_data = create_checkpoint_data(
                 epoch,
                 i + 1,

@@ -27,7 +27,8 @@ def test_config_manager_from_env(monkeypatch):
     manager = ConfigManager()
     assert manager.config.port == 9090
     assert manager.config.max_workers == 8
-    assert manager.get_source('port') == manager.ConfigSource.ENV
+    from compass.service.config_manager import ConfigSource
+    assert manager.get_source('port') == ConfigSource.ENV
 
 
 def test_config_manager_from_file():
