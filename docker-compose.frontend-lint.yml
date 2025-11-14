@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  frontend-linter:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend-lint
+    container_name: aidd-frontend-linter
+    volumes:
+      # 挂载项目根目录，以便访问代码和配置文件
+      - .:/app
+      # 挂载 node_modules 作为命名卷，避免覆盖容器内的依赖
+      - node_modules:/app/node_modules
+      # 挂载临时代码目录
+      - ./temp_frontend_code:/app/temp_frontend_code
+      # 挂载报告输出目录
+      - ./lint_reports:/app/lint_reports
+    working_dir: /app
+    # 默认不启动，仅用于执行命令
+    command: tail -f /dev/null
+    networks:
+      - default
+
+volumes:
+  node_modules:
+
+networks:
+  default:
+    driver: bridge
+
+
+

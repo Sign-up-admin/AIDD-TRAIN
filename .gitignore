@@ -27,3 +27,13 @@ PDBbind-2025.8.4/
 .idea/
 .cadence/
 DiffGui-main/
+
+# Large files (>100MB) - should not be committed to Git
+# CUDA installation packages
+*.run
+# Miniconda installation scripts
+Miniconda*.sh
+# LMDB database files
+**/ligand_predict.lmdb
+# PyTorch model files
+**/*.pt

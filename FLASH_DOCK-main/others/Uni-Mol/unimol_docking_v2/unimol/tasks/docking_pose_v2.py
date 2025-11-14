@@ -113,7 +113,24 @@ class DockingPoseV2(UnicoreTask):
             split (str): name of the data scoure (e.g., bppp)
         """
         data_path = os.path.join(self.args.data, split + '.lmdb')
-        dataset = LMDBDataset(data_path)
+        
+        # Windows上优先使用PickleDataset以避免LMDB的兼容性问题
+        # 可以通过环境变量 UNIMOL_USE_PICKLE=1 强制使用pickle格式
+        use_pickle = os.environ.get('UNIMOL_USE_PICKLE', '0') == '1'
+        if not use_pickle:
+            import platform
+            use_pickle = platform.system() == 'Windows'
+        
+        if use_pickle:
+            try:
+                from unimol.data.pickle_dataset import PickleDataset
+                logger.info(f"Using PickleDataset for {split} (Windows compatibility mode)")
+                dataset = PickleDataset(data_path)
+            except ImportError:
+                logger.warning("PickleDataset not available, falling back to LMDBDataset")
+                dataset = LMDBDataset(data_path)
+        else:
+            dataset = LMDBDataset(data_path)
         if split.startswith('train'):
             tgt_dataset = KeyDataset(dataset, 'target')
             smi_dataset = KeyDataset(dataset, 'smi')

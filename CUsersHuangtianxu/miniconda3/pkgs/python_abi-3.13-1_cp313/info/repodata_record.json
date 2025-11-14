@@ -1,0 +1,22 @@
+{
+  "arch": "x86_64",
+  "build": "1_cp313",
+  "build_number": 1,
+  "channel": "https://repo.anaconda.com/pkgs/main/noarch/",
+  "constrains": [
+    "python 3.13.* *_cp313"
+  ],
+  "depends": [],
+  "fn": "python_abi-3.13-1_cp313.conda",
+  "license": "BSD-3-Clause",
+  "license_family": "BSD",
+  "md5": "bea705c35663f9394ec82e87dc692c85",
+  "name": "python_abi",
+  "platform": "linux",
+  "sha256": "3372884ce360851486826118baf5a5077f0cbba2fb95018181aa1e494184e15f",
+  "size": 5635,
+  "subdir": "linux-64",
+  "timestamp": 1757085643000,
+  "url": "https://repo.anaconda.com/pkgs/main/linux-64/python_abi-3.13-1_cp313.conda",
+  "version": "3.13"
+}

@@ -1,0 +1,37 @@
+{
+  "arch": "x86_64",
+  "build": "py313h06a4308_1",
+  "build_number": 1,
+  "channel": "https://repo.anaconda.com/pkgs/main/noarch/",
+  "constrains": [
+    "conda >=23.9.0",
+    "anaconda-cloud-auth >=0.8.2",
+    "conda-token >=0.7.0"
+  ],
+  "depends": [
+    "anaconda-cli-base >=0.5.2",
+    "cryptography >=3.4.0",
+    "keyring",
+    "pkce",
+    "pydantic",
+    "pyjwt",
+    "python >=3.13,<3.14.0a0",
+    "python-dotenv",
+    "python_abi 3.13.* *_cp313",
+    "requests",
+    "semver <4",
+    "anaconda-anon-usage >=0.7.2"
+  ],
+  "fn": "anaconda-auth-0.10.0-py313h06a4308_1.conda",
+  "license": "BSD-3-Clause",
+  "license_family": "BSD",
+  "md5": "5f9a69d79afb01255f1f4f8ced6f7cf7",
+  "name": "anaconda-auth",
+  "platform": "linux",
+  "sha256": "390efcc326c31c508ae1a8ae69bea53c323726a08f22830f4b7a9ad88f53da04",
+  "size": 87714,
+  "subdir": "linux-64",
+  "timestamp": 1759943219000,
+  "url": "https://repo.anaconda.com/pkgs/main/linux-64/anaconda-auth-0.10.0-py313h06a4308_1.conda",
+  "version": "0.10.0"
+}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css" />
+        
+        
+        
+    </head>
+    <body>
+        <div id="status">状态: <span id="status-text" class="status-connecting">连接中...</span></div>
+        <div id="resources">
+            <div class="resource-item">
+                <div class="resource-label">CPU</div>
+                <div class="resource-value" id="cpu-value">0.0%</div>
+                <div class="progress-bar"><div class="progress-fill" id="cpu-progress" style="width: 0%"></div></div>
+            </div>
+            <div class="resource-item">
+                <div class="resource-label">内存</div>
+                <div class="resource-value" id="memory-value">0.0%</div>
+                <div class="resource-detail" id="memory-detail">0.0 GB / 0.0 GB</div>
+                <div class="progress-bar"><div class="progress-fill" id="memory-progress" style="width: 0%"></div></div>
+            </div>
+            <div class="resource-item">
+                <div class="resource-label">GPU</div>
+                <div class="resource-value" id="gpu-value">不可用</div>
+                <div class="resource-detail" id="gpu-detail"></div>
+                <div class="progress-bar"><div class="progress-fill" id="gpu-progress" style="width: 0%"></div></div>
+            </div>
+            <div class="resource-item">
+                <div class="resource-label">存储</div>
+                <div class="resource-value" id="storage-value">0.0%</div>
+                <div class="resource-detail" id="storage-detail">0.0 GB / 0.0 GB</div>
+                <div class="progress-bar"><div class="progress-fill" id="storage-progress" style="width: 0%"></div></div>
+            </div>
+        </div>
+        <div id="terminal"></div>
+        
+    </body>
+    </html>

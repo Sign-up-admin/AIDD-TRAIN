@@ -92,6 +92,8 @@ async def lifespan(app: FastAPI):
     check_interval = int(os.getenv("REGISTRY_CHECK_INTERVAL", "10"))
     timeout = int(os.getenv("REGISTRY_TIMEOUT", "5"))
     health_checker = HealthChecker(check_interval=check_interval, timeout=timeout)
+    # Pass storage instance to health checker to avoid creating new connections
+    health_checker._storage = storage
     health_checker.start_background_checking(services)
     logger.info("Service Registry started")
 

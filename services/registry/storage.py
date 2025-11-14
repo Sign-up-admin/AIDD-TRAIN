@@ -167,23 +167,27 @@ class ServiceRegistryStorage:
                         else:
                             service_dict["metadata"] = {}
 
-                        # Parse datetime strings - keep as strings for from_dict
+                        # Parse datetime strings - ensure they are strings for from_dict
                         # from_dict will handle the conversion
-                        if service_dict.get("registered_at") and not isinstance(
-                            service_dict["registered_at"], str
-                        ):
-                            # If it's already a datetime, convert to string
-                            if isinstance(service_dict["registered_at"], datetime):
-                                service_dict["registered_at"] = service_dict[
-                                    "registered_at"
-                                ].isoformat()
-                        if service_dict.get("last_heartbeat") and not isinstance(
-                            service_dict["last_heartbeat"], str
-                        ):
-                            if isinstance(service_dict["last_heartbeat"], datetime):
-                                service_dict["last_heartbeat"] = service_dict[
-                                    "last_heartbeat"
-                                ].isoformat()
+                        if service_dict.get("registered_at"):
+                            if not isinstance(service_dict["registered_at"], str):
+                                # If it's already a datetime, convert to string
+                                if isinstance(service_dict["registered_at"], datetime):
+                                    service_dict["registered_at"] = service_dict[
+                                        "registered_at"
+                                    ].isoformat()
+                                else:
+                                    # Try to convert to string if it's not already
+                                    service_dict["registered_at"] = str(service_dict["registered_at"])
+                        if service_dict.get("last_heartbeat"):
+                            if not isinstance(service_dict["last_heartbeat"], str):
+                                if isinstance(service_dict["last_heartbeat"], datetime):
+                                    service_dict["last_heartbeat"] = service_dict[
+                                        "last_heartbeat"
+                                    ].isoformat()
+                                else:
+                                    # Try to convert to string if it's not already
+                                    service_dict["last_heartbeat"] = str(service_dict["last_heartbeat"])
 
                         service = ServiceInfo.from_dict(service_dict)
                         services[service.service_id] = service

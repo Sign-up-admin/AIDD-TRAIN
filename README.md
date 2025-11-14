@@ -432,6 +432,7 @@ This project maintains high code quality standards using automated tools:
 
 ### Quick Start
 
+**Python Code Quality:**
 ```bash
 # Install development dependencies
 pip install -r requirements-dev.txt
@@ -446,8 +447,34 @@ python scripts/run_all_checks.py --format
 python scripts/run_tests.bat
 ```
 
+**Frontend Code Quality:**
+
+**Option 1: Using Docker (Recommended, no Node.js installation needed)**
+```bash
+# Install Docker Desktop first
+# Then run checks using Docker
+python scripts/check_frontend_docker.py
+```
+
+**Option 2: Using Local Node.js**
+```bash
+# Install Node.js dependencies (requires Node.js >= 14.0.0)
+npm install
+
+# Extract frontend code from Python files
+python scripts/extract_frontend_code.py FLASH_DOCK-main
+
+# Run frontend code checks
+python scripts/check_frontend.py
+
+# Or use npm scripts directly
+npm run lint:all
+npm run format
+```
+
 ### Tools Used
 
+**Python Code Quality:**
 - **Black**: Code formatting (PEP 8)
 - **Flake8**: Code style and complexity checking
 - **Pylint**: Code quality analysis
@@ -455,9 +482,17 @@ python scripts/run_tests.bat
 - **Bandit**: Security vulnerability scanning
 - **Pytest**: Unit testing and coverage
 
+**Frontend Code Quality:**
+- **ESLint**: JavaScript code linting
+- **Stylelint**: CSS/SCSS code linting
+- **Prettier**: Code formatting (HTML/CSS/JS)
+- **HTMLHint**: HTML code quality checking
+
 ### Reports
 
-All quality check reports are saved to `lint_reports/` directory. For detailed information, see [Code Quality Guide](docs/CODE_QUALITY.md).
+All quality check reports are saved to `lint_reports/` directory. For detailed information, see:
+- [Python Code Quality Guide](docs/CODE_QUALITY.md)
+- [Frontend Code Quality Guide](docs/FRONTEND_CODE_QUALITY.md)
 
 ---
 

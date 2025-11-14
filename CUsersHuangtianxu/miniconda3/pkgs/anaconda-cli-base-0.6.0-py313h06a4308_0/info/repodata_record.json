@@ -1,0 +1,33 @@
+{
+  "arch": "x86_64",
+  "build": "py313h06a4308_0",
+  "build_number": 0,
+  "channel": "https://repo.anaconda.com/pkgs/main/noarch/",
+  "constrains": [
+    "anaconda-client >=1.13.0",
+    "anaconda-cloud-cli >=0.3.0"
+  ],
+  "depends": [
+    "click <8.2",
+    "packaging >=23.0",
+    "pydantic-settings >=2.3",
+    "python >=3.13,<3.14.0a0",
+    "python_abi 3.13.* *_cp313",
+    "readchar",
+    "rich",
+    "tomli",
+    "typer"
+  ],
+  "fn": "anaconda-cli-base-0.6.0-py313h06a4308_0.conda",
+  "license": "BSD-3-Clause",
+  "license_family": "BSD",
+  "md5": "f712ea24f85ad01f928d95e7a9ff1e35",
+  "name": "anaconda-cli-base",
+  "platform": "linux",
+  "sha256": "5270020d39dfab1f768cc5d7537f4160258b6d4e3b5ba14dcaf6e7d97226a7e0",
+  "size": 46245,
+  "subdir": "linux-64",
+  "timestamp": 1762294981000,
+  "url": "https://repo.anaconda.com/pkgs/main/linux-64/anaconda-cli-base-0.6.0-py313h06a4308_0.conda",
+  "version": "0.6.0"
+}

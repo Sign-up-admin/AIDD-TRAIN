@@ -68,11 +68,13 @@ class HealthChecker:
         from services.registry.storage import ServiceRegistryStorage
 
         # Get storage instance (will be injected or use default)
-        storage = getattr(self, "_storage", None)
-        if storage is None:
+        # Reuse storage instance to avoid creating new connections every time
+        if not hasattr(self, "_storage") or self._storage is None:
             # Use default storage path
             db_path = os.getenv("REGISTRY_DB_PATH", "registry.db")
-            storage = ServiceRegistryStorage(db_path=db_path)
+            self._storage = ServiceRegistryStorage(db_path=db_path)
+        
+        storage = self._storage
 
         for service_id, service in list(services.items()):
             status = self.check_service_health(service)

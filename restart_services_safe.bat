@@ -13,7 +13,26 @@ set "PROJECT_ROOT=%CD%"
 
 REM Find conda python executables (will be set later)
 set PYTHON_AIDDTRAIN=python
-set PYTHON_FLASHDOCK=python
+
+REM FlashDock 使用 WSL 环境
+set "WSL_DISTRO=Ubuntu-24.04"
+set "WSL_ENV_NAME=flash_dock"
+set "WSL_PROJECT_ROOT=/mnt/e/Qinchaojun/AIDD-TRAIN"
+set "WSL_FLASHDOCK_DIR=%WSL_PROJECT_ROOT%/FLASH_DOCK-main"
+set "WSL_PORT=8501"
+set "WSL_FLASHDOCK_READY=0"
+
+REM 检查 WSL 是否可用
+wsl --status >nul 2>&1
+if not errorlevel 1 (
+    wsl -d %WSL_DISTRO% -- echo "WSL 发行版可用" >nul 2>&1
+    if not errorlevel 1 (
+        wsl -d %WSL_DISTRO% bash -c "conda env list | grep -q '^%WSL_ENV_NAME% '" >nul 2>&1
+        if not errorlevel 1 (
+            set "WSL_FLASHDOCK_READY=1"
+        )
+    )
+)
 
 echo [Step 1/5] Stopping existing services...
 echo Finding and stopping processes on ports 8500, 8080, and 8501...
@@ -46,15 +65,12 @@ set "PYTHONPATH=%PROJECT_ROOT%"
 
 REM Find conda python executables
 set PYTHON_AIDDTRAIN=python
-set PYTHON_FLASHDOCK=python
 
 if exist "%USERPROFILE%\anaconda3\envs\AIDDTRAIN\python.exe" (
     set PYTHON_AIDDTRAIN=%USERPROFILE%\anaconda3\envs\AIDDTRAIN\python.exe
-    set PYTHON_FLASHDOCK=%USERPROFILE%\anaconda3\envs\flash_dock\python.exe
 ) else (
     if exist "C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe" (
         set PYTHON_AIDDTRAIN=C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe
-        set PYTHON_FLASHDOCK=C:\ProgramData\Anaconda3\envs\flash_dock\python.exe
     )
 )
 
@@ -80,10 +96,22 @@ timeout /t 5 /nobreak >nul 2>&1
 
 echo.
 echo [Step 4/5] Starting FLASH-DOCK (port 8501)...
-if exist "%PYTHON_FLASHDOCK%" (
-    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %PROJECT_ROOT%\FLASH_DOCK-main && set PYTHONPATH=%PROJECT_ROOT% && %PYTHON_FLASHDOCK% -m streamlit run FlashDock.py --server.port 8501"
+if !WSL_FLASHDOCK_READY! EQU 1 (
+    echo Using WSL environment: %WSL_ENV_NAME%
+    start "FLASH-DOCK (WSL) - Port 8501" cmd /k "wsl -d %WSL_DISTRO% bash -c \"source ~/miniconda3/etc/profile.d/conda.sh 2>/dev/null || source ~/anaconda3/etc/profile.d/conda.sh 2>/dev/null; conda activate %WSL_ENV_NAME% && export PYTHONPATH=%WSL_PROJECT_ROOT% && cd %WSL_FLASHDOCK_DIR% && streamlit run FlashDock.py --server.port %WSL_PORT% --server.address 0.0.0.0\""
 ) else (
-    start "FLASH-DOCK - Port 8501" cmd /k "cd /d %PROJECT_ROOT%\FLASH_DOCK-main && set PYTHONPATH=%PROJECT_ROOT% && python -m streamlit run FlashDock.py --server.port 8501"
+    echo ========================================
+    echo [ERROR] WSL FlashDock 环境不可用
+    echo ========================================
+    echo FlashDock 必须使用 WSL 环境运行
+    echo.
+    echo 请执行以下步骤设置 WSL 环境：
+    echo 1. 确保 WSL 已安装并启用
+    echo 2. 确保 WSL 发行版 '%WSL_DISTRO%' 存在
+    echo 3. 在 WSL 中手动创建 conda 环境并安装依赖
+    echo.
+    echo [ERROR] FlashDock 服务启动失败
+    echo.
 )
 
 echo.

@@ -3,6 +3,7 @@
 # LICENSE file in the root directory of this source tree.
 
 import os
+import platform
 import numpy as np
 import lmdb
 import pickle
@@ -291,17 +292,35 @@ class Processor:
         print(f'Number of ligands: {len(smiles_list)}')
         seed = [seed] * len(input_ligand)
         content_list = zip(smiles_list, input_protein, input_ligand, input_docking_grid, seed)
-        with Pool(self.nthreads) as pool:
+        
+        # On Windows, use single process to avoid multiprocessing issues
+        # On Linux/Mac, use multiprocessing for better performance
+        use_multiprocessing = platform.system() != 'Windows' and self.nthreads > 1
+        
+        if use_multiprocessing:
+            with Pool(self.nthreads) as pool:
+                i = 0
+                failed_num = 0
+                for inner_output in tqdm(pool.imap(self.parser, content_list)):
+                    if inner_output is not None:
+                        txn_write.put(f"{i}".encode("ascii"), inner_output)
+                        i+=1
+                    elif inner_output is None: 
+                        failed_num += 1
+        else:
+            # Single process mode for Windows or when nthreads <= 1
             i = 0
             failed_num = 0
-            for inner_output in tqdm(pool.imap(self.parser, content_list)):
+            for content in tqdm(content_list):
+                inner_output = self.parser(content)
                 if inner_output is not None:
                     txn_write.put(f"{i}".encode("ascii"), inner_output)
                     i+=1
                 elif inner_output is None: 
                     failed_num += 1
-            txn_write.commit()
-            env_new.close()
+        
+        txn_write.commit()
+        env_new.close()
         print(f'Total num: {len(smiles_list)}, Success: {i}, Failed: {failed_num}')
         print("Done!")
         return output_ligand_name
@@ -422,10 +441,21 @@ class Processor:
             predicted_ligand = [predicted_ligand]
         input_content = zip(predicted_ligand, predicted_ligand, input_ligand, input_protein)
 
-        with Pool(self.nthreads) as pool:
-            for inner_output in tqdm(
-                pool.imap(self.single_clash_fix, input_content), total=len(input_ligand) if type(input_ligand) is list else 1
-            ):
+        # On Windows, use single process to avoid multiprocessing issues
+        # On Linux/Mac, use multiprocessing for better performance
+        use_multiprocessing = platform.system() != 'Windows' and self.nthreads > 1
+        
+        if use_multiprocessing:
+            with Pool(self.nthreads) as pool:
+                for inner_output in tqdm(
+                    pool.imap(self.single_clash_fix, input_content), total=len(input_ligand) if type(input_ligand) is list else 1
+                ):
+                    if not inner_output:
+                        print("fail to clash fix")
+        else:
+            # Single process mode for Windows or when nthreads <= 1
+            for content in tqdm(input_content, total=len(input_ligand) if type(input_ligand) is list else 1):
+                inner_output = self.single_clash_fix(content)
                 if not inner_output:
                     print("fail to clash fix")
         return predicted_ligand

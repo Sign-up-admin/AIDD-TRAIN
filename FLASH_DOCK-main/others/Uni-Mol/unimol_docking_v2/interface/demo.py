@@ -1,10 +1,11 @@
 import lmdb
 import pickle
 import pandas as pd
-from predictor import UnimolPredictor
+from predictor import UnimolPredictor, is_wsl2
 from sklearn.metrics import roc_auc_score
 import argparse
 import os
+import platform
 from tqdm import tqdm
 import time
 
@@ -96,6 +97,27 @@ def main(args):
 
 
 def main_cli():
+    # 检测运行环境
+    is_wsl = is_wsl2()
+    is_windows = platform.system() == 'Windows'
+    is_linux = platform.system() == 'Linux' and not is_wsl
+    
+    if is_wsl:
+        print("=" * 60)
+        print("检测到 WSL2 环境")
+        print("=" * 60)
+        print("提示: 如果使用 Windows 路径，将自动转换为 WSL2 路径")
+        print("示例: E:\\data\\file.pdb -> /mnt/e/data/file.pdb")
+        print("=" * 60)
+        print()
+    elif is_windows:
+        print("=" * 60)
+        print("警告: 在 Windows 上运行可能遇到兼容性问题")
+        print("建议: 使用 WSL2 运行以获得更好的稳定性")
+        print("方法: 在 WSL2 中运行 python3 demo.py [参数]")
+        print("或使用: python run_in_wsl2.py [参数] (从 Windows 调用 WSL2)")
+        print("=" * 60)
+        print()
 
     parser = argparse.ArgumentParser(description='unimol docking run entry')
     parser.add_argument(

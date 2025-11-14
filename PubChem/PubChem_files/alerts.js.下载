@@ -1,0 +1,394 @@
+/* Global Alert v4.0.0 */
+/* For CHANGELOG, visit https://confluence.ncbi.nlm.nih.gov/x/KgnRCw */
+/*
+    WAG-1282: Use content from Wagtail CMS to display Global alert
+    Detailed information is at https://confluence.ncbi.nlm.nih.gov/x/zJYqEw
+  */
+
+galert = function (selectors, styles) {
+  // Global flag prevents repeat calls
+  if (typeof galert.complete != "undefined") {
+    return;
+  }
+
+  // localStorage key for alert dismissal
+  const alertLocalstorageKey = "ncbi_alert_info";
+
+  // duration of  alerts dismissal - 24 hours
+  const alertDismissalTimeout = 86400000;
+
+  // Takes a list of URL patterns and decides if the current URL matches any of the patterns
+  function decideMatch(patternList) {
+    let currentURL = document.location.host + document.location.pathname;
+    for (const item of patternList) {
+      let pattern = item.url_pattern.replace(/^\*+/, "");
+      if (pattern.endsWith("*")) {
+        pattern = pattern.replace(/\/*\**$/, "");
+        if (currentURL.includes(pattern)) {
+          return true;
+        }
+      } else {
+        pattern = pattern.replace(/\/*$/, "");
+        currentURL = currentURL.replace(/\/*$/, "");
+        if (currentURL.endsWith(pattern)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  // Find the node relative to which emergency and info alerts can be inserted
+  // Info alert: Set of selectors are provided as function parameters
+  // Choose selector, first nonempty selector wins
+  let sel = selectors.shift();
+  let nodeAboveAlert = document.querySelector(sel);
+  while (nodeAboveAlert === null && (sel = selectors.shift())) {
+    nodeAboveAlert = document.querySelector(sel);
+  }
+
+  // Get alerts from Wagtail database
+  async function getMessageData() {
+    // Handle alert simulation
+    const hash = window.location.hash;
+    if (hash === "#debug_alert" || hash === "#debug_info") {
+      // Simulate an emergency or info alert for debugging
+      return simulatedAlert(hash);
+    }
+    let cmsURL = getDataSource();
+    // since async process has not started yet, setting galert here
+    // will immediately return any other calls to galert()
+    galert.complete = false;
+    const response = await fetch(cmsURL);
+    if (!response.ok) {
+      const message = `An error has occured: ${response.status}`;
+      delete galert["complete"];
+      throw new Error(message);
+    }
+    const alerts = await response.json();
+    return alerts;
+  }
+
+  // Return data source based on domain
+  function getDataSource() {
+    const host = window.location.hostname;
+    if (
+      host.match(
+        /^(pubmed-d.ncbi.nlm|dev.ncbi.nlm|pmc-d.ncbi.nlm|dsubmit.ncbi.nlm|dev.nihms|dev-dataview.ncbi.nlm|test.ncbi.nlm|pubchemdev13.be-md.ncbi.nlm)\.nih\.gov/
+      )
+    ) {
+      return "https://cdndev.ncbi.nlm.nih.gov/ncbi-media/alerts/alerts.json";
+    } else {
+      return "https://cdn.ncbi.nlm.nih.gov/ncbi-media/alerts/alerts.json";
+    }
+  }
+
+  // Process list of alerts based on their type
+  function processAlerts(alertList, alertType) {
+    for (const alert of alertList) {
+      // Check localStorage to see if the alert had been dismissed in the past
+      // If alert and content hash matches do not display it
+      const uuid = alert.uuid;
+      const hash = alert.content_hash;
+
+      if (checkAlertDismissed(uuid, hash)) {
+        let isExcluded = false;
+        let isIncluded = true;
+        let excludedURLPattern = alert.excluded_urls;
+        let includedURLPattern = alert.included_urls;
+
+        // If there are no included patterns, all URLs are included
+        if (includedURLPattern.length === 0) isIncluded = true;
+        else isIncluded = decideMatch(includedURLPattern);
+        isExcluded = decideMatch(excludedURLPattern);
+
+        if (isExcluded === false && isIncluded === true) {
+          renderAlert(alert, alertType);
+        }
+      }
+    }
+  }
+
+  // Puts the alert message on the page
+  // Determines whether to display the dismiss button
+  function renderAlert(alert, alertType) {
+    let nodeDismiss = "";
+    if (alert.is_dismissible === true) {
+      nodeDismiss =
+        '<button type="button" class="close" aria-controls="${alert.uuid}" aria-label="Close Alert"><span aria-hidden="true">&nbsp;</span></button>';
+    }
+    let typeTag = alertType === "emergency" ? "shutdown" : "info";
+
+    const nodeAlert = `<div class="ncbi-alerts" id="${alert.uuid}" role="region" aria-label="Alert" data-hash="${alert.content_hash}">
+                        <div class="ncbi-alert__${typeTag}-outer">
+                          <h3>${alert.heading}</h3>
+                          <div class="ncbi-alert__${typeTag}-inner">
+                            ${alert.message}
+                          </div>
+                          ${nodeDismiss}
+                        </div>
+                      </div>`;
+
+    // Insert alert banner
+    if (nodeAboveAlert !== null)
+      nodeAboveAlert.insertAdjacentHTML("afterend", nodeAlert);
+    galert.complete = true;
+  }
+
+  // Call function to get data
+  // then display alerts and related CSS
+  getMessageData()
+    .then(function (alerts) {
+      let showAlert = false;
+      if ("info_alerts" in alerts && alerts.info_alerts.length >= 0) {
+        processAlerts(alerts.info_alerts, "info");
+        showAlert = true;
+      }
+      if ("emergency_alerts" in alerts && alerts.emergency_alerts.length >= 0) {
+        processAlerts(alerts.emergency_alerts, "emergency");
+        showAlert = true;
+      }
+      if (showAlert) {
+        // Create alert styles
+        const styleElement = document.createElement("style");
+        styleElement.textContent =
+          ".ncbi-alerts {width: 100%;}" +
+          ".ncbi-alerts .ncbi-alert__shutdown-outer { position: relative; background-color: #f4e3db; border-left: 8px solid #d54309;  background-image: url(\"data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' width='126' height='126' viewBox='0 0 126 126'%3E%3Cpath fill='%231B1B1B' d='M117.18,31.592 C111.585,22.006 103.995,14.416 94.409,8.821 C84.821,3.226 74.354,0.429 63.001,0.429 C51.649,0.429 41.18,3.226 31.593,8.821 C22.006,14.415 14.416,22.005 8.821,31.592 C3.225,41.179 0.428,51.649 0.428,63 C0.428,74.351 3.226,84.82 8.82,94.408 C14.415,103.992 22.005,111.584 31.592,117.179 C41.179,122.774 51.648,125.571 63,125.571 C74.352,125.571 84.822,122.774 94.408,117.179 C103.994,111.585 111.584,103.994 117.179,94.408 C122.773,84.82 125.57,74.35 125.57,63 C125.57,51.649 122.773,41.178 117.18,31.592 Z M73.43,102.025 C73.43,102.786 73.184,103.423 72.696,103.939 C72.208,104.455 71.61,104.712 70.903,104.712 L55.26,104.712 C54.554,104.712 53.929,104.441 53.386,103.898 C52.843,103.355 52.572,102.73 52.572,102.025 L52.572,86.546 C52.572,85.84 52.843,85.215 53.386,84.672 C53.929,84.129 54.554,83.858 55.26,83.858 L70.903,83.858 C71.61,83.858 72.209,84.116 72.696,84.631 C73.184,85.149 73.43,85.785 73.43,86.546 L73.43,102.025 Z M73.266,73.999 C73.211,74.542 72.927,75.018 72.412,75.425 C71.895,75.832 71.258,76.035 70.498,76.035 L55.425,76.035 C54.664,76.035 54.012,75.832 53.469,75.425 C52.926,75.018 52.654,74.542 52.654,73.999 L51.269,23.404 C51.269,22.751 51.54,22.263 52.083,21.937 C52.627,21.503 53.279,21.285 54.039,21.285 L71.965,21.285 C72.726,21.285 73.377,21.502 73.92,21.937 C74.463,22.263 74.733,22.752 74.733,23.404 L73.266,73.999 Z'/%3E%3C/svg%3E%0A\");}" +
+          ".ncbi-alerts .ncbi-alert__info-outer { position: relative; background-color: #e7f6f8; border-left: 8px solid #00bde3; background-image: url(\"data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' width='126' height='126' viewBox='0 0 126 126'%3E%3Cpath fill='%231B1B1B' d='M117.18,31.592 C111.585,22.006 103.995,14.416 94.409,8.821 C84.821,3.226 74.354,0.429 63.001,0.429 C51.649,0.429 41.179,3.226 31.593,8.821 C22.006,14.415 14.416,22.005 8.821,31.592 C3.225,41.179 0.428,51.649 0.428,63 C0.428,74.352 3.226,84.82 8.82,94.408 C14.415,103.993 22.005,111.584 31.592,117.179 C41.179,122.774 51.648,125.571 63,125.571 C74.352,125.571 84.822,122.774 94.408,117.179 C103.994,111.585 111.584,103.994 117.179,94.408 C122.773,84.821 125.57,74.351 125.57,63 C125.57,51.648 122.773,41.178 117.18,31.592 Z M52.572,16.071 C52.572,15.31 52.816,14.686 53.305,14.197 C53.794,13.709 54.419,13.464 55.179,13.464 L70.823,13.464 C71.583,13.464 72.208,13.709 72.695,14.197 C73.183,14.686 73.429,15.31 73.429,16.071 L73.429,29.107 C73.429,29.867 73.183,30.492 72.695,30.98 C72.208,31.469 71.583,31.713 70.823,31.713 L55.179,31.713 C54.419,31.713 53.794,31.469 53.305,30.98 C52.816,30.492 52.572,29.867 52.572,29.107 L52.572,16.071 Z M83.857,102.107 C83.857,102.867 83.611,103.492 83.124,103.979 C82.637,104.468 82.012,104.712 81.25,104.712 L44.75,104.712 C43.989,104.712 43.365,104.468 42.876,103.979 C42.387,103.491 42.143,102.866 42.143,102.106 L42.143,89.07 C42.143,88.308 42.387,87.685 42.876,87.196 C43.365,86.708 43.99,86.463 44.75,86.463 L52.572,86.463 L52.572,60.392 L44.75,60.392 C43.989,60.392 43.365,60.148 42.876,59.659 C42.387,59.171 42.143,58.546 42.143,57.785 L42.143,44.75 C42.143,43.989 42.387,43.365 42.876,42.876 C43.365,42.387 43.99,42.143 44.75,42.143 L70.823,42.143 C71.583,42.143 72.208,42.387 72.695,42.876 C73.183,43.365 73.429,43.989 73.429,44.75 L73.429,86.464 L81.249,86.464 C82.01,86.464 82.635,86.709 83.123,87.197 C83.61,87.685 83.856,88.31 83.856,89.071 L83.856,102.107 L83.857,102.107 Z'/%3E%3C/svg%3E\");}" +
+          '.ncbi-alerts div[class$="-outer"]{background-position: 28px 20px;  background-size: 32px 32px;  background-repeat: no-repeat;padding:20px 20px 20px 28px;}' +
+          '.ncbi-alerts div[class$="-inner"]{padding-left: 52px; padding-right: 52px;}' +
+          '@media (max-width: 639px){.ncbi-alerts div[class$="outer"]{background-position: 29px 20px;}.ncbi-alerts div[class$="-inner"]{padding-left: 0px; padding-right: 0px; padding-top: 0px;}}' +
+          ".ncbi-alerts button.close{cursor: pointer;position:absolute; top: 10px; right: 20px; width: 36px; height: 32px; border:0; background-color: transparent; background-image: url(\"data:image/svg+xml,%3Csvg version='1.2' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' overflow='visible' preserveAspectRatio='none' viewBox='0 0 24 24' width='32' height='32'%3E%3Cg%3E%3Cpath xmlns:default='http://www.w3.org/2000/svg' id='window-close' d='M14.9,16.42c-0.13,0.13-0.33,0.14-0.47,0.01c0,0-0.01-0.01-0.01-0.01L12,14l-2.43,2.42 c-0.13,0.13-0.33,0.14-0.47,0.01c0,0-0.01-0.01-0.01-0.01L7.58,14.9c-0.13-0.13-0.14-0.33-0.01-0.47c0,0,0.01-0.01,0.01-0.01L10,12 L7.58,9.57C7.45,9.45,7.44,9.24,7.57,9.1c0,0,0.01-0.01,0.01-0.01L9.1,7.58c0.13-0.13,0.33-0.14,0.47-0.01c0,0,0.01,0.01,0.01,0.01 L12,10l2.43-2.43c0.13-0.13,0.33-0.14,0.47-0.01c0,0,0.01,0.01,0.01,0.01l1.51,1.53c0.13,0.13,0.14,0.33,0.01,0.47 c0,0-0.01,0.01-0.01,0.01L14,12l2.43,2.43c0.13,0.13,0.14,0.33,0.01,0.47c0,0-0.01,0.01-0.01,0.01L14.9,16.42L14.9,16.42z M20.84,4.49C20.53,4.17,20.1,3.99,19.66,4H4.34C3.42,4,2.67,4.75,2.67,5.67l0,0v12.66c0,0.92,0.75,1.67,1.67,1.67l0,0h15.32 c0.92,0,1.67-0.75,1.67-1.67l0,0V5.67C21.34,5.23,21.16,4.8,20.84,4.49z' style='fill: rgb(33, 33, 33);' vector-effect='non-scaling-stroke'/%3E%3C/g%3E%3C/svg%3E\");background-size: 32px 32px; background-repeat:no-repeat;background-position:center center}" +
+          ".ncbi-alerts button.close:focus{ outline: 1px dotted #000000;}" +
+          "@media (max-width: 639px){.ncbi-alerts button.close{right: 0px;}}" +
+          ".ncbi-alerts p{margin-bottom: 0px; margin-top: 0px; font-size: 18px; line-height: 28px;}" +
+          ".ncbi-alerts .list-items > p{font-size: 0.94em; display: inline;}" +
+          ".ncbi-alerts .list-items > p a {font-weight: 700;}" +
+          ".ncbi-alerts .list-items > p:not(:last-child)::after{margin:0 8px;content:'|'}" +
+          "@media (min-width: 768px) and (max-width: 991px){.ncbi-alerts .list-items > p:nth-child(2)::after{content:'\\a'!important;white-space: pre;}}" +
+          "@media(max-width: 767px){.ncbi-alerts .list-items > p{display:block;}.ncbi-alerts .list-items > p::after{content:''!important;}}" +
+          ".ncbi-alerts h3 {margin: 2px 0 1rem 0; padding: 0 52px; color: #000; font-size: 20px; font-weight: 700; line-height: 1.3;}" +
+          "@media (max-width: 639px){.ncbi-alerts h3 {padding-left: 42px;}}";
+        document.head.appendChild(styleElement);
+        if (styles) {
+          document.head.insertAdjacentHTML("beforeend", styles);
+        }
+      }
+      /* Event handlers */
+      const alertDismiss = document.querySelectorAll(
+        ".ncbi-alerts button.close"
+      );
+      for (const button of alertDismiss) {
+        button.addEventListener("click", function (e) {
+          const nodeParent = button.closest(".ncbi-alerts");
+          const uuid = nodeParent.id;
+          const contentHash = nodeParent.dataset.hash;
+          nodeParent.remove();
+          setAlertDismissalInfo(uuid, contentHash);
+        });
+      }
+    })
+    .catch(function (error) {
+      console.log(error);
+      delete galert["complete"];
+    });
+
+  //get alert dismissal info, which is saved in
+  //localStorage when a user dismisses the alert
+  function getAlertDismissalInfo(messageId) {
+    let msginfo = false,
+      m = localStorage.getItem(alertLocalstorageKey);
+    if (!!m) {
+      m = JSON.parse(m);
+      if (m.hasOwnProperty(messageId)) {
+        msginfo = m[messageId];
+      }
+    }
+    return msginfo;
+  }
+
+  //set dismissal info in localStorage when user dismisses alert
+  // the stored data lifespan is dependent on alertDismissalTimeout
+  function setAlertDismissalInfo(messageId, contentHash) {
+    const d = new Date();
+    let msginfo = getAlertDismissalInfo(messageId);
+    if (msginfo === false) {
+      const currentmsginfo = localStorage.getItem(alertLocalstorageKey);
+      msginfo = !!currentmsginfo ? JSON.parse(currentmsginfo) : {};
+      msginfo[messageId] = {
+        message: contentHash,
+        until: d.getTime() + alertDismissalTimeout,
+      };
+      localStorage.setItem(alertLocalstorageKey, JSON.stringify(msginfo));
+    }
+  }
+
+  //Invalidate alert dismissal in localStorage
+  function removeAlertDismissal(messageId) {
+    let currentmsginfo = localStorage.getItem(alertLocalstorageKey);
+    if (!!currentmsginfo) {
+      msginfo = JSON.parse(currentmsginfo);
+      if (msginfo.hasOwnProperty(messageId)) {
+        delete msginfo[messageId];
+        localStorage.setItem(alertLocalstorageKey, JSON.stringify(msginfo));
+      }
+    }
+  }
+
+  // Alert dismissal override. The message must be shown if:
+  // (1) message text has changed
+  // (2) alertDismissalTimeout has elapsed
+  function checkAlertDismissed(messageId, contentHash) {
+    let show = false,
+      d = new Date(),
+      msginfo = getAlertDismissalInfo(messageId);
+    if (msginfo === false) {
+      show = true;
+    } else if (msginfo.message != contentHash || msginfo.until < d.getTime()) {
+      removeAlertDismissal(messageId);
+      show = true;
+    }
+    return show;
+  }
+
+  // Return simlated alert data
+  function simulatedAlert(hash) {
+    return {
+      emergency_alerts:
+        hash === "#debug_alert"
+          ? [
+              {
+                uuid: "debug-emergency",
+                content_hash: "debug-emergency-hash",
+                heading: "Debug Emergency Alert",
+                message:
+                  "<p>This is a simulated emergency alert for debugging.</p>",
+                is_dismissible: true,
+                excluded_urls: [],
+                included_urls: [],
+              },
+            ]
+          : [],
+      info_alerts:
+        hash === "#debug_info"
+          ? [
+              {
+                uuid: "debug-info",
+                content_hash: "debug-info-hash",
+                heading: "Debug Info Alert",
+                message: "<p>This is a simulated info alert for debugging.</p>",
+                is_dismissible: true,
+                excluded_urls: [],
+                included_urls: [],
+              },
+            ]
+          : [],
+    };
+  }
+};
+/* End of galert() */
+
+/* Common tasks to run after page load is completed */
+const common_tasks = () => {
+  /****************** NWS-5336 - Add opt-out modal to guide pages (ncbi_app=guide) ************/
+  (() => {
+    // NWS-7009: Load credret_opt_out_modal.js only if the user is logged in
+    let wcu = "";
+    const match = document.cookie.match(/(^| )WebCubbyUser=([^;]+)/);
+    if (match) {
+      wcu = decodeURIComponent(match[2]);
+    }
+    if (wcu && wcu.indexOf("logged-in=true") > -1) {
+      let host_subdomain = "cdn";
+      if (
+        window.location.hostname.match(
+          /^(pubmed-d.ncbi.nlm|dev.ncbi.nlm|pmc-d.ncbi.nlm|dsubmit.ncbi.nlm|dev.nihms)\.nih\.gov/
+        )
+      ) {
+        host_subdomain = "cdndev";
+      }
+      const script = document.createElement("script");
+      script.src =
+        "https://" +
+        host_subdomain +
+        ".ncbi.nlm.nih.gov/static/account/credret_opt_out_modal.js";
+      document.head.appendChild(script);
+    }
+  })();
+  /************* End of NWS-5336 Add opt-out modal to guide pages (ncbi_app=guide) ************/
+
+  /****************** NWS-6374 - Adding vulnerability policy link ************/
+  (() => {
+    if (
+      document.querySelector("a#vdp") === null &&
+      document.querySelector(
+        "a[href='https://www.hhs.gov/vulnerability-disclosure-policy/index.html']"
+      ) === null
+    ) {
+      let vulnerability_link = document.createElement("a");
+      vulnerability_link.setAttribute("id", "vdp");
+      vulnerability_link.setAttribute(
+        "href",
+        "https://www.hhs.gov/vulnerability-disclosure-policy/index.html"
+      );
+      vulnerability_link.append("HHS Vulnerability Disclosure");
+      let link_container = document.createElement("div");
+      link_container.setAttribute("style", "text-align:center");
+      link_container.append(vulnerability_link);
+      document.body.append(link_container);
+      if (ncbi && ncbi.sg && ncbi.sg.ping) {
+        ncbi.sg.ping([
+          "jsevent=vulnerability-link-added",
+          "url=" + window.location.href,
+        ]);
+      }
+    }
+  })();
+  /*************** End: NWS-6374 - Adding vulnerability policy link **********/
+
+  /***** PP-4241: Change all ftp protocol ncbi links to https protocol *****/
+  (function () {
+    // Function to replace FTP URLs with HTTPS
+    function replaceFTPWithHTTPS() {
+      const elements = document.querySelectorAll('a[href^="ftp://"]');
+      elements.forEach((element) => {
+        const oldHref = element.getAttribute("href");
+        const newHref = oldHref.replace(/^ftp:\/\//, "https://");
+        element.setAttribute("href", newHref);
+        if (ncbi && ncbi.sg && ncbi.sg.ping) {
+          ncbi.sg.ping([
+            "jsevent=ftplinks-updated",
+            "url=" + window.location.href,
+            "newhref=" + newHref,
+          ]);
+        }
+      });
+    }
+
+    // Retry the replacement function at intervals
+    function retryReplaceFTPWithHTTPS(retries, interval) {
+      const intervalId = setInterval(() => {
+        replaceFTPWithHTTPS();
+        retries--;
+        if (retries <= 0) {
+          clearInterval(intervalId);
+        }
+      }, interval);
+    }
+
+    // Call the retry function with 5 retries and 500ms interval
+    retryReplaceFTPWithHTTPS(10, 1000);
+  })();
+  /***** End: PP-4241: Use Change all ftp protocol ncbi links to https protocol *****/
+};
+
+/**** Running common tasks after page content is loaded ****/
+if (document.readyState === "loading") {
+  // Wait for DOM to load
+  document.addEventListener("DOMContentLoaded", function () {
+    common_tasks();
+  });
+} else {
+  // DOM is already loaded
+  common_tasks();
+}

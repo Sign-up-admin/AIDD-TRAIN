@@ -5,6 +5,7 @@ import subprocess
 import sys
 import time
 import requests
+import os
 
 
 def check_port(port: int) -> list:
@@ -78,6 +79,90 @@ def verify_service_stopped(url: str, service_name: str) -> bool:
         return True  # 服务已停止
 
 
+def stop_wsl_flashdock(wsl_distro: str = "Ubuntu-24.04", env_name: str = "flash_dock") -> bool:
+    """停止 WSL 中的 FlashDock streamlit 进程"""
+    if sys.platform != "win32":
+        return False
+    
+    print(f"\n[步骤] 停止 WSL 中的 FlashDock 服务...")
+    print(f"  WSL 发行版: {wsl_distro}")
+    print(f"  环境名称: {env_name}")
+    
+    try:
+        # 检查 WSL 是否可用
+        result = subprocess.run(
+            ["wsl", "--status"],
+            capture_output=True,
+            timeout=5
+        )
+        if result.returncode != 0:
+            print("  [INFO] WSL 不可用，跳过 WSL 进程停止")
+            return False
+        
+        # 查找 WSL 中运行 streamlit 的进程
+        find_cmd = (
+            f"ps aux | grep -E 'streamlit.*FlashDock|streamlit.*8501' | "
+            f"grep -v grep | awk '{{print $2}}'"
+        )
+        
+        result = subprocess.run(
+            ["wsl", "-d", wsl_distro, "bash", "-c", find_cmd],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+        
+        if result.returncode == 0 and result.stdout.strip():
+            pids = [pid.strip() for pid in result.stdout.strip().split('\n') if pid.strip()]
+            if pids:
+                print(f"  找到 {len(pids)} 个 streamlit 进程: {', '.join(pids)}")
+                
+                # 停止所有找到的进程
+                for pid in pids:
+                    kill_cmd = f"kill -9 {pid} 2>/dev/null || true"
+                    kill_result = subprocess.run(
+                        ["wsl", "-d", wsl_distro, "bash", "-c", kill_cmd],
+                        capture_output=True,
+                        text=True,
+                        timeout=5
+                    )
+                    if kill_result.returncode == 0:
+                        print(f"  [OK] 已停止 WSL 进程 {pid}")
+                    else:
+                        print(f"  [WARNING] 停止 WSL 进程 {pid} 失败")
+                
+                # 等待进程完全停止
+                time.sleep(2)
+                
+                # 再次检查是否还有进程
+                verify_result = subprocess.run(
+                    ["wsl", "-d", wsl_distro, "bash", "-c", find_cmd],
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+                
+                if verify_result.returncode == 0 and verify_result.stdout.strip():
+                    print("  [WARNING] 仍有 streamlit 进程在运行")
+                    return False
+                else:
+                    print("  [OK] WSL 中的 FlashDock 进程已全部停止")
+                    return True
+            else:
+                print("  [INFO] WSL 中没有找到运行中的 streamlit 进程")
+                return True
+        else:
+            print("  [INFO] WSL 中没有找到运行中的 streamlit 进程")
+            return True
+            
+    except subprocess.TimeoutExpired:
+        print("  [ERROR] WSL 命令执行超时")
+        return False
+    except Exception as e:
+        print(f"  [ERROR] 停止 WSL FlashDock 进程时出错: {e}")
+        return False
+
+
 def main():
     """主函数"""
     print("=" * 60)
@@ -91,7 +176,11 @@ def main():
     stop_service(8080, "COMPASS 服务")
     
     # 停止 FLASH-DOCK 前端 (端口 8501)
+    # 先停止 Windows 上的进程
     stop_service(8501, "FLASH-DOCK 前端")
+    
+    # 停止 WSL 中的 FlashDock 进程
+    stop_wsl_flashdock()
     
     # 等待所有进程完全停止
     print("\n等待所有进程完全停止...")

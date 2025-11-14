@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "stylelint-config-standard",
+    "stylelint-config-prettier"
+  ],
+  "rules": {
+    "color-hex-case": "lower",
+    "color-hex-length": "short",
+    "color-named": "never",
+    "selector-max-id": 1,
+    "selector-class-pattern": null,
+    "custom-property-pattern": null,
+    "value-no-vendor-prefix": null,
+    "property-no-vendor-prefix": null,
+    "at-rule-no-vendor-prefix": null,
+    "declaration-block-no-duplicate-properties": true,
+    "declaration-block-no-shorthand-property-overrides": true,
+    "no-duplicate-selectors": true,
+    "no-empty-source": null
+  },
+  "ignoreFiles": [
+    "**/*.min.css",
+    "**/node_modules/**",
+    "**/htmlcov/**",
+    "**/PubChem/**"
+  ]
+}
+
+
+

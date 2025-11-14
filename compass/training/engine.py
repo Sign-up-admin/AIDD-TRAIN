@@ -1,5 +1,6 @@
 import signal
 import sys
+import threading
 
 import torch
 from torch.amp import GradScaler
@@ -83,6 +84,12 @@ class Trainer:
 
     def setup_signal_handlers(self):
         """Handles graceful shutdown on SIGTERM or KeyboardInterrupt."""
+        
+        # Signal handlers can only be set in the main thread of the main interpreter
+        # Skip if we're not in the main thread (e.g., when running in a service worker thread)
+        if threading.current_thread() is not threading.main_thread():
+            self.logger.log("Skipping signal handler setup: not in main thread")
+            return
 
         def graceful_exit_handler(sig, _frame):
             log_msg = "\n\n--- "
@@ -103,8 +110,12 @@ class Trainer:
 
         # Only set signal handlers on non-Windows platforms
         if sys.platform != "win32":
-            signal.signal(signal.SIGTERM, graceful_exit_handler)
-            signal.signal(signal.SIGINT, graceful_exit_handler)
+            try:
+                signal.signal(signal.SIGTERM, graceful_exit_handler)
+                signal.signal(signal.SIGINT, graceful_exit_handler)
+            except ValueError as e:
+                # Signal handlers can only be set in the main thread
+                self.logger.log_warning(f"Could not set signal handlers: {e}")
 
     def resume(self):
         """Resumes training from a checkpoint if one exists."""

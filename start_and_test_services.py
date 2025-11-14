@@ -123,42 +123,103 @@ def start_compass_service(project_root: Path) -> Optional[subprocess.Popen]:
         print(f"Failed to start COMPASS service: {e}")
         return None
 
-def start_flashdock_service(project_root: Path) -> Optional[subprocess.Popen]:
-    """启动FLASH-DOCK前端服务"""
-    python_cmd = find_python_executable("flash_dock") or sys.executable
-    
-    env = os.environ.copy()
-    env['PYTHONPATH'] = str(project_root)
-    
-    flashdock_dir = project_root / "FLASH_DOCK-main"
-    cmd = [
-        python_cmd,
-        "-m", "streamlit", "run",
-        "FlashDock.py",
-        "--server.port", str(FLASHDOCK_PORT)
-    ]
+def check_wsl_flashdock_ready(wsl_distro: str = "Ubuntu-24.04", env_name: str = "flash_dock") -> bool:
+    """检查WSL FlashDock环境是否可用"""
+    if sys.platform != "win32":
+        return False
     
     try:
-        if sys.platform == 'win32':
-            process = subprocess.Popen(
-                cmd,
-                env=env,
-                cwd=str(flashdock_dir),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                creationflags=subprocess.CREATE_NEW_CONSOLE
-            )
-        else:
-            process = subprocess.Popen(
-                cmd,
-                env=env,
-                cwd=str(flashdock_dir),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-        return process
+        # 检查WSL是否可用
+        result = subprocess.run(
+            ["wsl", "--status"],
+            capture_output=True,
+            timeout=5
+        )
+        if result.returncode != 0:
+            return False
+        
+        # 检查WSL发行版是否存在（即使停止也会自动启动）
+        result = subprocess.run(
+            ["wsl", "-d", wsl_distro, "--", "echo", "test"],
+            capture_output=True,
+            timeout=10  # 增加超时时间，因为可能需要启动WSL
+        )
+        if result.returncode != 0:
+            return False
+        
+        # 检查conda环境是否存在
+        result = subprocess.run(
+            ["wsl", "-d", wsl_distro, "bash", "-c", 
+             f"conda env list | grep -q '^{env_name} '"],
+            capture_output=True,
+            timeout=10
+        )
+        return result.returncode == 0
     except Exception as e:
-        print(f"Failed to start FLASH-DOCK service: {e}")
+        print(f"[DEBUG] WSL检测失败: {e}")
+        return False
+
+
+def start_flashdock_service(project_root: Path) -> Optional[subprocess.Popen]:
+    """启动FLASH-DOCK前端服务（优先使用WSL环境）"""
+    flashdock_dir = project_root / "FLASH_DOCK-main"
+    
+    # WSL配置
+    wsl_distro = "Ubuntu-24.04"
+    wsl_env_name = "flash_dock"
+    wsl_project_root = "/mnt/e/Qinchaojun/AIDD-TRAIN"
+    wsl_flashdock_dir = f"{wsl_project_root}/FLASH_DOCK-main"
+    wsl_port = str(FLASHDOCK_PORT)
+    
+    # 优先尝试使用WSL环境
+    if sys.platform == "win32" and check_wsl_flashdock_ready(wsl_distro, wsl_env_name):
+        print(f"[INFO] Using WSL environment to start FLASH-DOCK")
+        print(f"  WSL Distribution: {wsl_distro}")
+        print(f"  Environment: {wsl_env_name}")
+        print(f"  Project Path: {wsl_project_root}")
+        
+        # 构建WSL命令
+        wsl_cmd = (
+            f"source ~/miniconda3/etc/profile.d/conda.sh 2>/dev/null || "
+            f"source ~/anaconda3/etc/profile.d/conda.sh 2>/dev/null; "
+            f"conda activate {wsl_env_name} && "
+            f"export PYTHONPATH={wsl_project_root} && "
+            f"cd {wsl_flashdock_dir} && "
+            f"streamlit run FlashDock.py --server.port {wsl_port} --server.address 0.0.0.0"
+        )
+        
+        cmd = ["wsl", "-d", wsl_distro, "bash", "-c", wsl_cmd]
+        
+        try:
+            if sys.platform == 'win32':
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    creationflags=subprocess.CREATE_NEW_CONSOLE
+                )
+            else:
+                process = subprocess.Popen(
+                    cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+            return process
+        except Exception as e:
+            print(f"Failed to start FLASH-DOCK service (WSL): {e}")
+            return None
+    else:
+        # WSL环境不可用，直接失败
+        print("=" * 60)
+        print("[ERROR] WSL FlashDock environment not available")
+        print("=" * 60)
+        print("FlashDock must run in WSL environment")
+        print()
+        print("Please follow these steps to set up WSL environment:")
+        print("1. Ensure WSL is installed and enabled")
+        print(f"2. Ensure WSL distribution '{wsl_distro}' exists")
+        print("3. Manually create conda environment and install dependencies in WSL")
+        print()
         return None
 
 def wait_for_service(url: str, name: str, max_wait: int = 30, interval: int = 2) -> bool:

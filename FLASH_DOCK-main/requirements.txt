@@ -14,6 +14,8 @@ py3dmol>=2.0.0
 stmol>=0.0.6
 streamlit-molstar
 streamlit-ketcher
+ipywidgets==7.6.3  # stmol 0.0.9 要求此版本
+ipython_genutils  # ipywidgets 7.6.3 需要此包（Python 3.12 中需要手动安装）
 
 # PyTorch（根据系统选择CPU或GPU版本）
 # CPU版本：
@@ -24,6 +26,8 @@ streamlit-ketcher
 # Uni-Mol 相关
 # 可以通过 pip 安装或从源码安装
 # pip install unimol_tools
+# Uni-Core: Uni-Mol的核心依赖，需要从GitHub安装
+# pip install git+https://github.com/dptech-corp/Uni-Core.git
 huggingface_hub  # 用于自动下载模型
 
 # 数据处理
@@ -35,6 +39,7 @@ biopandas==0.4.1
 pyyaml>=6.0
 addict>=2.4.0
 joblib>=1.1.0
+sh>=1.14.0  # streamlit-molstar依赖
 
 # 注意：
 # 1. 需要 Java 17-23 用于 P2Rank（系统级别安装）

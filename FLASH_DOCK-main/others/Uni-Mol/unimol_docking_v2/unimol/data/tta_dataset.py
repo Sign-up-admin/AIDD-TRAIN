@@ -5,6 +5,62 @@
 import numpy as np
 from functools import lru_cache
 from unicore.data import BaseWrapperDataset
+import platform
+import threading
+from collections import OrderedDict
+
+# Windows特定的缓存实现
+_is_windows = platform.system() == 'Windows'
+
+class ThreadSafeLRUCache:
+    """线程安全的LRU缓存实现（用于Windows）"""
+    def __init__(self, maxsize=128):
+        self.maxsize = maxsize
+        self.cache = OrderedDict()
+        self.lock = threading.Lock()
+    
+    def get(self, key):
+        with self.lock:
+            if key in self.cache:
+                # 移动到末尾（最近使用）
+                value = self.cache.pop(key)
+                self.cache[key] = value
+                return value
+            return None
+    
+    def put(self, key, value):
+        with self.lock:
+            if key in self.cache:
+                # 更新现有项
+                self.cache.pop(key)
+            elif len(self.cache) >= self.maxsize:
+                # 移除最旧的项
+                self.cache.popitem(last=False)
+            self.cache[key] = value
+    
+    def clear(self):
+        with self.lock:
+            self.cache.clear()
+
+def thread_safe_lru_cache(maxsize=128):
+    """线程安全的LRU缓存装饰器"""
+    if _is_windows:
+        # Windows上使用线程安全的缓存
+        def decorator(func):
+            cache = ThreadSafeLRUCache(maxsize=maxsize)
+            def wrapper(self, *args):
+                key = args
+                value = cache.get(key)
+                if value is None:
+                    value = func(self, *args)
+                    cache.put(key, value)
+                return value
+            wrapper.cache_clear = cache.clear
+            return wrapper
+        return decorator
+    else:
+        # 非Windows上使用标准的lru_cache
+        return lru_cache(maxsize=maxsize)
 
 
 class TTADockingPoseDataset(BaseWrapperDataset):
@@ -30,16 +86,27 @@ class TTADockingPoseDataset(BaseWrapperDataset):
         self.is_train = is_train
         self.conf_size = conf_size
         self.set_epoch(None)
+        
+        # Windows上使用线程安全的缓存
+        if _is_windows:
+            self._cache = ThreadSafeLRUCache(maxsize=16)
 
     def set_epoch(self, epoch, **unused):
         super().set_epoch(epoch)
         self.epoch = epoch
+        # 清除缓存（因为epoch改变了）
+        if _is_windows and hasattr(self, '_cache'):
+            self._cache.clear()
+        elif hasattr(self, '__cached_item__'):
+            # 清除lru_cache
+            if hasattr(self.__cached_item__, 'cache_clear'):
+                self.__cached_item__.cache_clear()
 
     def __len__(self):
         return len(self.dataset) * self.conf_size
 
-    @lru_cache(maxsize=16)
-    def __cached_item__(self, index: int, epoch: int):
+    def _get_item_impl(self, index: int, epoch: int):
+        """实际的数据获取实现（不包含缓存）"""
         smi_idx = index // self.conf_size
         coord_idx = index % self.conf_size
         atoms = np.array(self.dataset[smi_idx][self.atoms])
@@ -72,6 +139,21 @@ class TTADockingPoseDataset(BaseWrapperDataset):
             "pocket": pocket,
             # 'id': id,
         }
+
+    if _is_windows:
+        # Windows上使用线程安全的缓存
+        def __cached_item__(self, index: int, epoch: int):
+            key = (index, epoch)
+            value = self._cache.get(key)
+            if value is None:
+                value = self._get_item_impl(index, epoch)
+                self._cache.put(key, value)
+            return value
+    else:
+        # 非Windows上使用标准的lru_cache
+        @lru_cache(maxsize=16)
+        def __cached_item__(self, index: int, epoch: int):
+            return self._get_item_impl(index, epoch)
 
     def __getitem__(self, index: int):
         return self.__cached_item__(index, self.epoch)

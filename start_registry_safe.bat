@@ -16,14 +16,32 @@ echo.
 REM Set PYTHONPATH
 set "PYTHONPATH=%PROJECT_ROOT%"
 
-REM Check if conda is available
-where conda >nul 2>&1
-if %ERRORLEVEL% EQU 0 (
-    echo Using conda environment AIDDTRAIN...
-    start "Service Registry - Port 8500" cmd /k "cd /d \"%PROJECT_ROOT%\" && conda activate AIDDTRAIN && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500"
+REM Find conda environment AIDDTRAIN
+set "PYTHON_AIDDTRAIN="
+if exist "D:\conda_envs\AIDDTRAIN\python.exe" (
+    set "PYTHON_AIDDTRAIN=D:\conda_envs\AIDDTRAIN\python.exe"
+    echo Found AIDDTRAIN at D:\conda_envs
+) else if exist "C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe" (
+    set "PYTHON_AIDDTRAIN=C:\ProgramData\Anaconda3\envs\AIDDTRAIN\python.exe"
+    echo Found AIDDTRAIN at C:\ProgramData\Anaconda3
+) else if exist "%USERPROFILE%\anaconda3\envs\AIDDTRAIN\python.exe" (
+    set "PYTHON_AIDDTRAIN=%USERPROFILE%\anaconda3\envs\AIDDTRAIN\python.exe"
+    echo Found AIDDTRAIN at %USERPROFILE%\anaconda3
+)
+
+REM Check if conda is available and use it, otherwise use direct path
+if defined PYTHON_AIDDTRAIN (
+    echo Using conda environment AIDDTRAIN: %PYTHON_AIDDTRAIN%
+    start "Service Registry - Port 8500" cmd /k "cd /d \"%PROJECT_ROOT%\" && set PYTHONPATH=%PROJECT_ROOT% && \"%PYTHON_AIDDTRAIN%\" services\registry\server.py --host 0.0.0.0 --port 8500"
 ) else (
-    echo Using default python...
-    start "Service Registry - Port 8500" cmd /k "cd /d \"%PROJECT_ROOT%\" && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500"
+    where conda >nul 2>&1
+    if %ERRORLEVEL% EQU 0 (
+        echo Using conda activate AIDDTRAIN...
+        start "Service Registry - Port 8500" cmd /k "cd /d \"%PROJECT_ROOT%\" && conda activate AIDDTRAIN && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500"
+    ) else (
+        echo Using default python...
+        start "Service Registry - Port 8500" cmd /k "cd /d \"%PROJECT_ROOT%\" && set PYTHONPATH=%PROJECT_ROOT% && python services\registry\server.py --host 0.0.0.0 --port 8500"
+    )
 )
 
 echo.

@@ -141,7 +141,7 @@ if page == "主页":
 
     # 显示 logo.png
     if os.path.exists("./others/logo.png"):
-        st.image("./others/logo.png", width="stretch")
+        st.image("./others/logo.png", use_container_width=True)
     else:
         st.error("logo.png 文件未找到，请确保它与脚本位于同一目录下。")
 
@@ -189,80 +189,161 @@ elif page == "准备配体":
         ketcher_fix_script = """
         <script>
         (function() {
-            // 修复 streamlit_ketcher 的 eventBus 初始化问题
-            // 在组件初始化前，确保全局 eventBus 对象存在
+            // 立即创建 eventBus，不等待任何事件
+            function createEventBus() {
+                return {
+                    listeners: {},
+                    on: function(event, callback) {
+                        if (!this.listeners[event]) {
+                            this.listeners[event] = [];
+                        }
+                        this.listeners[event].push(callback);
+                    },
+                    emit: function(event, data) {
+                        if (this.listeners[event]) {
+                            this.listeners[event].forEach(callback => {
+                                try {
+                                    callback(data);
+                                } catch (e) {
+                                    console.error('EventBus callback error:', e);
+                                }
+                            });
+                        }
+                    },
+                    off: function(event, callback) {
+                        if (this.listeners[event]) {
+                            this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
+                        }
+                    }
+                };
+            }
+            
+            // 创建全局 eventBus 实例
+            var globalEventBus = createEventBus();
+            
+            // 在多个位置设置 eventBus，确保组件能找到它
             if (typeof window !== 'undefined') {
-                // 等待 DOM 加载完成
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initKetcherFix);
-                } else {
-                    initKetcherFix();
+                // 设置全局 eventBus（多个可能的名称）
+                window.__ketcher_eventBus = globalEventBus;
+                window.eventBus = globalEventBus;
+                window.ketcherEventBus = globalEventBus;
+                
+                // 确保在 document 上也有引用
+                if (typeof document !== 'undefined') {
+                    document.__ketcher_eventBus = globalEventBus;
+                    document.eventBus = globalEventBus;
                 }
                 
-                function initKetcherFix() {
-                    // 创建一个简单的事件总线实现
-                    if (!window.__ketcher_eventBus) {
-                        window.__ketcher_eventBus = {
-                            listeners: {},
-                            on: function(event, callback) {
-                                if (!this.listeners[event]) {
-                                    this.listeners[event] = [];
-                                }
-                                this.listeners[event].push(callback);
-                            },
-                            emit: function(event, data) {
-                                if (this.listeners[event]) {
-                                    this.listeners[event].forEach(callback => {
-                                        try {
-                                            callback(data);
-                                        } catch (e) {
-                                            console.error('EventBus callback error:', e);
-                                        }
-                                    });
-                                }
-                            },
-                            off: function(event, callback) {
-                                if (this.listeners[event]) {
-                                    this.listeners[event] = this.listeners[event].filter(cb => cb !== callback);
-                                }
+                // 使用 Object.defineProperty 确保 eventBus 始终可用
+                try {
+                    Object.defineProperty(window, 'eventBus', {
+                        get: function() {
+                            return globalEventBus;
+                        },
+                        set: function(value) {
+                            globalEventBus = value || createEventBus();
+                        },
+                        configurable: true
+                    });
+                } catch (e) {
+                    console.warn('Could not define eventBus property:', e);
+                }
+                
+                // 使用 Proxy 拦截对 undefined 对象的 eventBus 访问
+                try {
+                    var originalGet = Object.prototype.__lookupGetter__;
+                    var eventBusProxy = new Proxy({}, {
+                        get: function(target, prop) {
+                            if (prop === 'eventBus') {
+                                return globalEventBus;
                             }
-                        };
-                    }
+                            return undefined;
+                        }
+                    });
                     
-                    // 尝试修复组件内部的 eventBus 引用
-                    // 使用 MutationObserver 监听组件加载
-                    const observer = new MutationObserver(function(mutations) {
+                    // 将 eventBus 设置为全局可访问
+                    window.__streamlit_ketcher_eventBus = globalEventBus;
+                } catch (e) {
+                    console.warn('Could not create eventBus proxy:', e);
+                }
+                
+                // 监听 iframe 加载，确保 iframe 内部也能访问 eventBus
+                function setupIframeEventBus(iframe) {
+                    try {
+                        if (iframe.contentWindow) {
+                            var iframeWindow = iframe.contentWindow;
+                            iframeWindow.__ketcher_eventBus = globalEventBus;
+                            iframeWindow.eventBus = globalEventBus;
+                            iframeWindow.ketcherEventBus = globalEventBus;
+                            
+                            // 也在 iframe 的 document 上设置
+                            try {
+                                if (iframeWindow.document) {
+                                    iframeWindow.document.__ketcher_eventBus = globalEventBus;
+                                    iframeWindow.document.eventBus = globalEventBus;
+                                }
+                            } catch (e) {
+                                // 可能无法访问 iframe document
+                            }
+                        }
+                    } catch (e) {
+                        // 跨域限制，无法访问 iframe 内容
+                    }
+                }
+                
+                // 立即检查现有的 iframe
+                if (typeof document !== 'undefined') {
+                    var existingIframes = document.querySelectorAll('iframe');
+                    existingIframes.forEach(setupIframeEventBus);
+                    
+                    // 使用 MutationObserver 监听新添加的 iframe
+                    var observer = new MutationObserver(function(mutations) {
                         mutations.forEach(function(mutation) {
                             mutation.addedNodes.forEach(function(node) {
                                 if (node.nodeType === 1) { // Element node
-                                    // 查找所有 iframe（streamlit 组件通常在 iframe 中）
-                                    const iframes = node.querySelectorAll ? node.querySelectorAll('iframe') : [];
+                                    if (node.tagName === 'IFRAME') {
+                                        setupIframeEventBus(node);
+                                        // 等待 iframe 加载完成后再设置
+                                        node.addEventListener('load', function() {
+                                            setupIframeEventBus(node);
+                                        });
+                                    }
+                                    var iframes = node.querySelectorAll ? node.querySelectorAll('iframe') : [];
                                     iframes.forEach(function(iframe) {
-                                        try {
-                                            // 尝试访问 iframe 内容并修复 eventBus
-                                            if (iframe.contentWindow && iframe.contentWindow.__ketcher_eventBus === undefined) {
-                                                iframe.contentWindow.__ketcher_eventBus = window.__ketcher_eventBus;
-                                            }
-                                        } catch (e) {
-                                            // 跨域限制，无法访问 iframe 内容
-                                        }
+                                        setupIframeEventBus(iframe);
+                                        iframe.addEventListener('load', function() {
+                                            setupIframeEventBus(iframe);
+                                        });
                                     });
                                 }
                             });
                         });
                     });
                     
-                    observer.observe(document.body, {
-                        childList: true,
-                        subtree: true
-                    });
+                    if (document.body) {
+                        observer.observe(document.body, {
+                            childList: true,
+                            subtree: true
+                        });
+                    } else {
+                        // 如果 body 还没加载，等待 DOMContentLoaded
+                        document.addEventListener('DOMContentLoaded', function() {
+                            observer.observe(document.body, {
+                                childList: true,
+                                subtree: true
+                            });
+                            // 再次检查所有 iframe
+                            var allIframes = document.querySelectorAll('iframe');
+                            allIframes.forEach(setupIframeEventBus);
+                        });
+                    }
                 }
             }
         })();
         </script>
         """
 
-        # 注入修复脚本
+        # 注入修复脚本（必须在组件加载前执行）
         components.html(ketcher_fix_script, height=0)
 
         try:
@@ -279,10 +360,88 @@ elif page == "准备配体":
     # 如果 Ketcher 不可用或失败，提供文本输入作为备选方案
     if not smiles_input:
         smiles_input = st.text_input(
-            "输入 SMILES 字符串（如果上方编辑器不可用）",
-            placeholder="例如: CCO (乙醇), CC(=O)O (乙酸) 等",
-            help="请输入有效的 SMILES 字符串。SMILES 是一种用文本表示分子结构的化学标记法。",
+            "输入 SMILES 字符串、分子式或结构式（如果上方编辑器不可用）",
+            placeholder="例如: CCO (乙醇), CC(=O)O (乙酸), C9H8O4 (分子式), CH3COOC6H4COOH (结构式) 等",
+            help="支持格式：\n1. SMILES字符串（如：CCO, CC(=O)O）\n2. 分子式（如：C9H8O4）\n3. 结构式（如：CH3COOC6H4COOH）",
         )
+
+    def convert_formula_to_smiles(formula: str) -> str:
+        """
+        尝试将分子式或结构式转换为SMILES字符串
+        
+        支持的格式：
+        1. 标准分子式：C9H8O4
+        2. 结构式：CH3COOC6H4COOH
+        
+        Args:
+            formula: 分子式或结构式字符串
+            
+        Returns:
+            SMILES字符串，如果转换失败则返回None
+        """
+        # 首先尝试直接作为SMILES解析
+        mol = Chem.MolFromSmiles(formula)
+        if mol is not None:
+            return formula
+        
+        # 清理输入，移除空格
+        formula_clean = formula.strip().replace(" ", "")
+        
+        # 尝试一些常见的结构式转换规则（内置字典，无需网络）
+        # 例如：CH3COOC6H4COOH 可能是阿司匹林的结构式
+        common_structures = {
+            "CH3COOC6H4COOH": "CC(=O)OC1=CC=CC=C1C(=O)O",  # 阿司匹林
+            "C9H8O4": "CC(=O)OC1=CC=CC=C1C(=O)O",  # 阿司匹林（阿司匹林的分子式）
+        }
+        
+        if formula_clean.upper() in common_structures:
+            return common_structures[formula_clean.upper()]
+        
+        # 尝试通过PubChem API查找分子式对应的SMILES（需要网络连接和requests库）
+        try:
+            import requests
+        except ImportError:
+            # requests库未安装，跳过API调用
+            return None
+        
+        try:
+            # 检查是否是标准分子式格式（如C9H8O4）
+            # 标准分子式通常以元素符号开头，后跟数字
+            if re.match(r'^[A-Z][a-z]?\d*([A-Z][a-z]?\d*)*$', formula_clean):
+                # 使用PubChem API通过分子式查找
+                url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/formula/{formula_clean}/property/CanonicalSMILES/JSON"
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'PropertyTable' in data and 'Properties' in data['PropertyTable']:
+                        properties = data['PropertyTable']['Properties']
+                        if properties and len(properties) > 0:
+                            smiles = properties[0].get('CanonicalSMILES')
+                            if smiles:
+                                # 验证SMILES是否有效
+                                test_mol = Chem.MolFromSmiles(smiles)
+                                if test_mol is not None:
+                                    return smiles
+            else:
+                # 可能是结构式（如CH3COOC6H4COOH），尝试通过名称查找
+                # 这里我们尝试通过PubChem的名称搜索
+                url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{formula_clean}/property/CanonicalSMILES/JSON"
+                response = requests.get(url, timeout=10)
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'PropertyTable' in data and 'Properties' in data['PropertyTable']:
+                        properties = data['PropertyTable']['Properties']
+                        if properties and len(properties) > 0:
+                            smiles = properties[0].get('CanonicalSMILES')
+                            if smiles:
+                                test_mol = Chem.MolFromSmiles(smiles)
+                                if test_mol is not None:
+                                    return smiles
+        except Exception:
+            # API调用失败（网络问题、超时等），继续返回None
+            pass
+        
+        return None
 
     def process_and_show_mol(
         mol: Chem.Mol, uploaded_sdf_name: str = None, user_defined_filename: str = None
@@ -298,8 +457,43 @@ elif page == "准备配体":
 
         # 2D 可视化
         st.subheader("2D 分子结构")
-        svg = rdMolDraw2D.MolToSVG(mol, width=300, height=300)
-        st.markdown(svg, unsafe_allow_html=True)
+        try:
+            # 方法1: 尝试使用 PIL 图像显示（更可靠）
+            try:
+                img = Draw.MolToImage(mol, size=(400, 400))
+                if img:
+                    st.image(img, caption="2D 分子结构", use_container_width=False)
+                else:
+                    raise ValueError("图像生成失败")
+            except Exception as img_error:
+                # 方法2: 如果图像失败，尝试使用 SVG
+                st.warning(f"图像显示失败，尝试使用 SVG 方式: {str(img_error)}")
+                try:
+                    svg = rdMolDraw2D.MolToSVG(mol, width=400, height=400)
+                    if svg and len(svg) > 0:
+                        # 确保 SVG 格式正确，添加居中样式
+                        if svg.strip().startswith('<svg'):
+                            # 完整的 SVG，添加容器
+                            svg_html = f'<div style="text-align: center; margin: 10px 0;">{svg}</div>'
+                        else:
+                            # 不完整的 SVG，尝试包装
+                            svg_html = f'<div style="text-align: center; margin: 10px 0;">{svg}</div>'
+                        st.markdown(svg_html, unsafe_allow_html=True)
+                    else:
+                        raise ValueError("SVG 生成失败：返回空内容")
+                except Exception as svg_error:
+                    # 方法3: 如果都失败，显示错误信息
+                    st.error(f"2D 分子结构显示失败: {str(svg_error)}")
+                    st.info("请检查分子结构是否有效，或尝试使用其他可视化工具。")
+                    # 尝试显示分子的基本信息
+                    try:
+                        st.write(f"分子原子数: {mol.GetNumAtoms()}")
+                        st.write(f"分子键数: {mol.GetNumBonds()}")
+                    except:
+                        pass
+        except Exception as e:
+            st.error(f"2D 可视化过程中出现错误: {str(e)}")
+            st.info("请检查分子结构是否有效。")
 
         # 生成 3D 构象并能量优化
         mol_3d = Chem.AddHs(mol)
@@ -383,7 +577,19 @@ elif page == "准备配体":
     else:
         # 如果用户没有上传 SDF 或上传的 SDF 解析失败，则查看 Ketcher 中有没有输入 SMILES
         if smiles_input:
+            # 首先尝试直接作为SMILES解析
             mol_from_smiles = Chem.MolFromSmiles(smiles_input)
+            
+            # 如果直接解析失败，尝试作为分子式或结构式转换
+            if mol_from_smiles is None:
+                with st.spinner("正在尝试将分子式/结构式转换为SMILES..."):
+                    converted_smiles = convert_formula_to_smiles(smiles_input)
+                    if converted_smiles:
+                        st.info(f"已成功转换：{smiles_input} → {converted_smiles}")
+                        mol_from_smiles = Chem.MolFromSmiles(converted_smiles)
+                    else:
+                        st.warning(f"无法将 '{smiles_input}' 转换为有效的SMILES。尝试作为SMILES直接解析...")
+            
             if mol_from_smiles:
                 user_defined_filename = st.text_input(
                     "请输入保存时的 SDF 文件名（不含 .sdf）", value="my_mol"
@@ -394,7 +600,34 @@ elif page == "准备配体":
                     user_defined_filename=user_defined_filename,
                 )
             else:
-                st.error("SMILES 无效，请重新输入或确认格式。")
+                # 检查是否安装了requests库
+                try:
+                    import requests
+                    requests_available = True
+                except ImportError:
+                    requests_available = False
+                
+                error_msg = (
+                    f"无法解析输入 '{smiles_input}'。\n\n"
+                    "请确保输入格式正确：\n"
+                    "1. SMILES字符串（如：CCO, CC(=O)O）\n"
+                    "2. 标准分子式（如：C9H8O4）\n"
+                    "3. 结构式（如：CH3COOC6H4COOH）\n\n"
+                )
+                
+                if not requests_available:
+                    error_msg += (
+                        "⚠️ 注意：检测到未安装 `requests` 库，无法使用PubChem API查询分子式。\n"
+                        "如需支持分子式转换，请安装：`pip install requests`\n\n"
+                        "目前仅支持内置的常见分子式（如：C9H8O4, CH3COOC6H4COOH）。"
+                    )
+                else:
+                    error_msg += (
+                        "注意：分子式和结构式需要通过PubChem API查询，需要网络连接。\n"
+                        "如果网络不可用，请使用SMILES字符串或上传SDF文件。"
+                    )
+                
+                st.error(error_msg)
 
 # ------------------------------------------------------------------------------
 # 口袋预测
