@@ -16,17 +16,22 @@ sys.path.insert(0, str(flashdock_services))
 
 from service_manager import ServiceManager
 from compass_client import CompassClient
+from registry_url_helper import get_registry_url
 
 st.title("服务监控")
 st.write("监控COMPASS服务状态")
 
+# 自动检测注册中心 URL（在 WSL 中时使用 Windows 主机 IP）
+registry_url = get_registry_url()
+
 # Initialize service manager
 try:
-    service_manager = ServiceManager()
-    client = CompassClient()
-    st.success("已连接到服务注册中心")
+    service_manager = ServiceManager(registry_url=registry_url)
+    client = CompassClient(registry_url=registry_url)
+    st.success(f"已连接到服务注册中心 ({registry_url})")
 except Exception as e:
-    st.error(f"无法连接到服务注册中心: {e}")
+    st.error(f"无法连接到服务注册中心 ({registry_url}): {e}")
+    st.info("提示: 如果在 WSL 中运行，请确保可以访问 Windows 主机的注册中心")
     st.stop()
 
 # Refresh services

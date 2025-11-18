@@ -15,16 +15,21 @@ flashdock_services = Path(__file__).parent.parent / "services"
 sys.path.insert(0, str(flashdock_services))
 
 from compass_client import CompassClient
+from registry_url_helper import get_registry_url
 
 st.title("数据管理")
 st.write("管理COMPASS训练数据集")
 
+# 自动检测注册中心 URL（在 WSL 中时使用 Windows 主机 IP）
+registry_url = get_registry_url()
+
 # Initialize client
 try:
-    client = CompassClient()
-    st.success("已连接到COMPASS服务")
+    client = CompassClient(registry_url=registry_url)
+    st.success(f"已连接到COMPASS服务 ({registry_url})")
 except Exception as e:
-    st.error(f"无法连接到COMPASS服务: {e}")
+    st.error(f"无法连接到COMPASS服务 ({registry_url}): {e}")
+    st.info("提示: 如果在 WSL 中运行，请确保可以访问 Windows 主机的注册中心")
     st.stop()
 
 # Tabs
