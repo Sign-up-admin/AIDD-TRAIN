@@ -131,3 +131,27 @@ def temp_test_dir(tmp_path):
     test_dir.mkdir()
     return test_dir
 
+
+# E2E test fixtures
+@pytest.fixture(scope="session")
+def flashdock_url():
+    """FlashDock应用URL for E2E testing."""
+    return "http://localhost:8501"
+
+
+@pytest.fixture(scope="session")
+def compass_url():
+    """COMPASS服务URL for E2E testing."""
+    return "http://localhost:8080"
+
+
+@pytest.fixture(scope="session")
+def registry_url():
+    """服务注册中心URL for E2E testing."""
+    return "http://localhost:8500"
+
+
+@pytest.fixture
+def wait_time():
+    """等待时间（秒）for E2E testing."""
+    return 2.0

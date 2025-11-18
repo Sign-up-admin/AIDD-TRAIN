@@ -13,6 +13,8 @@ Service of Uni-Mol Docking V2 is avaiable at https://bohrium.dp.tech/apps/unimol
 Dependencies
 ------------
  - [Uni-Core](https://github.com/dptech-corp/Uni-Core), check its [Installation Documentation](https://github.com/dptech-corp/Uni-Core#installation).
+   - **If you encounter `ModuleNotFoundError: No module named 'unicore'`, see [INSTALL_UNICORE.md](INSTALL_UNICORE.md) for detailed installation instructions.**
+   - Quick install: `pip install git+https://github.com/dptech-corp/Uni-Core.git@stable`
  - rdkit==2022.9.3, install via `pip install rdkit-pypi==2022.9.3 -i https://pypi.tuna.tsinghua.edu.cn/simple/ --trusted-host pypi.tuna.tsinghua.edu.cn`
   - biopandas==0.4.1, install via `pip install biopandas tqdm scikit-learn`
 

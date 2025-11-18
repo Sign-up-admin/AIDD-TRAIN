@@ -1,0 +1,30 @@
+快速修复 unicore 模块缺失问题
+=====================================
+
+问题: ModuleNotFoundError: No module named 'unicore'
+
+解决方案（在 Linux/WSL2 系统上执行）:
+
+1. 激活 conda 环境:
+   conda activate flash_dock
+
+2. 安装 Uni-Core（选择以下任一方法）:
+
+   方法 A - 使用安装脚本（推荐）:
+   python install_unicore.py
+
+   方法 B - 直接安装:
+   pip install git+https://github.com/dptech-corp/Uni-Core.git@stable
+
+   方法 C - 如果网络问题，克隆后安装:
+   git clone https://github.com/dptech-corp/Uni-Core.git
+   cd Uni-Core
+   pip install -e .
+   cd ..
+
+3. 验证安装:
+   python -c "import unicore; print('OK')"
+   python -c "from unicore import checkpoint_utils, distributed_utils, options, utils; print('OK')"
+
+详细说明请查看: INSTALL_UNICORE.md
+

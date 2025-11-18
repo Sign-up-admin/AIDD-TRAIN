@@ -10,7 +10,7 @@ echo.
 
 REM 配置
 set WSL_DISTRO=Ubuntu-24.04
-set ENV_NAME=flash_dock_wsl
+set ENV_NAME=flash_dock
 set PROJECT_ROOT=/mnt/e/Qinchaojun/AIDD-TRAIN
 set FLASHDOCK_DIR=%PROJECT_ROOT%/FLASH_DOCK-main
 set PORT=8501

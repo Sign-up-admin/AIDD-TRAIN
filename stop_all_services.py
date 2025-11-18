@@ -7,6 +7,12 @@ import time
 import requests
 import os
 
+# 设置UTF-8编码
+if sys.platform == "win32":
+    import io
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 
 def check_port(port: int) -> list:
     """检查端口占用的进程"""
@@ -16,6 +22,8 @@ def check_port(port: int) -> list:
             ["netstat", "-ano"],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='ignore',
             timeout=5
         )
         
@@ -40,6 +48,8 @@ def stop_process(pid: str, service_name: str) -> bool:
             ["taskkill", "/F", "/PID", pid],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='ignore',
             timeout=5
         )
         

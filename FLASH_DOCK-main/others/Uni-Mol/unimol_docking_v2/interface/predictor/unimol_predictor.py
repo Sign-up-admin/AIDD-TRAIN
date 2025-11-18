@@ -118,6 +118,34 @@ class UnimolPredictor:
                 output_ligand_name:str, 
                 output_ligand_dir:str, 
                 batch_size:int):
+        # Check if unicore is installed
+        try:
+            import unicore
+            from unicore import checkpoint_utils, distributed_utils, options, utils
+        except ImportError as e:
+            error_msg = (
+                "\n" + "=" * 70 + "\n"
+                "错误: 未找到 unicore 模块\n"
+                "=" * 70 + "\n"
+                "Uni-Core 未安装。请按照以下步骤安装：\n\n"
+                "方法 1 (推荐):\n"
+                "  conda activate flash_dock\n"
+                "  pip install git+https://github.com/dptech-corp/Uni-Core.git@stable\n\n"
+                "方法 2 (如果方法 1 失败):\n"
+                "  git clone https://github.com/dptech-corp/Uni-Core.git\n"
+                "  cd Uni-Core\n"
+                "  pip install -e .\n"
+                "  cd ..\n\n"
+                "验证安装:\n"
+                "  python -c \"import unicore; print('OK')\"\n\n"
+                "详细说明请查看:\n"
+                "  FLASH_DOCK-main/others/Uni-Mol/unimol_docking_v2/INSTALL_UNICORE.md\n"
+                "  或运行安装脚本:\n"
+                "  python FLASH_DOCK-main/others/Uni-Mol/unimol_docking_v2/install_unicore.py\n"
+                "=" * 70
+            )
+            raise ImportError(error_msg) from e
+        
         # Check CUDA availability and environment
         is_windows = platform.system() == 'Windows'
         is_wsl = is_wsl2()

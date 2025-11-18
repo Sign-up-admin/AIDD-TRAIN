@@ -90,9 +90,14 @@ class CompassTestRunner:
                 "--cov-report=json:" + str(self.reports_dir / "coverage.json")
             ])
         
-        # JSON报告
+        # JSON报告（如果pytest-json-report可用）
         json_report = self.reports_dir / f"test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        cmd.extend(["--json-report", "--json-report-file", str(json_report)])
+        try:
+            import pytest_jsonreport
+            cmd.extend(["--json-report", "--json-report-file", str(json_report)])
+        except ImportError:
+            # pytest-json-report不可用，跳过JSON报告
+            json_report = None
         
         # 其他选项
         cmd.extend([
@@ -120,11 +125,11 @@ class CompassTestRunner:
                 "stderr": result.stderr,
                 "command": " ".join(cmd),
                 "timestamp": datetime.now().isoformat(),
-                "json_report": str(json_report) if json_report.exists() else None
+                "json_report": str(json_report) if json_report and json_report.exists() else None
             }
             
             # 读取JSON报告
-            if json_report.exists():
+            if json_report and json_report.exists():
                 try:
                     with open(json_report, 'r', encoding='utf-8') as f:
                         test_results["json_data"] = json.load(f)

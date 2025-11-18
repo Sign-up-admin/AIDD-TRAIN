@@ -34,6 +34,7 @@ huggingface_hub  # 用于自动下载模型
 scikit-learn>=1.0.0
 tqdm>=4.64.0
 biopandas==0.4.1
+lmdb>=1.4.0
 
 # 其他工具
 pyyaml>=6.0

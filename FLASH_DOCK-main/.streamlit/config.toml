@@ -4,6 +4,7 @@ backgroundColor = "#FFFFFF"
 secondaryBackgroundColor = "#F0F2F6"
 textColor = "#262730"
 font = "sans serif"
+base = "light"
 
 [server]
 # 启用 CORS 以兼容 XSRF 保护

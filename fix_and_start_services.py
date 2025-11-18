@@ -31,6 +31,8 @@ def check_port(port):
             ["netstat", "-ano"],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='ignore',
             timeout=5
         )
         processes = []
@@ -53,6 +55,8 @@ def stop_process(pid, service_name):
             ["taskkill", "/F", "/PID", pid],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='ignore',
             timeout=5
         )
         if result.returncode == 0:
@@ -108,6 +112,8 @@ def stop_wsl_flashdock(wsl_distro="Ubuntu-24.04", env_name="flash_dock"):
             ["wsl", "-d", wsl_distro, "bash", "-c", find_cmd],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='ignore',
             timeout=10
         )
         
@@ -123,6 +129,8 @@ def stop_wsl_flashdock(wsl_distro="Ubuntu-24.04", env_name="flash_dock"):
                         ["wsl", "-d", wsl_distro, "bash", "-c", kill_cmd],
                         capture_output=True,
                         text=True,
+                        encoding='utf-8',
+                        errors='ignore',
                         timeout=5
                     )
                     if kill_result.returncode == 0:
@@ -214,27 +222,37 @@ def start_registry_service(project_root, python_exe=None):
     ]
     
     print(f"启动服务注册中心: {' '.join(cmd)}")
+    print(f"工作目录: {project_root}")
+    print(f"PYTHONPATH: {env['PYTHONPATH']}")
     
-    if sys.platform == "win32":
-        subprocess.Popen(
-            cmd,
-            env=env,
-            cwd=str(project_root),
-            creationflags=subprocess.CREATE_NEW_CONSOLE,
-        )
-    else:
-        subprocess.Popen(cmd, env=env, cwd=str(project_root))
+    try:
+        if sys.platform == "win32":
+            process = subprocess.Popen(
+                cmd,
+                env=env,
+                cwd=str(project_root),
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+            )
+        else:
+            process = subprocess.Popen(cmd, env=env, cwd=str(project_root))
+        
+        print(f"[INFO] 服务进程已启动 (PID: {process.pid})")
+    except Exception as e:
+        print(f"[ERROR] 启动服务注册中心失败: {e}")
+        return False
     
-    # 等待服务启动
+    # 等待服务启动（增加等待时间和重试次数）
     print("等待服务注册中心启动...")
-    for i in range(10):
+    for i in range(15):  # 增加到15秒
         time.sleep(1)
         if check_service("http://localhost:8500/health", "服务注册中心", timeout=2):
             print("[OK] 服务注册中心已启动")
             return True
-        print(f"  等待中... ({i+1}/10)")
+        if (i + 1) % 3 == 0:  # 每3秒显示一次进度
+            print(f"  等待中... ({i+1}/15)")
     
-    print("[WARNING] 服务注册中心可能未完全启动，请检查")
+    print("[WARNING] 服务注册中心可能未完全启动，请检查新窗口中的错误信息")
+    print("提示: 服务可能仍在启动中，请稍后手动检查 http://localhost:8500/health")
     return False
 
 
@@ -255,27 +273,38 @@ def start_compass_service(project_root, python_exe=None):
     ]
     
     print(f"启动COMPASS服务: {' '.join(cmd)}")
+    print(f"工作目录: {project_root}")
+    print(f"PYTHONPATH: {env['PYTHONPATH']}")
     
-    if sys.platform == "win32":
-        subprocess.Popen(
-            cmd,
-            env=env,
-            cwd=str(project_root),
-            creationflags=subprocess.CREATE_NEW_CONSOLE,
-        )
-    else:
-        subprocess.Popen(cmd, env=env, cwd=str(project_root))
+    try:
+        if sys.platform == "win32":
+            process = subprocess.Popen(
+                cmd,
+                env=env,
+                cwd=str(project_root),
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+            )
+        else:
+            process = subprocess.Popen(cmd, env=env, cwd=str(project_root))
+        
+        print(f"[INFO] 服务进程已启动 (PID: {process.pid})")
+    except Exception as e:
+        print(f"[ERROR] 启动COMPASS服务失败: {e}")
+        return False
     
-    # 等待服务启动
+    # 等待服务启动（增加等待时间）
     print("等待COMPASS服务启动...")
-    for i in range(15):
+    print("提示: COMPASS服务启动可能需要更长时间，请耐心等待")
+    for i in range(20):  # 增加到20秒
         time.sleep(1)
         if check_service("http://localhost:8080/health", "COMPASS服务", timeout=2):
             print("[OK] COMPASS服务已启动")
             return True
-        print(f"  等待中... ({i+1}/15)")
+        if (i + 1) % 5 == 0:  # 每5秒显示一次进度
+            print(f"  等待中... ({i+1}/20)")
     
-    print("[WARNING] COMPASS服务可能未完全启动，请检查")
+    print("[WARNING] COMPASS服务可能未完全启动，请检查新窗口中的错误信息")
+    print("提示: 服务可能仍在启动中，请稍后手动检查 http://localhost:8080/health")
     return False
 
 
@@ -312,6 +341,8 @@ def check_wsl_flashdock_ready(wsl_distro="Ubuntu-24.04", env_name="flash_dock"):
         result = subprocess.run(
             ["wsl", "-d", wsl_distro, "bash", "-c", check_cmd],
             capture_output=True,
+            encoding='utf-8',
+            errors='ignore',
             timeout=10
         )
         return result.returncode == 0
@@ -342,6 +373,8 @@ def verify_wsl_dependencies(wsl_distro="Ubuntu-24.04", env_name="flash_dock"):
             ["wsl", "-d", wsl_distro, "bash", "-c", verify_cmd],
             capture_output=True,
             text=True,
+            encoding='utf-8',
+            errors='ignore',
             timeout=15
         )
         
@@ -366,6 +399,8 @@ def verify_wsl_dependencies(wsl_distro="Ubuntu-24.04", env_name="flash_dock"):
                     ["wsl", "-d", wsl_distro, "bash", "-c", install_cmd],
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
+                    errors='ignore',
                     timeout=60
                 )
                 
@@ -376,6 +411,8 @@ def verify_wsl_dependencies(wsl_distro="Ubuntu-24.04", env_name="flash_dock"):
                         ["wsl", "-d", wsl_distro, "bash", "-c", verify_cmd],
                         capture_output=True,
                         text=True,
+                        encoding='utf-8',
+                        errors='ignore',
                         timeout=15
                     )
                     if verify_result.returncode == 0 and "OK" in verify_result.stdout:
@@ -465,26 +502,39 @@ def start_flashdock_service(project_root, python_exe=None):
     
     try:
         if sys.platform == "win32":
+            # 使用UTF-8编码避免编码错误
             subprocess.Popen(
                 cmd,
                 creationflags=subprocess.CREATE_NEW_CONSOLE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
             )
         else:
-            subprocess.Popen(cmd)
+            subprocess.Popen(
+                cmd,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
     except Exception as e:
         print(f"[ERROR] 启动 FlashDock 服务失败: {e}")
         return False
     
-    # 等待服务启动
+    # 等待服务启动（增加等待时间，因为WSL启动可能较慢）
     print("等待FLASH-DOCK服务启动...")
-    for i in range(15):
+    print("提示: WSL环境启动可能需要更长时间，请耐心等待")
+    for i in range(30):  # 增加到30秒
         time.sleep(1)
-        if check_service("http://localhost:8501/_stcore/health", "FLASH-DOCK服务", timeout=2):
+        # 尝试多个健康检查端点
+        if (check_service("http://localhost:8501/_stcore/health", "FLASH-DOCK服务", timeout=2) or
+            check_service("http://localhost:8501", "FLASH-DOCK服务", timeout=2)):
             print("[OK] FLASH-DOCK服务已启动")
             return True
-        print(f"  等待中... ({i+1}/15)")
+        if (i + 1) % 5 == 0:  # 每5秒显示一次进度
+            print(f"  等待中... ({i+1}/30)")
     
-    print("[WARNING] FLASH-DOCK服务可能未完全启动，请检查")
+    print("[WARNING] FLASH-DOCK服务可能未完全启动")
+    print("提示: 请检查新打开的WSL窗口中的错误信息")
+    print("或者手动启动: start_flashdock_wsl.bat")
     return False
 
 

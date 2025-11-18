@@ -64,12 +64,11 @@ def start_registry_service(project_root: Path) -> Optional[subprocess.Popen]:
     
     try:
         if sys.platform == 'win32':
+            # 在新窗口中启动，不使用 PIPE（这样可以看到错误信息）
             process = subprocess.Popen(
                 cmd,
                 env=env,
                 cwd=str(project_root),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
                 creationflags=subprocess.CREATE_NEW_CONSOLE
             )
         else:
@@ -80,6 +79,7 @@ def start_registry_service(project_root: Path) -> Optional[subprocess.Popen]:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
+        print(f"[INFO] 服务注册中心进程已启动 (PID: {process.pid})")
         return process
     except Exception as e:
         print(f"Failed to start registry service: {e}")
@@ -102,12 +102,11 @@ def start_compass_service(project_root: Path) -> Optional[subprocess.Popen]:
     
     try:
         if sys.platform == 'win32':
+            # 在新窗口中启动，不使用 PIPE（这样可以看到错误信息）
             process = subprocess.Popen(
                 cmd,
                 env=env,
                 cwd=str(project_root),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
                 creationflags=subprocess.CREATE_NEW_CONSOLE
             )
         else:
@@ -118,6 +117,8 @@ def start_compass_service(project_root: Path) -> Optional[subprocess.Popen]:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
+        print(f"[INFO] COMPASS 服务进程已启动 (PID: {process.pid})")
+        print(f"[INFO] 服务将在新窗口中运行，请查看新窗口中的日志")
         return process
     except Exception as e:
         print(f"Failed to start COMPASS service: {e}")
@@ -147,10 +148,14 @@ def check_wsl_flashdock_ready(wsl_distro: str = "Ubuntu-24.04", env_name: str = 
         if result.returncode != 0:
             return False
         
-        # 检查conda环境是否存在
+        # 检查conda环境是否存在（需要先初始化conda）
+        check_cmd = (
+            f"source ~/miniconda3/etc/profile.d/conda.sh 2>/dev/null || "
+            f"source ~/anaconda3/etc/profile.d/conda.sh 2>/dev/null; "
+            f"conda env list | grep -q '^{env_name} '"
+        )
         result = subprocess.run(
-            ["wsl", "-d", wsl_distro, "bash", "-c", 
-             f"conda env list | grep -q '^{env_name} '"],
+            ["wsl", "-d", wsl_distro, "bash", "-c", check_cmd],
             capture_output=True,
             timeout=10
         )
@@ -232,10 +237,13 @@ def wait_for_service(url: str, name: str, max_wait: int = 30, interval: int = 2)
         if is_running:
             print(f"[OK] {name} is running")
             return True
+        elapsed = int(time.time() - start_time)
         time.sleep(interval)
-        print(f"  Still waiting... ({int(time.time() - start_time)}s)")
+        # 每10秒显示一次进度，避免输出过多
+        if elapsed % 10 == 0 or elapsed < 5:
+            print(f"  Still waiting... ({elapsed}/{max_wait}s)")
     
-    print(f"[FAIL] {name} failed to start within {max_wait} seconds")
+    print(f"[WARNING] {name} may still be starting (waited {max_wait} seconds)")
     return False
 
 def main():
@@ -273,12 +281,16 @@ def main():
     # 启动COMPASS服务
     if not compass_running:
         print("\n启动COMPASS服务...")
+        print("提示: COMPASS 服务启动可能需要更长时间（30-60秒），请耐心等待")
         process = start_compass_service(project_root)
         if process:
             processes.append(("COMPASS", process))
-            if not wait_for_service(f"{COMPASS_URL}/health", "COMPASS", max_wait=30):
-                print("[ERROR] Failed to start COMPASS service")
-                return 1
+            # 增加等待时间到60秒，因为 COMPASS 服务启动较慢
+            if not wait_for_service(f"{COMPASS_URL}/health", "COMPASS", max_wait=60):
+                print("[WARNING] COMPASS 服务可能仍在启动中")
+                print("提示: 请检查新窗口中的服务状态和错误信息")
+                print("如果服务正常启动，可以稍后手动检查 http://localhost:8080/health")
+                # 不直接返回错误，让服务继续尝试启动
         else:
             print("[ERROR] Failed to start COMPASS service")
             return 1

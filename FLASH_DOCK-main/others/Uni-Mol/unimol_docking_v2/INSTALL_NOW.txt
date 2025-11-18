@@ -1,0 +1,31 @@
+═══════════════════════════════════════════════════════════════════════
+  立即安装 Uni-Core - 解决 ModuleNotFoundError: No module named 'unicore'
+═══════════════════════════════════════════════════════════════════════
+
+在 Linux 系统上执行以下命令：
+
+1. 激活 conda 环境:
+   conda activate flash_dock
+
+2. 安装 Uni-Core（复制并执行）:
+   pip install git+https://github.com/dptech-corp/Uni-Core.git@stable
+
+3. 验证安装:
+   python -c "import unicore; print('✓ 安装成功！')"
+
+═══════════════════════════════════════════════════════════════════════
+
+如果上述命令失败，尝试：
+
+方法 A - 使用安装脚本:
+   cd /mnt/e/Qinchaojun/AIDD-TRAIN/FLASH_DOCK-main/others/Uni-Mol/unimol_docking_v2
+   python install_unicore.py
+
+方法 B - 克隆后安装:
+   git clone https://github.com/dptech-corp/Uni-Core.git
+   cd Uni-Core
+   pip install -e .
+   cd ..
+
+═══════════════════════════════════════════════════════════════════════
+

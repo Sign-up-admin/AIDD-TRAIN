@@ -1309,6 +1309,7 @@ elif page == "预测亲和力":
 # ------------------------------------------------------------------------------
 elif page == "数据管理":
     import sys
+    import os
     from pathlib import Path
 
     # Add parent directory to path
@@ -1323,12 +1324,73 @@ elif page == "数据管理":
     st.title("数据管理")
     st.write("管理COMPASS训练数据集")
 
+    # 自动检测注册中心 URL（在 WSL 中时使用 Windows 主机 IP）
+    def get_registry_url():
+        """获取注册中心 URL，在 WSL 中自动检测 Windows 主机 IP"""
+        # 首先检查环境变量
+        registry_url = os.getenv("REGISTRY_URL", None)
+        if registry_url:
+            return registry_url
+        
+        # 如果在 WSL 中，尝试获取 Windows 主机 IP
+        if os.path.exists("/etc/resolv.conf"):
+            import requests
+            import subprocess
+            
+            # 方法1: 从路由表获取默认网关（最可靠）
+            try:
+                result = subprocess.run(
+                    ["ip", "route", "show", "default"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2
+                )
+                if result.returncode == 0:
+                    for line in result.stdout.split('\n'):
+                        if 'default via' in line:
+                            parts = line.split()
+                            if len(parts) >= 3:
+                                gateway_ip = parts[2]
+                                # 测试网关 IP 是否可访问注册中心
+                                test_url = f"http://{gateway_ip}:8500/health"
+                                try:
+                                    response = requests.get(test_url, timeout=2)
+                                    if response.status_code == 200:
+                                        return f"http://{gateway_ip}:8500"
+                                except:
+                                    pass
+            except:
+                pass
+            
+            # 方法2: 从 /etc/resolv.conf 获取 nameserver
+            try:
+                with open("/etc/resolv.conf", "r") as f:
+                    for line in f:
+                        if line.startswith("nameserver"):
+                            windows_ip = line.split()[1]
+                            # 测试 Windows IP 是否可访问
+                            test_url = f"http://{windows_ip}:8500/health"
+                            try:
+                                response = requests.get(test_url, timeout=2)
+                                if response.status_code == 200:
+                                    return f"http://{windows_ip}:8500"
+                            except:
+                                pass
+            except:
+                pass
+        
+        # 默认使用 localhost
+        return "http://localhost:8500"
+
+    registry_url = get_registry_url()
+
     # Initialize client
     try:
-        client = CompassClient()
-        st.success("已连接到COMPASS服务")
+        client = CompassClient(registry_url=registry_url)
+        st.success(f"已连接到COMPASS服务 ({registry_url})")
     except Exception as e:
-        st.error(f"无法连接到COMPASS服务: {e}")
+        st.error(f"无法连接到COMPASS服务 ({registry_url}): {e}")
+        st.info("提示: 如果在 WSL 中运行，请确保可以访问 Windows 主机的注册中心")
         st.stop()
 
     # Tabs
@@ -1408,6 +1470,7 @@ elif page == "数据管理":
 # ------------------------------------------------------------------------------
 elif page == "服务监控":
     import sys
+    import os
     from pathlib import Path
 
     # Add parent directory to path
@@ -1423,13 +1486,84 @@ elif page == "服务监控":
     st.title("服务监控")
     st.write("监控COMPASS服务状态")
 
+    # 自动检测注册中心 URL（在 WSL 中时使用 Windows 主机 IP）
+    def get_registry_url():
+        """获取注册中心 URL，在 WSL 中自动检测 Windows 主机 IP"""
+        # 首先检查环境变量
+        registry_url = os.getenv("REGISTRY_URL", None)
+        if registry_url:
+            return registry_url
+        
+        # 如果在 WSL 中，尝试获取 Windows 主机 IP
+        if os.path.exists("/etc/resolv.conf"):
+            import requests
+            import subprocess
+            
+            # 方法1: 从路由表获取默认网关（最可靠）
+            try:
+                result = subprocess.run(
+                    ["ip", "route", "show", "default"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2
+                )
+                if result.returncode == 0:
+                    for line in result.stdout.split('\n'):
+                        if 'default via' in line:
+                            parts = line.split()
+                            if len(parts) >= 3:
+                                gateway_ip = parts[2]
+                                # 测试网关 IP 是否可访问注册中心
+                                test_url = f"http://{gateway_ip}:8500/health"
+                                try:
+                                    response = requests.get(test_url, timeout=2)
+                                    if response.status_code == 200:
+                                        return f"http://{gateway_ip}:8500"
+                                except:
+                                    pass
+            except:
+                pass
+            
+            # 方法2: 从 /etc/resolv.conf 获取 nameserver
+            try:
+                with open("/etc/resolv.conf", "r") as f:
+                    for line in f:
+                        if line.startswith("nameserver"):
+                            windows_ip = line.split()[1]
+                            # 测试 Windows IP 是否可访问
+                            test_url = f"http://{windows_ip}:8500/health"
+                            try:
+                                response = requests.get(test_url, timeout=2)
+                                if response.status_code == 200:
+                                    return f"http://{windows_ip}:8500"
+                            except:
+                                pass
+            except:
+                pass
+        
+        # 默认使用 localhost
+        return "http://localhost:8500"
+
+    registry_url = get_registry_url()
+    
+    # 显示调试信息
+    with st.expander("调试信息", expanded=False):
+        st.write(f"检测到的注册中心 URL: {registry_url}")
+        if os.path.exists("/etc/resolv.conf"):
+            try:
+                with open("/etc/resolv.conf", "r") as f:
+                    st.code(f.read())
+            except:
+                pass
+
     # Initialize service manager
     try:
-        service_manager = ServiceManager()
-        client = CompassClient()
-        st.success("已连接到服务注册中心")
+        service_manager = ServiceManager(registry_url=registry_url)
+        client = CompassClient(registry_url=registry_url)
+        st.success(f"已连接到服务注册中心 ({registry_url})")
     except Exception as e:
-        st.error(f"无法连接到服务注册中心: {e}")
+        st.error(f"无法连接到服务注册中心 ({registry_url}): {e}")
+        st.info("提示: 如果在 WSL 中运行，请确保可以访问 Windows 主机的注册中心")
         st.stop()
 
     # Refresh services

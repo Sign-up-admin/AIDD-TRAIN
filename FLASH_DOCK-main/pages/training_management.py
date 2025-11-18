@@ -1061,8 +1061,10 @@ with tab2:
             for task in tasks:
                 status_icon = status_colors.get(task["status"], "❓")
                 progress_info = task.get("progress", {})
-                current_epoch = progress_info.get("current_epoch", 0)
-                total_epochs = progress_info.get(
+                # Progress structure: {"training": {"current_epoch": ..., "total_epochs": ...}, ...}
+                training_info = progress_info.get("training", {})
+                current_epoch = training_info.get("current_epoch", 0)
+                total_epochs = training_info.get(
                     "total_epochs", task.get("config", {}).get("epochs", 0)
                 )
 
@@ -1325,9 +1327,10 @@ with tab3:
             progress = task.get("progress", {})
 
             if progress:
-                # Progress metrics
-                current_epoch = progress.get("current_epoch", 0)
-                total_epochs = progress.get("total_epochs", config.get("epochs", 0))
+                # Progress structure: {"training": {"current_epoch": ..., "total_epochs": ...}, ...}
+                training_info = progress.get("training", {})
+                current_epoch = training_info.get("current_epoch", 0)
+                total_epochs = training_info.get("total_epochs", config.get("epochs", 0))
 
                 if total_epochs > 0:
                     progress_percent = (current_epoch / total_epochs) * 100
