@@ -71,6 +71,7 @@ import json
 import tempfile  # 用于创建临时文件
 import re
 import tqdm
+import shutil  # 用于检查命令是否存在
 
 # 如果没有在 session_state 中记录 page，就初始化一个默认值
 if "page" not in st.session_state:
@@ -642,11 +643,36 @@ elif page == "口袋预测":
     uploaded_pdb_filename = None
 
     if option == "上传蛋白质":
+        # 首先检查Java环境
+        java_available = shutil.which("java") is not None
+        java_home = os.environ.get("JAVA_HOME", None)
+        
+        if not java_available and not java_home:
+            st.warning("⚠️ **Java环境未找到** - 请先安装Java 17-23才能使用口袋预测功能")
+            st.info("💡 提示：点击"加载示例文件"选项可以查看详细的Java安装指南")
+        
+        # 检查p2rank目录是否存在
+        p2rank_home = "./others/p2rank_2.5/"
+        if not os.path.exists(p2rank_home):
+            st.error(f"❌ **P2Rank工具未找到**：`{p2rank_home}`")
+            st.stop()
+        
         try:
             # 用户上传蛋白质（只出现一次，不会再弹二次上传）
             pdb_file = st.file_uploader("请上传蛋白质文件 (.pdb)", type=["pdb"])
 
             if pdb_file is not None:
+                # 再次检查Java环境（用户可能在上传文件时安装了Java）
+                if not java_available and not java_home:
+                    st.error("❌ **无法执行预测：Java环境未找到**")
+                    st.markdown("""
+                    **请先安装Java 17-23：**
+                    1. 下载地址：https://adoptium.net/
+                    2. 安装后重启Streamlit应用
+                    3. 验证：在命令行运行 `java -version`
+                    """)
+                    st.stop()
+                
                 # 记下上传的名称
                 uploaded_pdb_filename = pdb_file.name
 
@@ -656,49 +682,183 @@ elif page == "口袋预测":
                     tmp.flush()
                     file_path = tmp.name
 
-                # 调用 p2rank (或其他函数) ，读取该临时文件进行预测
-                selected = select_pocket_from_local_protein(
-                    file_path, p2rank_home="./others/p2rank_2.5/"
-                )
-                # 预测完成后删除该临时文件
-                os.remove(file_path)
+                try:
+                    # 调用 p2rank (或其他函数) ，读取该临时文件进行预测
+                    selected = select_pocket_from_local_protein(
+                        file_path, p2rank_home=p2rank_home
+                    )
+                    # 预测完成后删除该临时文件
+                    os.remove(file_path)
 
-                if selected:
-                    pocket = selected
-                    st.write("预测到的口袋信息: ", pocket)
+                    if selected:
+                        pocket = selected
+                        st.write("预测到的口袋信息: ", pocket)
 
-                    # 如果 rank=1 的口袋
-                    if pocket["rank"] == "1":
-                        # 如果上传了文件名，则用之，否则用 pocket['name']
-                        final_name = (
-                            uploaded_pdb_filename if uploaded_pdb_filename else pocket["name"]
-                        )
-                        data = {
-                            "Pocket Name": [final_name],
-                            "Center": [pocket["center"]],
-                        }
-                        df = pd.DataFrame(data)
+                        # 如果 rank=1 的口袋
+                        if pocket["rank"] == "1":
+                            # 如果上传了文件名，则用之，否则用 pocket['name']
+                            final_name = (
+                                uploaded_pdb_filename if uploaded_pdb_filename else pocket["name"]
+                            )
+                            data = {
+                                "Pocket Name": [final_name],
+                                "Center": [pocket["center"]],
+                            }
+                            df = pd.DataFrame(data)
 
-                        st.write("最优口袋信息预览：")
-                        st.dataframe(df)
+                            st.write("最优口袋信息预览：")
+                            st.dataframe(df)
 
-                        # 用户点击按钮后，才将CSV保存到指定文件夹
-                        if st.button("保存 best_pocket.csv"):
-                            os.makedirs("./Result/Predict_Pocket", exist_ok=True)
-                            csv_path = "./Result/Predict_Pocket/best_pocket.csv"
-                            df.to_csv(csv_path, index=False)
-                            st.success(f"best_pocket.csv 已保存到 {csv_path}")
+                            # 用户点击按钮后，才将CSV保存到指定文件夹
+                            if st.button("保存 best_pocket.csv"):
+                                os.makedirs("./Result/Predict_Pocket", exist_ok=True)
+                                csv_path = "./Result/Predict_Pocket/best_pocket.csv"
+                                df.to_csv(csv_path, index=False)
+                                st.success(f"best_pocket.csv 已保存到 {csv_path}")
+                except FileNotFoundError as e:
+                    if "java" in str(e).lower() or "java.exe" in str(e):
+                        st.error("❌ **Java执行失败**")
+                        st.markdown(f"""
+                        **错误详情：** `{str(e)}`
+                        
+                        **解决方案：**
+                        1. 确保Java 17-23已正确安装
+                        2. 将Java的bin目录添加到PATH环境变量
+                        3. 重启Streamlit应用
+                        """)
+                    else:
+                        st.error(f"❌ **文件未找到错误**：{str(e)}")
+                except subprocess.CalledProcessError as e:
+                    st.error("❌ **P2Rank执行失败**")
+                    st.markdown(f"""
+                    **错误详情：**
+                    - 返回码：{e.returncode}
+                    - 错误信息：{str(e)}
+                    
+                    **可能的原因：**
+                    1. Java版本不兼容（需要Java 17-23）
+                    2. PDB文件格式问题
+                    3. 系统资源不足
+                    """)
+                    if hasattr(e, 'stderr') and e.stderr:
+                        with st.expander("查看详细错误信息"):
+                            st.code(e.stderr, language="text")
+                finally:
+                    # 确保临时文件被删除
+                    if os.path.exists(file_path):
+                        try:
+                            os.remove(file_path)
+                        except:
+                            pass
 
         except Exception as e:
-            st.warning(f"处理上传蛋白时发生错误: {e}")
+            error_msg = str(e)
+            st.error(f"❌ **处理上传蛋白时发生错误**")
+            
+            if "java" in error_msg.lower():
+                st.markdown(f"""
+                **错误信息：** `{error_msg}`
+                
+                **问题诊断：**
+                这是一个Java相关的错误。请确保：
+                1. Java 17-23已正确安装
+                2. Java在系统PATH中
+                3. 已重启Streamlit应用
+                """)
+            else:
+                st.markdown(f"""
+                **错误信息：** `{error_msg}`
+                
+                **请检查：**
+                1. 上传的文件是否为有效的PDB格式
+                2. 文件是否完整
+                3. 系统资源是否充足
+                """)
+            
+            import traceback
+            with st.expander("查看完整错误堆栈"):
+                st.code(traceback.format_exc(), language="python")
 
     elif option == "加载示例文件":
+        # 首先检查Java环境
+        java_available = shutil.which("java") is not None
+        java_home = os.environ.get("JAVA_HOME", None)
+        
+        if not java_available and not java_home:
+            st.error("❌ **Java环境未找到**")
+            st.markdown("""
+            **问题诊断：**
+            - 系统无法找到Java可执行文件
+            - JAVA_HOME环境变量未设置
+            
+            **解决方案：**
+            1. **安装Java 17-23**（推荐Java 17或Java 21）：
+               - 下载地址：https://adoptium.net/ 或 https://www.oracle.com/java/technologies/downloads/
+               - 选择适合Windows的JDK版本（建议选择LTS版本）
+            
+            2. **配置环境变量**：
+               - 将Java的`bin`目录添加到系统PATH环境变量
+               - 或者设置`JAVA_HOME`环境变量指向Java安装目录
+            
+            3. **验证安装**：
+               - 打开新的命令行窗口
+               - 运行 `java -version` 应该显示Java版本信息
+            
+            4. **重启应用**：
+               - 安装Java后，需要重启Streamlit应用才能生效
+            """)
+            st.stop()
+        elif not java_available and java_home:
+            # JAVA_HOME设置了但java命令不可用
+            java_exe = os.path.join(java_home, "bin", "java.exe")
+            if not os.path.exists(java_exe):
+                st.error("❌ **Java环境配置错误**")
+                st.markdown(f"""
+                **问题诊断：**
+                - JAVA_HOME设置为：`{java_home}`
+                - 但在该路径下找不到 `bin\\java.exe`
+                
+                **解决方案：**
+                1. 检查JAVA_HOME路径是否正确
+                2. 确保Java已正确安装在该路径
+                3. 或者将Java的bin目录添加到PATH环境变量
+                """)
+                st.stop()
+        
+        # 检查示例文件是否存在
+        example_file = "examples/pocket/protein.pdb"
+        if not os.path.exists(example_file):
+            st.error(f"❌ **示例文件不存在**")
+            st.markdown(f"""
+            **问题诊断：**
+            - 找不到示例文件：`{example_file}`
+            
+            **解决方案：**
+            - 请确保示例文件存在于正确的位置
+            - 或者使用"上传蛋白质"选项上传您自己的PDB文件
+            """)
+            st.stop()
+        
+        # 检查p2rank目录是否存在
+        p2rank_home = "./others/p2rank_2.5/"
+        if not os.path.exists(p2rank_home):
+            st.error(f"❌ **P2Rank工具未找到**")
+            st.markdown(f"""
+            **问题诊断：**
+            - P2Rank目录不存在：`{p2rank_home}`
+            
+            **解决方案：**
+            - 请确保P2Rank工具已正确安装
+            - 检查项目目录结构是否完整
+            """)
+            st.stop()
+        
         try:
             # 用示例文件名
             uploaded_pdb_filename = "protein_example.pdb"
             # 调用 p2rank 做预测
             selected = select_pocket_from_local_protein(
-                "examples/pocket/protein.pdb", p2rank_home="./others/p2rank_2.5/"
+                example_file, p2rank_home=p2rank_home
             )
             if selected:
                 pocket = selected
@@ -720,8 +880,75 @@ elif page == "口袋预测":
                         df.to_csv(csv_path, index=False)
                         st.success(f"best_pocket.csv 已保存到 {csv_path}")
 
+        except FileNotFoundError as e:
+            if "java" in str(e).lower() or "java.exe" in str(e):
+                st.error("❌ **Java执行失败**")
+                st.markdown(f"""
+                **错误详情：** `{str(e)}`
+                
+                **可能的原因：**
+                1. Java未正确安装
+                2. Java不在系统PATH中
+                3. JAVA_HOME配置不正确
+                
+                **解决方案：**
+                请参考上方的Java环境配置说明
+                """)
+            else:
+                st.error(f"❌ **文件未找到错误**：{str(e)}")
+        except subprocess.CalledProcessError as e:
+            st.error("❌ **P2Rank执行失败**")
+            st.markdown(f"""
+            **错误详情：**
+            - 返回码：{e.returncode}
+            - 错误信息：{str(e)}
+            
+            **可能的原因：**
+            1. Java版本不兼容（需要Java 17-23）
+            2. P2Rank工具配置错误
+            3. 输入文件格式问题
+            
+            **解决方案：**
+            1. 检查Java版本：`java -version`（应该显示17-23之间的版本）
+            2. 检查P2Rank目录是否完整
+            3. 尝试手动运行P2Rank命令进行诊断
+            """)
+            if hasattr(e, 'stderr') and e.stderr:
+                with st.expander("查看详细错误信息"):
+                    st.code(e.stderr, language="text")
         except Exception as e:
-            st.warning(f"加载示例文件时发生错误: {e}")
+            error_msg = str(e)
+            st.error(f"❌ **加载示例文件时发生错误**")
+            
+            # 根据错误类型提供更详细的诊断
+            if "java" in error_msg.lower():
+                st.markdown(f"""
+                **错误信息：** `{error_msg}`
+                
+                **问题诊断：**
+                这是一个Java相关的错误，可能的原因包括：
+                1. Java未安装或不在PATH中
+                2. Java版本不兼容（P2Rank需要Java 17-23）
+                3. JAVA_HOME环境变量配置错误
+                
+                **解决方案：**
+                请参考上方的Java环境配置说明
+                """)
+            else:
+                st.markdown(f"""
+                **错误信息：** `{error_msg}`
+                
+                **问题诊断：**
+                请检查：
+                1. 示例文件是否存在且格式正确
+                2. P2Rank工具是否完整
+                3. 系统资源是否充足
+                """)
+            
+            # 显示完整的错误堆栈（在可展开区域中）
+            import traceback
+            with st.expander("查看完整错误堆栈"):
+                st.code(traceback.format_exc(), language="python")
 
 # ------------------------------------------------------------------------------
 # 分子对接

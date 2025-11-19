@@ -123,6 +123,17 @@ class UnimolPredictor:
             import unicore
             from unicore import checkpoint_utils, distributed_utils, options, utils
         except ImportError as e:
+            # 获取当前文件的目录，用于构建相对路径
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            install_script_path = os.path.join(
+                os.path.dirname(os.path.dirname(current_dir)), 
+                "install_unicore.py"
+            )
+            install_doc_path = os.path.join(
+                os.path.dirname(os.path.dirname(current_dir)), 
+                "INSTALL_UNICORE.md"
+            )
+            
             error_msg = (
                 "\n" + "=" * 70 + "\n"
                 "错误: 未找到 unicore 模块\n"
@@ -139,12 +150,15 @@ class UnimolPredictor:
                 "验证安装:\n"
                 "  python -c \"import unicore; print('OK')\"\n\n"
                 "详细说明请查看:\n"
-                "  FLASH_DOCK-main/others/Uni-Mol/unimol_docking_v2/INSTALL_UNICORE.md\n"
+                f"  {install_doc_path}\n"
                 "  或运行安装脚本:\n"
-                "  python FLASH_DOCK-main/others/Uni-Mol/unimol_docking_v2/install_unicore.py\n"
-                "=" * 70
+                f"  python {install_script_path}\n"
+                "=" * 70 + "\n"
             )
-            raise ImportError(error_msg) from e
+            # 直接打印错误信息，避免异常链导致的重复打印
+            print(error_msg, file=sys.stderr)
+            # 使用 None 作为 from 参数，避免异常链
+            raise ImportError("未找到 unicore 模块。请按照上述说明安装 Uni-Core。")
         
         # Check CUDA availability and environment
         is_windows = platform.system() == 'Windows'
